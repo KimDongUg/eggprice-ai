@@ -1,0 +1,66 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background & Foreground */
+    --background: 210 17% 98%;
+    --foreground: 222 47% 11%;
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    /* Primary: #FF6B35 (오렌지 - 계란 노른자) */
+    --primary: 16 100% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: #FFC864 (노란색) */
+    --secondary: 39 100% 70%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent */
+    --accent: 39 100% 95%;
+    --accent-foreground: 16 100% 40%;
+
+    /* Destructive / Danger: #F44336 (상승) */
+    --destructive: 4 90% 58%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Success: #4CAF50 (하락) */
+    --success: 122 39% 49%;
+    --success-foreground: 0 0% 100%;
+
+    /* Border / Input / Ring */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 16 100% 60%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+      sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-mono-num {
+    font-family: "Roboto Mono", ui-monospace, monospace;
+  }
+}

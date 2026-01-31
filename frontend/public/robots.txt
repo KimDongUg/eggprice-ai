@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /predictions
+Allow: /compare
+Allow: /alerts
+
+Disallow: /login
+Disallow: /register
+Disallow: /mypage
+Disallow: /api
+
+Sitemap: https://eggprice.ai/sitemap.xml
