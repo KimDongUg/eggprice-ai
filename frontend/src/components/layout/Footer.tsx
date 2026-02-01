@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="bg-card border-t mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
-          <p>EggPrice AI - LSTM 기반 계란 가격 예측 서비스</p>
+          <p>계란가격 예측(EggPrice AI) - LSTM 기반 계란 가격 예측 서비스</p>
           <p>
             데이터 출처:{" "}
             <a
@@ -27,7 +27,7 @@ export default function Footer() {
             이용약관
           </Link>
           <span>|</span>
-          <span>&copy; 2026 EggPrice AI</span>
+          <span>&copy; 2026 계란가격 예측(EggPrice AI)</span>
         </div>
       </div>
     </footer>

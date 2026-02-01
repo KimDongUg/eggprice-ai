@@ -23,7 +23,7 @@ export function useCurrentPrices() {
   });
 }
 
-export function usePriceHistory(grade: string, days = 180) {
+export function usePriceHistory(grade: string, days = 180, enabled = true) {
   return useQuery<PriceHistory[]>({
     queryKey: ["prices", "history", grade, days],
     queryFn: () =>
@@ -31,12 +31,13 @@ export function usePriceHistory(grade: string, days = 180) {
         .get("/prices/history", { params: { grade, days } })
         .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 
 // ── Predictions ─────────────────────────────────────
 
-export function useForecast(grade: string) {
+export function useForecast(grade: string, enabled = true) {
   return useQuery<ForecastResponse>({
     queryKey: ["forecast", grade],
     queryFn: () =>
@@ -44,6 +45,7 @@ export function useForecast(grade: string) {
         .get("/predictions/forecast", { params: { grade } })
         .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 
@@ -98,9 +100,18 @@ export function useDeleteAlert() {
   });
 }
 
+// ── Email Report ───────────────────────────────────
+
+export function useSendReport() {
+  return useMutation({
+    mutationFn: (data: { email: string }) =>
+      api.post("/email/send-report", data).then((r) => r.data),
+  });
+}
+
 // ── Market Data ─────────────────────────────────────
 
-export function useMarketSnapshot(date?: string) {
+export function useMarketSnapshot(date?: string, enabled = true) {
   return useQuery<MarketDataSnapshot>({
     queryKey: ["market", "snapshot", date],
     queryFn: () =>
@@ -108,6 +119,7 @@ export function useMarketSnapshot(date?: string) {
         .get("/market/snapshot", { params: date ? { target_date: date } : {} })
         .then((r) => r.data),
     staleTime: 10 * 60 * 1000,
+    enabled,
   });
 }
 
@@ -135,12 +147,13 @@ export function useModelPerformance(grade: string) {
   });
 }
 
-export function useCurrentModel(grade: string) {
+export function useCurrentModel(grade: string, enabled = true) {
   return useQuery<ModelPerformance | null>({
     queryKey: ["models", "current", grade],
     queryFn: () =>
       api.get("/models/current", { params: { grade } }).then((r) => r.data),
     staleTime: 30 * 60 * 1000,
+    enabled,
   });
 }
 

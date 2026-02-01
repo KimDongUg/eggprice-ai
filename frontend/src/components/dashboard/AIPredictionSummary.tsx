@@ -49,35 +49,40 @@ export default function AIPredictionSummary({ data }: Props) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Prediction rows */}
+        {/* Prediction rows: 7일 / 14일 / 30일 */}
         <div className="space-y-2">
-          {data.predictions.map((item, i) => {
-            const horizonLabel =
-              i === 0 ? "7일 후" : i === 1 ? "14일 후" : "30일 후";
-            const pctColor =
-              item.change_percent > 0
-                ? "text-danger-500"
-                : item.change_percent < 0
-                  ? "text-success-500"
-                  : "text-muted-foreground";
-            return (
-              <div
-                key={i}
-                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
-              >
-                <span className="text-sm text-muted-foreground">{horizonLabel}:</span>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono-num font-bold text-lg">
-                    {item.price.toLocaleString()}원
-                  </span>
-                  <span className={cn("font-mono-num text-sm font-semibold", pctColor)}>
-                    ({item.change_percent > 0 ? "▲" : item.change_percent < 0 ? "▼" : ""}
-                    {Math.abs(item.change_percent)}%)
-                  </span>
+          {[
+            { idx: 6, label: "7일 후" },
+            { idx: 13, label: "14일 후" },
+            { idx: 29, label: "30일 후" },
+          ]
+            .filter(({ idx }) => idx < data.predictions.length)
+            .map(({ idx, label }) => {
+              const item = data.predictions[idx];
+              const pctColor =
+                item.change_percent > 0
+                  ? "text-danger-500"
+                  : item.change_percent < 0
+                    ? "text-success-500"
+                    : "text-muted-foreground";
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                >
+                  <span className="text-sm text-muted-foreground">{label}:</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono-num font-bold text-lg">
+                      {item.price.toLocaleString()}원
+                    </span>
+                    <span className={cn("font-mono-num text-sm font-semibold", pctColor)}>
+                      ({item.change_percent > 0 ? "▲" : item.change_percent < 0 ? "▼" : ""}
+                      {Math.abs(item.change_percent)}%)
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
 
         {/* Tips */}

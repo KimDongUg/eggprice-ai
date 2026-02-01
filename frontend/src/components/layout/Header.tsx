@@ -27,9 +27,36 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🥚</span>
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="shrink-0"
+            >
+              {/* Egg shape */}
+              <ellipse cx="16" cy="17" rx="11" ry="13" fill="#FFC864" />
+              <ellipse cx="16" cy="17" rx="11" ry="13" fill="url(#egg-grad)" />
+              {/* AI circuit lines */}
+              <circle cx="16" cy="14" r="3" fill="#1a56db" />
+              <circle cx="10" cy="20" r="2" fill="#1a56db" opacity="0.8" />
+              <circle cx="22" cy="20" r="2" fill="#1a56db" opacity="0.8" />
+              <line x1="16" y1="17" x2="10" y2="20" stroke="#1a56db" strokeWidth="1.2" opacity="0.6" />
+              <line x1="16" y1="17" x2="22" y2="20" stroke="#1a56db" strokeWidth="1.2" opacity="0.6" />
+              <circle cx="16" cy="14" r="1.2" fill="#fff" />
+              <circle cx="10" cy="20" r="0.8" fill="#fff" />
+              <circle cx="22" cy="20" r="0.8" fill="#fff" />
+              <defs>
+                <linearGradient id="egg-grad" x1="16" y1="4" x2="16" y2="30" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#FFF3D6" stopOpacity="0.6" />
+                  <stop offset="1" stopColor="#FFC864" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+            </svg>
             <span className="text-xl font-bold text-primary-400">
-              EggPrice AI
+              계란가격 예측
+              <span className="text-xs font-medium text-muted-foreground ml-1">EggPrice AI</span>
             </span>
           </Link>
 

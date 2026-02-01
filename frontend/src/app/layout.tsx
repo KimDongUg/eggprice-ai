@@ -9,8 +9,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://eggprice.ai";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "EggPrice AI - 계란 가격 예측",
-    template: "%s | EggPrice AI",
+    default: "계란가격 예측(EggPrice AI)",
+    template: "%s | 계란가격 예측(EggPrice AI)",
   },
   description:
     "LSTM 기반 AI가 분석하는 계란 가격 예측 서비스. 7일/14일/30일 가격 전망, 시장 요인 분석, 맞춤 알림을 제공합니다.",
@@ -35,14 +35,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,
-    siteName: "EggPrice AI",
-    title: "EggPrice AI - 계란 가격 예측",
+    siteName: "계란가격 예측(EggPrice AI)",
+    title: "계란가격 예측(EggPrice AI)",
     description:
       "LSTM 기반 AI가 분석하는 계란 가격 예측 서비스. 7일/14일/30일 가격 전망, 시장 요인 분석, 맞춤 알림을 제공합니다.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "EggPrice AI - 계란 가격 예측",
+    title: "계란가격 예측(EggPrice AI)",
     description:
       "LSTM 기반 AI가 분석하는 계란 가격 예측 서비스. 7일/14일/30일 가격 전망, 시장 요인 분석, 맞춤 알림을 제공합니다.",
   },

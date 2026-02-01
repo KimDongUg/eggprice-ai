@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -12,11 +12,10 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { usePriceHistory } from "@/lib/queries";
 import { GRADES } from "@/types";
-import type { PriceHistory } from "@/types";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { usePriceHistory } from "@/lib/queries";
 
 const GRADE_COLORS: Record<string, string> = {
   왕란: "#8b5cf6",
@@ -26,17 +25,72 @@ const GRADE_COLORS: Record<string, string> = {
   소란: "#3b82f6",
 };
 
+const CHART_CACHE_KEY = "egg-chart-cache";
+
+type ChartRow = Record<string, string | number>;
+
 export default function PriceTrendChart() {
-  const [selectedGrades, setSelectedGrades] = useState<string[]>(["대란"]);
+  const [selectedGrades, setSelectedGrades] = useState<string[]>(["특란", "대란"]);
 
-  const queries = GRADES.map((g) => ({
-    grade: g,
-    ...usePriceHistory(g, 180),
-  }));
+  // Read cached chart data from localStorage on mount
+  const [cachedChartData] = useState<ChartRow[] | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = localStorage.getItem(CHART_CACHE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  const isLoading = queries.some(
-    (q) => selectedGrades.includes(q.grade) && q.isLoading
-  );
+  const { data: historyWangran, isLoading: l1 } = usePriceHistory("왕란", 180);
+  const { data: historyTeukran, isLoading: l2 } = usePriceHistory("특란", 180);
+  const { data: historyDaeran, isLoading: l3 } = usePriceHistory("대란", 180);
+  const { data: historyJungran, isLoading: l4 } = usePriceHistory("중란", 180);
+  const { data: historySoran, isLoading: l5 } = usePriceHistory("소란", 180);
+
+  const isLoading = l1 || l2 || l3 || l4 || l5;
+
+  const freshChartData = useMemo(() => {
+    const allHistories: Record<string, typeof historyWangran> = {
+      왕란: historyWangran,
+      특란: historyTeukran,
+      대란: historyDaeran,
+      중란: historyJungran,
+      소란: historySoran,
+    };
+
+    // Merge all grades into date-keyed records
+    const dateMap = new Map<string, ChartRow>();
+
+    for (const [grade, history] of Object.entries(allHistories)) {
+      if (!history) continue;
+      for (const row of history) {
+        if (!dateMap.has(row.date)) {
+          dateMap.set(row.date, { date: row.date });
+        }
+        const entry = dateMap.get(row.date)!;
+        entry[grade] = row.retail_price ?? row.wholesale_price ?? 0;
+      }
+    }
+
+    return Array.from(dateMap.values()).sort((a, b) =>
+      (a.date as string).localeCompare(b.date as string)
+    );
+  }, [historyWangran, historyTeukran, historyDaeran, historyJungran, historySoran]);
+
+  // Only switch to fresh data once ALL queries are done
+  const isFreshReady = !isLoading && freshChartData.length > 0;
+
+  // Persist fresh chart data to localStorage only when complete
+  useEffect(() => {
+    if (isFreshReady) {
+      localStorage.setItem(CHART_CACHE_KEY, JSON.stringify(freshChartData));
+    }
+  }, [isFreshReady, freshChartData]);
+
+  const displayData = isFreshReady ? freshChartData : (cachedChartData ?? []);
+  const hasData = displayData.length > 0;
 
   const toggleGrade = (grade: string) => {
     setSelectedGrades((prev) =>
@@ -45,22 +99,6 @@ export default function PriceTrendChart() {
         : [...prev, grade]
     );
   };
-
-  const dateMap = new Map<string, Record<string, number | string>>();
-  for (const grade of selectedGrades) {
-    const q = queries.find((q) => q.grade === grade);
-    const history: PriceHistory[] = q?.data || [];
-    for (const item of history) {
-      const existing = dateMap.get(item.date) || { date: item.date };
-      if (item.retail_price !== null) {
-        existing[grade] = item.retail_price;
-      }
-      dateMap.set(item.date, existing);
-    }
-  }
-  const chartData = Array.from(dateMap.values()).sort((a, b) =>
-    (a.date as string).localeCompare(b.date as string)
-  );
 
   return (
     <Card>
@@ -87,55 +125,65 @@ export default function PriceTrendChart() {
           ))}
         </div>
 
-        {isLoading ? (
-          <Skeleton className="h-[360px] w-full rounded-lg" />
+        {!hasData ? (
+          <div className="flex items-center justify-center gap-2 h-[180px]">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">불러오는 중...</span>
+          </div>
         ) : (
-          <ResponsiveContainer width="100%" height={360}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214 32% 91%)" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
-                tickFormatter={(v) => {
-                  const d = new Date(v);
-                  return `${d.getMonth() + 1}/${d.getDate()}`;
-                }}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
-                tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-                width={45}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "0.5rem",
-                  border: "1px solid hsl(214 32% 91%)",
-                  fontSize: "0.8rem",
-                }}
-                formatter={(value: number, name: string) => [
-                  `${value.toLocaleString()}원`,
-                  name,
-                ]}
-                labelFormatter={(label) => `${label}`}
-              />
-              <Legend
-                wrapperStyle={{ fontSize: "0.75rem" }}
-              />
-              {selectedGrades.map((grade) => (
-                <Line
-                  key={grade}
-                  type="monotone"
-                  dataKey={grade}
-                  name={grade}
-                  stroke={GRADE_COLORS[grade]}
-                  strokeWidth={2.5}
-                  dot={false}
-                  connectNulls
-                  activeDot={{ r: 5, strokeWidth: 2 }}
+          <div className="relative">
+            {isLoading && !isFreshReady && cachedChartData && (
+              <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-background/80 rounded px-2 py-1 z-10">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">최신 데이터 불러오는 중...</span>
+              </div>
+            )}
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={displayData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214 32% 91%)" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
+                  tickFormatter={(v) => {
+                    const d = new Date(v);
+                    return `${d.getMonth() + 1}/${d.getDate()}`;
+                  }}
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+                <YAxis
+                  tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
+                  tickFormatter={(v: number) => `${v.toLocaleString()}원`}
+                  width={62}
+                  domain={[2500, "auto"]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "0.5rem",
+                    border: "1px solid hsl(214 32% 91%)",
+                    fontSize: "0.8rem",
+                  }}
+                  formatter={(value: number, name: string) => [
+                    `${value.toLocaleString()}원`,
+                    name,
+                  ]}
+                  labelFormatter={(label) => `${label}`}
+                />
+                <Legend wrapperStyle={{ fontSize: "0.75rem" }} />
+                {selectedGrades.map((grade) => (
+                  <Line
+                    key={grade}
+                    type="monotone"
+                    dataKey={grade}
+                    name={grade}
+                    stroke={GRADE_COLORS[grade]}
+                    strokeWidth={2.5}
+                    dot={false}
+                    connectNulls
+                    activeDot={{ r: 5, strokeWidth: 2 }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>

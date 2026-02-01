@@ -90,8 +90,15 @@ async def predictions_for_grade(
     db: Session = Depends(get_db),
 ):
     """특정 등급의 가격 예측 결과 (7/14/30일)"""
+    cache_key = f"predictions:{grade}"
+    hit = cache_get(cache_key)
+    if hit is not None:
+        return hit
+
     preds = get_predictions(db, grade)
-    return PredictionSummary(grade=grade, predictions=preds)
+    result = PredictionSummary(grade=grade, predictions=preds)
+    cache_set(cache_key, result.model_dump(mode="json"), ttl=300)
+    return result
 
 
 @router.post("/predictions/refresh", response_model=list[PredictionResponse])

@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -11,7 +12,7 @@ from app.core.config import settings
 from app.core.database import Base, engine, init_timescaledb
 from app.core.rate_limit import limiter
 from app.core.scheduler import start_scheduler, shutdown_scheduler
-from app.api import prices, predictions, alerts, market_data, auth
+from app.api import prices, predictions, alerts, market_data, auth, email_report
 
 # Import all models so Base.metadata knows about them
 from app.models import price, prediction, alert, user  # noqa: F401
@@ -53,6 +54,16 @@ async def lifespan(app: FastAPI):
             integrations=[FastApiIntegration(), SqlalchemyIntegration()],
         )
 
+    # Cache warming — pre-populate frequently accessed data
+    from app.core.cache import warm_cache
+    from app.core.database import SessionLocal
+    try:
+        db = SessionLocal()
+        warm_cache(db)
+        db.close()
+    except Exception:
+        pass  # non-fatal: first request will populate cache
+
     yield
     shutdown_scheduler()
 
@@ -68,7 +79,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# ── Middleware (order matters — last added runs first) ──
+# ── Middleware (order matters — last added runs first = outermost) ──
 app.add_middleware(SecurityHeadersMiddleware)
 
 app.add_middleware(
@@ -84,6 +95,9 @@ app.add_middleware(
     allowed_hosts=settings.ALLOWED_HOSTS.split(","),
 )
 
+# GZip must be outermost to compress final response
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 # ── Prometheus metrics ──────────────────────────────────
 from app.core.metrics import setup_metrics  # noqa: E402
 
@@ -95,6 +109,7 @@ app.include_router(prices.router, prefix="/api/v1")
 app.include_router(predictions.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(market_data.router, prefix="/api/v1")
+app.include_router(email_report.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")

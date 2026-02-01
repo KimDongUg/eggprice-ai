@@ -55,10 +55,13 @@ def _override_get_db():
 
 @pytest.fixture(autouse=True)
 def setup_database():
-    """Create all tables before each test, drop after."""
+    """Create all tables before each test, drop after. Clear caches."""
     Base.metadata.create_all(bind=TEST_ENGINE)
     yield
     Base.metadata.drop_all(bind=TEST_ENGINE)
+    # Clear L1 in-memory cache between tests
+    from app.core.cache import _l1
+    _l1.clear()
 
 
 @pytest.fixture()
@@ -76,6 +79,9 @@ def client():
     """FastAPI test client with overridden DB dependency."""
     app.dependency_overrides[get_db] = _override_get_db
     with TestClient(app) as c:
+        # Clear L1 cache populated by warm_cache during lifespan
+        from app.core.cache import _l1
+        _l1.clear()
         yield c
     app.dependency_overrides.clear()
 

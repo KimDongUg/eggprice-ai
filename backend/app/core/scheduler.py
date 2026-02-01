@@ -19,15 +19,22 @@ logger = logging.getLogger(__name__)
 scheduler = BackgroundScheduler()
 
 
+_celery_status: bool | None = None  # cached result
+
+
 def _celery_available() -> bool:
-    """Check if Celery broker (Redis) is reachable."""
+    """Check if Celery broker (Redis) is reachable. Result is cached."""
+    global _celery_status
+    if _celery_status is not None:
+        return _celery_status
     try:
         import redis
-        r = redis.from_url(settings.CELERY_BROKER_URL, socket_connect_timeout=2)
+        r = redis.from_url(settings.CELERY_BROKER_URL, socket_connect_timeout=1)
         r.ping()
-        return True
+        _celery_status = True
     except Exception:
-        return False
+        _celery_status = False
+    return _celery_status
 
 
 def _run_async(coro):

@@ -26,6 +26,15 @@ class PriceWithChange(PriceBase):
     model_config = {"from_attributes": True}
 
 
+class PriceHistoryCompact(BaseModel):
+    """Lightweight history response — smaller payload."""
+    d: str        # date
+    r: int        # retail_price
+    w: int        # wholesale_price
+
+    model_config = {"from_attributes": True}
+
+
 class PriceHistoryParams(BaseModel):
     grade: str = "대란"
-    days: int = 180
+    days: int = 90
