@@ -18,7 +18,6 @@ from app.api import prices, predictions, alerts, market_data, auth, email_report
 from app.models import price, prediction, alert, user  # noqa: F401
 from app.models import market_data as market_data_models  # noqa: F401
 
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to every response."""
@@ -74,12 +73,6 @@ app = FastAPI(
     description="계란 가격 예측 AI 서비스 — LSTM 기반 다변량 시계열 예측",
     version="3.0.0",
     lifespan=lifespan,
-)
-
-# 모든 호스트 허용 (Railway 배포용)
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["*"]
 )
 
 # ── Rate limiter ────────────────────────────────────────
