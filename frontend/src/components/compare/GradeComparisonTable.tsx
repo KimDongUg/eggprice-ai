@@ -16,15 +16,15 @@ export default function GradeComparisonTable() {
 
   if (!prices || prices.length === 0) return null;
 
-  // Find the base grade (대란) for comparison
-  const baseGrade = prices.find((p) => p.grade === "대란");
+  // Find the base grade (특란) for comparison
+  const baseGrade = prices.find((p) => p.grade === "특란");
   const basePrice = baseGrade?.retail_price ?? 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>등급별 가격 비교</CardTitle>
-        <CardDescription>대란 기준 등급 간 가격 차이를 비교합니다.</CardDescription>
+        <CardDescription>특란 기준 등급 간 가격 차이를 비교합니다.</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <table className="w-full">
@@ -43,7 +43,7 @@ export default function GradeComparisonTable() {
                 전일 대비
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
-                대란 대비
+                특란 대비
               </th>
             </tr>
           </thead>
@@ -60,7 +60,7 @@ export default function GradeComparisonTable() {
                 <tr key={p.grade} className="hover:bg-muted/30">
                   <td className="px-4 py-3">
                     <span className="text-sm font-semibold">{p.grade}</span>
-                    {p.grade === "대란" && (
+                    {p.grade === "특란" && (
                       <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 py-0">
                         기준
                       </Badge>

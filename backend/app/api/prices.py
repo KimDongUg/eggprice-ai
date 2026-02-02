@@ -29,7 +29,7 @@ async def current_prices(request: Request, db: Session = Depends(get_db)):
 @limiter.limit(settings.RATE_LIMIT_API)
 async def price_history(
     request: Request,
-    grade: str = Query(default="대란", description="계란 등급"),
+    grade: str = Query(default="특란", description="계란 등급"),
     days: int = Query(default=90, ge=1, le=365, description="조회 기간 (일)"),
     compact: bool = Query(default=False, description="경량 응답 (d/r/w 필드만)"),
     db: Session = Depends(get_db),

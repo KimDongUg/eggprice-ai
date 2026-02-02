@@ -15,7 +15,7 @@ import { GRADES } from "@/types";
 import { cn } from "@/lib/utils";
 
 export default function PredictionsPage() {
-  const [selectedGrade, setSelectedGrade] = useState<string>("대란");
+  const [selectedGrade, setSelectedGrade] = useState<string>("특란");
 
   const { data: predData, isLoading: predLoading } = usePredictions(selectedGrade);
   const { data: history, isLoading: histLoading } = usePriceHistory(selectedGrade, 180);
@@ -76,32 +76,38 @@ export default function PredictionsPage() {
                         </p>
                       </div>
                     )}
-                    {forecast.predictions.map((item, i) => {
-                      const label = i === 0 ? "7일" : i === 1 ? "14일" : "30일";
-                      return (
-                        <div key={i}>
-                          <span className="text-xs text-muted-foreground">
-                            {label} 후
-                          </span>
-                          <p className="font-mono-num font-bold">
-                            {item.price.toLocaleString()}원
-                            <span
-                              className={cn(
-                                "text-xs ml-1 font-semibold",
-                                item.change_percent > 0
-                                  ? "text-danger-500"
-                                  : item.change_percent < 0
-                                    ? "text-success-500"
-                                    : "text-muted-foreground"
-                              )}
-                            >
-                              {item.change_percent > 0 ? "+" : ""}
-                              {item.change_percent}%
+                    {[
+                      { idx: 6, label: "7일" },
+                      { idx: 13, label: "14일" },
+                      { idx: 29, label: "30일" },
+                    ]
+                      .filter(({ idx }) => idx < forecast.predictions.length)
+                      .map(({ idx, label }) => {
+                        const item = forecast.predictions[idx];
+                        return (
+                          <div key={idx}>
+                            <span className="text-xs text-muted-foreground">
+                              {label} 후
                             </span>
-                          </p>
-                        </div>
-                      );
-                    })}
+                            <p className="font-mono-num font-bold">
+                              {item.price.toLocaleString()}원
+                              <span
+                                className={cn(
+                                  "text-xs ml-1 font-semibold",
+                                  item.change_percent > 0
+                                    ? "text-danger-500"
+                                    : item.change_percent < 0
+                                      ? "text-success-500"
+                                      : "text-muted-foreground"
+                                )}
+                              >
+                                {item.change_percent > 0 ? "+" : ""}
+                                {item.change_percent}%
+                              </span>
+                            </p>
+                          </div>
+                        );
+                      })}
                     {forecast.alert && (
                       <p className="text-sm text-muted-foreground italic">
                         {forecast.alert}

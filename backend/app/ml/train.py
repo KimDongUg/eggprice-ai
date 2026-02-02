@@ -91,7 +91,7 @@ def compute_metrics(
     }
 
 
-def train_model(grade: str = "대란", model_version: str | None = None) -> dict:
+def train_model(grade: str = "특란", model_version: str | None = None) -> dict:
     """Train the LSTM model for a specific egg grade.
 
     Returns:
@@ -252,7 +252,7 @@ def train_all_grades(model_version: str | None = None) -> list[dict]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train EggPrice LSTM model")
-    parser.add_argument("--grade", default="대란", help="Egg grade to train")
+    parser.add_argument("--grade", default="특란", help="Egg grade to train")
     parser.add_argument("--version", default=None, help="Model version string")
     parser.add_argument("--all", action="store_true", help="Train all grades")
     args = parser.parse_args()

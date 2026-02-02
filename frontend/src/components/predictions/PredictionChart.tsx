@@ -73,9 +73,19 @@ export default function PredictionChart({ history, predictions }: Props) {
               }}
             />
             <YAxis
+              domain={[2000, 'auto']}
+              ticks={(() => {
+                const allPrices = chartData.flatMap((d) => [
+                  d.actual, d.predicted, d.ci_lower, d.ci_upper,
+                ].filter((v): v is number => v !== null && v !== undefined));
+                const max = Math.max(...allPrices, 2000);
+                const result: number[] = [];
+                for (let t = 2000; t <= max + 2000; t += 2000) result.push(t);
+                return result;
+              })()}
               tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
-              tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-              width={45}
+              tickFormatter={(v: number) => v.toLocaleString()}
+              width={55}
             />
             <Tooltip
               contentStyle={{

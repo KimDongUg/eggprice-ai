@@ -36,5 +36,5 @@ class PriceHistoryCompact(BaseModel):
 
 
 class PriceHistoryParams(BaseModel):
-    grade: str = "대란"
+    grade: str = "특란"
     days: int = 90

@@ -16,9 +16,12 @@ interface Props {
 export default function AlertForm({ onCreated }: Props) {
   const [form, setForm] = useState<AlertCreate>({
     email: "",
-    grade: "대란",
+    phone: "",
+    grade: "특란",
     condition: "above",
     threshold_price: 0,
+    notify_email: true,
+    notify_sms: false,
   });
   const [success, setSuccess] = useState(false);
 
@@ -29,15 +32,20 @@ export default function AlertForm({ onCreated }: Props) {
     setSuccess(false);
 
     if (!form.email || form.threshold_price <= 0) return;
+    if (!form.notify_email && !form.notify_sms) return;
+    if (form.notify_sms && !form.phone) return;
 
     mutation.mutate(form, {
       onSuccess: () => {
         setSuccess(true);
         setForm({
           email: "",
-          grade: "대란",
+          phone: "",
+          grade: "특란",
           condition: "above",
           threshold_price: 0,
+          notify_email: true,
+          notify_sms: false,
         });
         onCreated();
       },
@@ -61,6 +69,17 @@ export default function AlertForm({ onCreated }: Props) {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="example@email.com"
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="alert-phone">전화번호</Label>
+              <Input
+                id="alert-phone"
+                type="tel"
+                value={form.phone || ""}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="010-1234-5678"
               />
             </div>
 
@@ -115,6 +134,36 @@ export default function AlertForm({ onCreated }: Props) {
                 required
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>알림 수단</Label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.notify_email}
+                  onChange={(e) => setForm({ ...form, notify_email: e.target.checked })}
+                  className="rounded border-input"
+                />
+                이메일
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.notify_sms}
+                  onChange={(e) => setForm({ ...form, notify_sms: e.target.checked })}
+                  className="rounded border-input"
+                />
+                문자(SMS)
+              </label>
+            </div>
+            {!form.notify_email && !form.notify_sms && (
+              <p className="text-xs text-destructive">하나 이상의 알림 수단을 선택해주세요.</p>
+            )}
+            {form.notify_sms && !form.phone && (
+              <p className="text-xs text-destructive">문자 알림을 위해 전화번호를 입력해주세요.</p>
+            )}
           </div>
 
           {mutation.isError && (

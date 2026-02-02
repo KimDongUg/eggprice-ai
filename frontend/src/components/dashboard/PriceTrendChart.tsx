@@ -30,7 +30,7 @@ const CHART_CACHE_KEY = "egg-chart-cache";
 type ChartRow = Record<string, string | number>;
 
 export default function PriceTrendChart() {
-  const [selectedGrades, setSelectedGrades] = useState<string[]>(["특란", "대란"]);
+  const [selectedGrades, setSelectedGrades] = useState<string[]>(["특란"]);
 
   // Read cached chart data from localStorage on mount
   const [cachedChartData] = useState<ChartRow[] | null>(() => {

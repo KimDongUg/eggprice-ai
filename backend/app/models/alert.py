@@ -11,8 +11,11 @@ class Alert(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     grade: Mapped[str] = mapped_column(String(10), nullable=False)
     condition: Mapped[str] = mapped_column(String(10), nullable=False)  # 'above' or 'below'
     threshold_price: Mapped[float] = mapped_column(Float, nullable=False)
+    notify_email: Mapped[bool] = mapped_column(Boolean, default=True)
+    notify_sms: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

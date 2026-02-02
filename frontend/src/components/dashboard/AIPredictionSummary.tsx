@@ -39,7 +39,7 @@ export default function AIPredictionSummary({ data }: Props) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary-400" />
-            AI 예측 ({data.grade} 기준)
+            AI 예측 (특란 기준-서울)
           </CardTitle>
           <Badge className={cn(trendBg, trendColor, "border-0")}>
             {data.trend === "상승" && <TrendingUp className="h-3 w-3 mr-1" />}

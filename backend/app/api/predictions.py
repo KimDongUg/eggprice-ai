@@ -22,7 +22,7 @@ router = APIRouter(tags=["predictions"])
 @limiter.limit(settings.RATE_LIMIT_API)
 async def forecast(
     request: Request,
-    grade: str = "대란",
+    grade: str = "특란",
     db: Session = Depends(get_db),
 ):
     """AI 예측 결과 (스펙 응답 형식)"""

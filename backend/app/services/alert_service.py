@@ -14,9 +14,12 @@ logger = logging.getLogger(__name__)
 def create_alert(db: Session, alert_data: AlertCreate) -> Alert:
     alert = Alert(
         email=alert_data.email,
+        phone=alert_data.phone,
         grade=alert_data.grade,
         condition=alert_data.condition,
         threshold_price=alert_data.threshold_price,
+        notify_email=alert_data.notify_email,
+        notify_sms=alert_data.notify_sms,
     )
     db.add(alert)
     db.commit()
@@ -79,19 +82,32 @@ async def send_alert_email(email: str, grade: str, predicted_price: float, condi
         logger.error(f"Failed to send alert email to {email}: {e}")
 
 
+async def send_alert_sms(phone: str, grade: str, predicted_price: float, condition: str, threshold: float):
+    """Send an alert notification via SMS. (placeholder – integrate SMS provider here)"""
+    direction = "이상" if condition == "above" else "이하"
+    message = f"[계란가격 알림] {grade} 예측가 {predicted_price:,.0f}원 ({threshold:,.0f}원 {direction} 도달)"
+    logger.info(f"SMS placeholder → {phone}: {message}")
+
+
 async def check_and_send_alerts(db: Session, predictions: list[dict]):
-    """Check active alerts against new predictions and send emails."""
+    """Check active alerts against new predictions and send notifications."""
     alerts = get_active_alerts(db)
     for alert in alerts:
         for pred in predictions:
             if pred["grade"] != alert.grade:
                 continue
             price = pred["predicted_price"]
-            if alert.condition == "above" and price >= alert.threshold_price:
+            triggered = (
+                (alert.condition == "above" and price >= alert.threshold_price)
+                or (alert.condition == "below" and price <= alert.threshold_price)
+            )
+            if not triggered:
+                continue
+            if alert.notify_email:
                 await send_alert_email(
                     alert.email, alert.grade, price, alert.condition, alert.threshold_price
                 )
-            elif alert.condition == "below" and price <= alert.threshold_price:
-                await send_alert_email(
-                    alert.email, alert.grade, price, alert.condition, alert.threshold_price
+            if alert.notify_sms and alert.phone:
+                await send_alert_sms(
+                    alert.phone, alert.grade, price, alert.condition, alert.threshold_price
                 )

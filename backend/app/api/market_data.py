@@ -122,7 +122,7 @@ async def market_snapshot(
 @limiter.limit(settings.RATE_LIMIT_API)
 async def model_performance(
     request: Request,
-    grade: str = Query(default="대란", description="등급"),
+    grade: str = Query(default="특란", description="등급"),
     db: Session = Depends(get_db),
 ):
     """모델 성능 이력 조회"""
@@ -155,7 +155,7 @@ async def model_performance(
 @limiter.limit(settings.RATE_LIMIT_API)
 async def current_model_performance(
     request: Request,
-    grade: str = Query(default="대란", description="등급"),
+    grade: str = Query(default="특란", description="등급"),
     db: Session = Depends(get_db),
 ):
     """현재 프로덕션 모델 성능"""
@@ -198,7 +198,7 @@ class AnalyticsFactorsResponse(BaseModel):
 @limiter.limit(settings.RATE_LIMIT_API)
 async def analytics_factors(
     request: Request,
-    grade: str = Query(default="대란", description="등급"),
+    grade: str = Query(default="특란", description="등급"),
     db: Session = Depends(get_db),
 ):
     """가격 변동 요인 분석"""

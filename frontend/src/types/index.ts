@@ -54,18 +54,24 @@ export interface ForecastResponse {
 export interface Alert {
   id: number;
   email: string;
+  phone?: string | null;
   grade: string;
   condition: "above" | "below";
   threshold_price: number;
+  notify_email: boolean;
+  notify_sms: boolean;
   is_active: boolean;
   created_at: string;
 }
 
 export interface AlertCreate {
   email: string;
+  phone?: string;
   grade: string;
   condition: "above" | "below";
   threshold_price: number;
+  notify_email: boolean;
+  notify_sms: boolean;
 }
 
 export interface MarketDataSnapshot {
