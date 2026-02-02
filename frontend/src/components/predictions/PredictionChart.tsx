@@ -41,15 +41,14 @@ export default function PredictionChart({ history, predictions }: Props) {
 
   const lastHistorical = histData[histData.length - 1];
   if (lastHistorical && predData.length > 0) {
+    const bridgePrice = lastHistorical.actual ?? 0;
     predData.unshift({
       date: lastHistorical.date,
       actual: null,
-      predicted: lastHistorical.actual,
-      ci_lower: lastHistorical.actual,
-      ci_upper: lastHistorical.actual,
-      ci_range: lastHistorical.actual
-        ? [lastHistorical.actual, lastHistorical.actual]
-        : null,
+      predicted: bridgePrice,
+      ci_lower: bridgePrice,
+      ci_upper: bridgePrice,
+      ci_range: [bridgePrice, bridgePrice] as [number, number],
     });
   }
 
