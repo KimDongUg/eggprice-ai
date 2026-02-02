@@ -112,6 +112,11 @@ app.include_router(market_data.router, prefix="/api/v1")
 app.include_router(email_report.router, prefix="/api/v1")
 
 
+@app.get("/")
+def root_health_check():
+    return {"status": "ok"}
+
+
 @app.get("/api/v1/health")
 async def health_check():
     return {"status": "ok", "service": "EggPrice AI", "version": "3.0.0"}
