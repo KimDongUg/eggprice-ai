@@ -1,9 +1,3 @@
-const { withSentryConfig } = require("@sentry/nextjs");
-
-const withBundleAnalyzer = process.env.ANALYZE === "true"
-  ? require("@next/bundle-analyzer")({ enabled: true })
-  : (config) => config;
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -13,7 +7,7 @@ const nextConfig = {
       : false,
   },
   experimental: {
-    optimizePackageImports: ["recharts", "lucide-react", "@sentry/nextjs"],
+    optimizePackageImports: ["recharts", "lucide-react"],
   },
   async headers() {
     return [
@@ -52,13 +46,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withBundleAnalyzer(
-  withSentryConfig(nextConfig, {
-    silent: true,
-    org: process.env.SENTRY_ORG || "",
-    project: process.env.SENTRY_PROJECT || "",
-    widenClientFileUpload: true,
-    hideSourceMaps: true,
-    disableLogger: true,
-  })
-);
+module.exports = nextConfig;
