@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     FROM_EMAIL: str = ""
 
-    CORS_ORIGINS: str = "http://localhost:3000"
+    CORS_ORIGINS: str = "http://localhost:3000,https://eggprice-ai.vercel.app"
     MODEL_VERSION: str = "v2.0"
 
     # Security
