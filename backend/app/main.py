@@ -92,7 +92,7 @@ app.add_middleware(
 
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=settings.ALLOWED_HOSTS.split(","),
+    allowed_hosts=["*"]
 )
 
 # GZip must be outermost to compress final response
