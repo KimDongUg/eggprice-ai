@@ -123,7 +123,8 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => handleSocialLogin("google")}
-              className="flex items-center justify-center gap-2 w-full h-11 rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 w-full h-11 rounded-md text-sm font-medium transition-colors"
+              style={{ backgroundColor: "#FFFFFF", color: "#374151", border: "1px solid #D1D5DB" }}
             >
               <GoogleIcon />
               Google로 시작하기
