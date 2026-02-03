@@ -39,6 +39,21 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     FROM_EMAIL: str = ""
 
+    # Kakao OAuth
+    KAKAO_CLIENT_ID: str = ""
+    KAKAO_CLIENT_SECRET: str = ""
+
+    # Naver OAuth
+    NAVER_CLIENT_ID: str = ""
+    NAVER_CLIENT_SECRET: str = ""
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+
+    # Frontend URL (OAuth callback redirect)
+    FRONTEND_URL: str = "http://localhost:3000"
+
     CORS_ORIGINS: str = "http://localhost:3000,https://eggprice-ai.vercel.app"
     MODEL_VERSION: str = "v2.0"
 

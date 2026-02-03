@@ -17,8 +17,10 @@ class UserLogin(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    email: str
+    email: Optional[str] = None
     name: Optional[str] = None
+    provider: str = "email"
+    profile_image: Optional[str] = None
     is_active: bool
     created_at: datetime
 

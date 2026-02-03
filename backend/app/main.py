@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.core.database import Base, engine, init_timescaledb
 from app.core.rate_limit import limiter
 from app.core.scheduler import start_scheduler, shutdown_scheduler
-from app.api import prices, predictions, alerts, market_data, auth, email_report
+from app.api import prices, predictions, alerts, market_data, auth, email_report, oauth
 
 # Import all models so Base.metadata knows about them
 from app.models import price, prediction, alert, user  # noqa: F401
@@ -105,6 +105,7 @@ setup_metrics(app)
 
 # ── API v1 routes ───────────────────────────────────────
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(oauth.router, prefix="/api/v1")
 app.include_router(prices.router, prefix="/api/v1")
 app.include_router(predictions.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")

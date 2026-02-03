@@ -111,8 +111,10 @@ export interface ModelPerformance {
 
 export interface UserResponse {
   id: number;
-  email: string;
-  name: string;
+  email: string | null;
+  name: string | null;
+  provider?: string;
+  profile_image?: string | null;
   is_active: boolean;
   created_at: string;
 }
