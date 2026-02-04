@@ -13,16 +13,15 @@ from app.models.user import User
 
 async def get_kakao_token(code: str, redirect_uri: str) -> str:
     async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            "https://kauth.kakao.com/oauth/token",
-            data={
-                "grant_type": "authorization_code",
-                "client_id": settings.KAKAO_CLIENT_ID,
-                "client_secret": settings.KAKAO_CLIENT_SECRET,
-                "redirect_uri": redirect_uri,
-                "code": code,
-            },
-        )
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": settings.KAKAO_CLIENT_ID,
+            "redirect_uri": redirect_uri,
+            "code": code,
+        }
+        if settings.KAKAO_CLIENT_SECRET:
+            data["client_secret"] = settings.KAKAO_CLIENT_SECRET
+        resp = await client.post("https://kauth.kakao.com/oauth/token", data=data)
         resp.raise_for_status()
         return resp.json()["access_token"]
 
