@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateAlert } from "@/lib/queries";
+import { useAuthStore } from "@/stores/auth";
 import type { AlertCreate } from "@/types";
 import { GRADES } from "@/types";
 
@@ -14,8 +15,10 @@ interface Props {
 }
 
 export default function AlertForm({ onCreated }: Props) {
+  const { user } = useAuthStore();
+
   const [form, setForm] = useState<AlertCreate>({
-    email: "",
+    email: user?.email || "",
     phone: "",
     grade: "특란",
     condition: "above",

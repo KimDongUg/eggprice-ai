@@ -129,10 +129,10 @@ export default function DashboardPage() {
         <PriceTrendChart />
       </section>
 
-      {/* Section: 빠른 알림 설정 */}
-      <section>
+      {/* Section: 빠른 알림 설정 (추후 활성화) */}
+      {/* <section>
         <QuickAlertSetup />
-      </section>
+      </section> */}
     </div>
   );
 }

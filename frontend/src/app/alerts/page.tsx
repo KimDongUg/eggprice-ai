@@ -6,11 +6,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAlerts, useDeleteAlert } from "@/lib/queries";
+import { useAuthStore } from "@/stores/auth";
 import { Trash2 } from "lucide-react";
 
 export default function AlertsPage() {
-  const [email, setEmail] = useState("");
-  const [searchEmail, setSearchEmail] = useState("");
+  const { user } = useAuthStore();
+  const [email, setEmail] = useState(user?.email || "");
+  const [searchEmail, setSearchEmail] = useState(user?.email || "");
 
   const { data: alerts = [], isLoading } = useAlerts(searchEmail);
   const deleteMutation = useDeleteAlert();
