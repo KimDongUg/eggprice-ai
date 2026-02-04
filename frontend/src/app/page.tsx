@@ -42,16 +42,17 @@ function SectionSpinner({ text }: { text: string }) {
 }
 
 export default function DashboardPage() {
-  // Read cached prices from localStorage on mount (synchronous, before first paint)
-  const [cachedPrices] = useState<PriceWithChange[] | null>(() => {
-    if (typeof window === "undefined") return null;
+  // Load cached prices after mount to avoid hydration mismatch
+  const [cachedPrices, setCachedPrices] = useState<PriceWithChange[] | null>(null);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(PRICES_CACHE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (stored) setCachedPrices(JSON.parse(stored));
     } catch {
-      return null;
+      // ignore
     }
-  });
+  }, []);
 
   const { data: prices } = useCurrentPrices();
   const { data: forecast, isLoading: forecastLoading } = useForecast("특란");

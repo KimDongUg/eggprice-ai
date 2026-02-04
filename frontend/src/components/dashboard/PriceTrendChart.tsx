@@ -32,16 +32,17 @@ type ChartRow = Record<string, string | number>;
 export default function PriceTrendChart() {
   const [selectedGrades, setSelectedGrades] = useState<string[]>(["특란"]);
 
-  // Read cached chart data from localStorage on mount
-  const [cachedChartData] = useState<ChartRow[] | null>(() => {
-    if (typeof window === "undefined") return null;
+  // Load cached chart data after mount to avoid hydration mismatch
+  const [cachedChartData, setCachedChartData] = useState<ChartRow[] | null>(null);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(CHART_CACHE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (stored) setCachedChartData(JSON.parse(stored));
     } catch {
-      return null;
+      // ignore
     }
-  });
+  }, []);
 
   const { data: historyWangran, isLoading: l1 } = usePriceHistory("왕란", 180);
   const { data: historyTeukran, isLoading: l2 } = usePriceHistory("특란", 180);
