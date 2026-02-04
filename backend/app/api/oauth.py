@@ -1,7 +1,10 @@
 """OAuth endpoints for Kakao, Naver, Google social login."""
 
+import logging
 import secrets
 from urllib.parse import urlencode
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
@@ -140,4 +143,5 @@ async def google_callback(request: Request, code: str = "", error: str = "", db:
         jwt_refresh = create_refresh_token(user.id)
         return RedirectResponse(_build_frontend_redirect(jwt_access, jwt_refresh))
     except Exception:
+        logger.exception("Google OAuth callback failed")
         return RedirectResponse(_build_frontend_error_redirect("google_auth_failed"))
