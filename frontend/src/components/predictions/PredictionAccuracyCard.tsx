@@ -17,7 +17,21 @@ export default function PredictionAccuracyCard({ grade }: Props) {
     return <Skeleton className="h-40 rounded-xl" />;
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">예측정확도</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-6">
+            아직 모델 평가 데이터가 없습니다.<br />
+            매월 1일 자동 평가 후 표시됩니다.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const metrics = [
     {
