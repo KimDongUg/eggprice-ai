@@ -18,6 +18,13 @@ _EXPECTED_COLUMNS = [
     ("users", "profile_image", "VARCHAR(500)", None),
 ]
 
+# Columns that must be nullable for social login to work
+_NULLABLE_COLUMNS = [
+    ("users", "hashed_password"),
+    ("users", "email"),
+    ("users", "name"),
+]
+
 
 def run_migrations(engine: Engine) -> None:
     insp = inspect(engine)
@@ -28,6 +35,7 @@ def run_migrations(engine: Engine) -> None:
     existing = {c["name"] for c in insp.get_columns("users")}
 
     with engine.connect() as conn:
+        # Add missing columns
         for table, column, col_type, default in _EXPECTED_COLUMNS:
             if column in existing:
                 continue
@@ -35,4 +43,16 @@ def run_migrations(engine: Engine) -> None:
             stmt = f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause}"
             logger.info("Migration: %s", stmt)
             conn.execute(text(stmt))
+
+        # Ensure columns are nullable (older schema may have NOT NULL)
+        for table, column in _NULLABLE_COLUMNS:
+            if column not in existing:
+                continue
+            stmt = f"ALTER TABLE {table} ALTER COLUMN {column} DROP NOT NULL"
+            try:
+                conn.execute(text(stmt))
+                logger.info("Migration: %s", stmt)
+            except Exception:
+                pass  # already nullable
+
         conn.commit()
