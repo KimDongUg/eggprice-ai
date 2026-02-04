@@ -14,7 +14,7 @@ export default function MyPage() {
 
   useEffect(() => {
     if (me) {
-      setUser({ id: me.id, email: me.email, name: me.name });
+      setUser({ id: me.id, email: me.email ?? "", name: me.name ?? "" });
     }
   }, [me, setUser]);
 
@@ -57,7 +57,7 @@ export default function MyPage() {
           <ProfileCard user={me} />
         </div>
         <div className="lg:col-span-2">
-          <AlertManagementCard email={me.email} />
+          <AlertManagementCard email={me.email ?? ""} />
         </div>
       </div>
     </div>
