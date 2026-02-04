@@ -68,6 +68,7 @@ async def kakao_callback(request: Request, code: str = "", error: str = "", db: 
         jwt_refresh = create_refresh_token(user.id)
         return RedirectResponse(_build_frontend_redirect(jwt_access, jwt_refresh))
     except Exception:
+        logger.exception("Kakao OAuth callback failed")
         return RedirectResponse(_build_frontend_error_redirect("kakao_auth_failed"))
 
 
