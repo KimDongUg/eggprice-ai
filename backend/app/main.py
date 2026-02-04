@@ -10,6 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.config import settings
 from app.core.database import Base, engine, init_timescaledb
+from app.core.migrate import run_migrations
 from app.core.rate_limit import limiter
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.api import prices, predictions, alerts, market_data, auth, email_report, oauth
@@ -37,6 +38,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    run_migrations(engine)
     init_timescaledb()
     start_scheduler()
 
