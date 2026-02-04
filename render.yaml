@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: eggprice-ai-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: singapore
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eggprice-db
+          property: connectionString
+      - key: REDIS_URL
+        value: ""
+      - key: CELERY_BROKER_URL
+        value: ""
+      - key: CORS_ORIGINS
+        value: https://frontend-my-news.vercel.app,http://localhost:3000
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: RATE_LIMIT_STORAGE_URI
+        value: "memory://"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://frontend-my-news.vercel.app
+      - key: SENTRY_DSN
+        value: ""
+      - key: SENTRY_ENVIRONMENT
+        value: production
+
+databases:
+  - name: eggprice-db
+    plan: free
+    region: singapore
+    databaseName: eggprice_db
+    user: eggprice
