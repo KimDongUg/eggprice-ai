@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     # Frontend URL (OAuth callback redirect)
     FRONTEND_URL: str = "http://localhost:3000"
 
-    CORS_ORIGINS: str = "http://localhost:3000,https://eggprice-ai.vercel.app"
+    CORS_ORIGINS: str = "http://localhost:3000,https://eggprice-ai.vercel.app,https://eggprice.kr,https://www.eggprice.kr"
     MODEL_VERSION: str = "v2.0"
 
     # Security
