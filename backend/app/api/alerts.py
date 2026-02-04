@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
@@ -6,6 +8,8 @@ from app.core.database import get_db
 from app.core.rate_limit import limiter
 from app.schemas.alert import AlertCreate, AlertResponse
 from app.services.alert_service import create_alert, delete_alert, get_alerts_by_email
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["alerts"])
 
@@ -18,7 +22,11 @@ async def create_new_alert(
     db: Session = Depends(get_db),
 ):
     """가격 알림 생성"""
-    return create_alert(db, alert_data)
+    try:
+        return create_alert(db, alert_data)
+    except Exception:
+        logger.exception("Failed to create alert")
+        raise
 
 
 @router.get("/alerts", response_model=list[AlertResponse])
