@@ -40,7 +40,9 @@ export default function OAuthCallbackPage() {
             profile_image: user.profile_image,
           }
         );
-        router.push("/");
+        const savedRedirect = localStorage.getItem("login_redirect") || "/";
+        localStorage.removeItem("login_redirect");
+        router.push(savedRedirect);
       })
       .catch(() => {
         setError("사용자 정보를 불러오지 못했습니다.");

@@ -54,7 +54,12 @@ function LoginForm() {
   const loginMutation = useLogin();
   const { login } = useAuthStore();
 
+  const redirectTo = searchParams.get("redirect") || "/";
+
   const handleSocialLogin = (provider: string) => {
+    if (redirectTo !== "/") {
+      localStorage.setItem("login_redirect", redirectTo);
+    }
     window.location.href = `${API_BASE}/auth/${provider}/login`;
   };
 
@@ -73,7 +78,7 @@ function LoginForm() {
             },
             { id: data.user?.id ?? 0, email, name: data.user?.name ?? email }
           );
-          router.push("/");
+          router.push(redirectTo);
         },
         onError: (err) => {
           setError(

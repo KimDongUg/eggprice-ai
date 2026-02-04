@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogIn, LogOut, User, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,17 +9,25 @@ import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "대시보드" },
-  { href: "/predictions", label: "상세 예측" },
-  { href: "/compare", label: "가격 비교" },
-  { href: "/alerts", label: "알림 설정" },
-  { href: "/mypage", label: "마이페이지" },
+  { href: "/", label: "대시보드", authRequired: false, authOnly: false },
+  { href: "/predictions", label: "상세 예측", authRequired: true, authOnly: false },
+  { href: "/compare", label: "가격 비교", authRequired: false, authOnly: false },
+  { href: "/alerts", label: "알림 설정", authRequired: true, authOnly: false },
+  { href: "/mypage", label: "마이페이지", authRequired: true, authOnly: true },
 ];
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isAuthenticated, user, logout } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleNavClick = (item: typeof navItems[number], e: React.MouseEvent) => {
+    if (item.authRequired && !isAuthenticated) {
+      e.preventDefault();
+      router.push(`/login?redirect=${encodeURIComponent(item.href)}`);
+    }
+  };
 
   return (
     <header className="bg-card border-b shadow-sm sticky top-0 z-50">
@@ -62,10 +70,13 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
+            {navItems
+              .filter((item) => !item.authOnly || isAuthenticated)
+              .map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={(e) => handleNavClick(item, e)}
                 className={cn(
                   "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === item.href
@@ -89,14 +100,9 @@ export default function Header() {
                   </Button>
                 </>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/login">로그인</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link href="/register">회원가입</Link>
-                  </Button>
-                </div>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/login">로그인</Link>
+                </Button>
               )}
             </div>
           </nav>
@@ -117,11 +123,16 @@ export default function Header() {
         {/* Mobile Nav */}
         {mobileOpen && (
           <nav className="md:hidden pb-4 space-y-1">
-            {navItems.map((item) => (
+            {navItems
+              .filter((item) => !item.authOnly || isAuthenticated)
+              .map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
+                onClick={(e) => {
+                  handleNavClick(item, e);
+                  setMobileOpen(false);
+                }}
                 className={cn(
                   "block px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === item.href
@@ -146,18 +157,11 @@ export default function Header() {
                   로그아웃
                 </Button>
               ) : (
-                <>
-                  <Button variant="outline" size="sm" className="flex-1" asChild>
-                    <Link href="/login" onClick={() => setMobileOpen(false)}>
-                      로그인
-                    </Link>
-                  </Button>
-                  <Button size="sm" className="flex-1" asChild>
-                    <Link href="/register" onClick={() => setMobileOpen(false)}>
-                      회원가입
-                    </Link>
-                  </Button>
-                </>
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link href="/login" onClick={() => setMobileOpen(false)}>
+                    로그인
+                  </Link>
+                </Button>
               )}
             </div>
           </nav>

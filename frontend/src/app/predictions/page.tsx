@@ -132,6 +132,7 @@ export default function PredictionsPage() {
                 />
                 <PredictionTable
                   predictions={predData?.predictions || []}
+                  basePrice={forecast?.current_price}
                 />
               </>
             )}

@@ -74,6 +74,12 @@ export default function DashboardPage() {
       <section>
         <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
           {isFresh ? "오늘의 계란 가격" : displayPrices ? "이전 계란 가격" : "오늘의 계란 가격"}
+          <span className="text-sm font-normal text-muted-foreground">
+            (30개)
+          </span>
+          <span className="text-sm">
+            {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })}
+          </span>
           {!isFresh && displayPrices && (
             <span className="text-xs font-normal text-muted-foreground">
               (최신 데이터 불러오는 중...)
