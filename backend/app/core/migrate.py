@@ -26,7 +26,49 @@ _NULLABLE_COLUMNS = [
 ]
 
 
+_MISSING_TABLES_SQL = {
+    "alerts": """
+        CREATE TABLE IF NOT EXISTS alerts (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) NOT NULL,
+            phone VARCHAR(20),
+            grade VARCHAR(10) NOT NULL,
+            condition VARCHAR(10) NOT NULL,
+            threshold_price FLOAT NOT NULL,
+            notify_email BOOLEAN DEFAULT TRUE,
+            notify_sms BOOLEAN DEFAULT FALSE,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """,
+    "model_performance": """
+        CREATE TABLE IF NOT EXISTS model_performance (
+            id SERIAL PRIMARY KEY,
+            model_version VARCHAR(50) NOT NULL,
+            grade VARCHAR(10) NOT NULL,
+            eval_date DATE NOT NULL,
+            mae FLOAT NOT NULL,
+            rmse FLOAT NOT NULL,
+            mape FLOAT NOT NULL,
+            directional_accuracy FLOAT NOT NULL,
+            is_production BOOLEAN DEFAULT FALSE
+        )
+    """,
+}
+
+
 def run_migrations(engine: Engine) -> None:
+    insp = inspect(engine)
+
+    # Create missing tables
+    with engine.connect() as conn:
+        for table_name, ddl in _MISSING_TABLES_SQL.items():
+            if not insp.has_table(table_name):
+                logger.info("Migration: creating table %s", table_name)
+                conn.execute(text(ddl))
+        conn.commit()
+
+    # Refresh inspector after creating tables
     insp = inspect(engine)
 
     if not insp.has_table("users"):
