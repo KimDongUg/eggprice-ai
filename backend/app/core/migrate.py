@@ -16,6 +16,10 @@ _EXPECTED_COLUMNS = [
     ("users", "provider", "VARCHAR(20)", "'email'"),
     ("users", "provider_id", "VARCHAR(255)", None),
     ("users", "profile_image", "VARCHAR(500)", None),
+    # alerts table columns that may be missing from older schema
+    ("alerts", "phone", "VARCHAR(20)", None),
+    ("alerts", "notify_email", "BOOLEAN", "TRUE"),
+    ("alerts", "notify_sms", "BOOLEAN", "FALSE"),
 ]
 
 # Columns that must be nullable for social login to work
@@ -77,24 +81,30 @@ def run_migrations(engine: Engine) -> None:
     # Refresh inspector after creating tables
     insp = inspect(engine)
 
-    if not insp.has_table("users"):
-        return  # table will be created by create_all()
-
-    existing = {c["name"] for c in insp.get_columns("users")}
+    # Build a cache of existing columns per table
+    existing_columns: dict[str, set[str]] = {}
+    for table, column, _, _ in _EXPECTED_COLUMNS:
+        if table not in existing_columns and insp.has_table(table):
+            existing_columns[table] = {c["name"] for c in insp.get_columns(table)}
 
     with engine.connect() as conn:
-        # Add missing columns
+        # Add missing columns to each table
         for table, column, col_type, default in _EXPECTED_COLUMNS:
-            if column in existing:
-                continue
+            if table not in existing_columns:
+                continue  # table doesn't exist yet, will be created by create_all()
+            if column in existing_columns[table]:
+                continue  # column already exists
             default_clause = f" DEFAULT {default}" if default else ""
             stmt = f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause}"
             logger.info("Migration: %s", stmt)
-            conn.execute(text(stmt))
+            try:
+                conn.execute(text(stmt))
+            except Exception as e:
+                logger.warning("Migration: column %s.%s may already exist: %s", table, column, e)
 
         # Ensure columns are nullable (older schema may have NOT NULL)
         for table, column in _NULLABLE_COLUMNS:
-            if column not in existing:
+            if table not in existing_columns or column not in existing_columns[table]:
                 continue
             stmt = f"ALTER TABLE {table} ALTER COLUMN {column} DROP NOT NULL"
             try:
