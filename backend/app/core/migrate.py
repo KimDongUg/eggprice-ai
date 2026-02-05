@@ -33,13 +33,14 @@ _MISSING_TABLES_SQL = {
             email VARCHAR(255) NOT NULL,
             phone VARCHAR(20),
             grade VARCHAR(10) NOT NULL,
-            "condition" VARCHAR(10) NOT NULL,
+            condition VARCHAR(10) NOT NULL,
             threshold_price FLOAT NOT NULL,
             notify_email BOOLEAN DEFAULT TRUE,
             notify_sms BOOLEAN DEFAULT FALSE,
             is_active BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT NOW()
-        )
+        );
+        CREATE INDEX IF NOT EXISTS idx_alerts_email ON alerts(email);
     """,
     "model_performance": """
         CREATE TABLE IF NOT EXISTS model_performance (
@@ -65,7 +66,12 @@ def run_migrations(engine: Engine) -> None:
         for table_name, ddl in _MISSING_TABLES_SQL.items():
             if not insp.has_table(table_name):
                 logger.info("Migration: creating table %s", table_name)
-                conn.execute(text(ddl))
+                try:
+                    conn.execute(text(ddl))
+                    logger.info("Migration: table %s created successfully", table_name)
+                except Exception as e:
+                    logger.error("Migration: failed to create table %s: %s", table_name, e)
+                    raise
         conn.commit()
 
     # Refresh inspector after creating tables
