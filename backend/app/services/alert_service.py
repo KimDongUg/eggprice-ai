@@ -28,7 +28,7 @@ def create_alert(db: Session, alert_data: AlertCreate) -> Alert:
 
 
 def get_alerts_by_email(db: Session, email: str) -> list[Alert]:
-    return db.query(Alert).filter(Alert.email == email, Alert.is_active == True).all()
+    return db.query(Alert).filter(Alert.email == email, Alert.is_active.is_(True)).all()
 
 
 def delete_alert(db: Session, alert_id: int) -> bool:
@@ -41,7 +41,7 @@ def delete_alert(db: Session, alert_id: int) -> bool:
 
 
 def get_active_alerts(db: Session) -> list[Alert]:
-    return db.query(Alert).filter(Alert.is_active == True).all()
+    return db.query(Alert).filter(Alert.is_active.is_(True)).all()
 
 
 async def send_alert_email(email: str, grade: str, predicted_price: float, condition: str, threshold: float):

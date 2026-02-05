@@ -59,6 +59,12 @@ export default function AlertsPage() {
             </Button>
           </div>
 
+          {deleteMutation.isError && (
+            <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
+              알림 삭제에 실패했습니다. 다시 시도해주세요.
+            </div>
+          )}
+
           {searchEmail && alerts.length === 0 && !isLoading && (
             <p className="text-sm text-muted-foreground">
               등록된 알림이 없습니다.

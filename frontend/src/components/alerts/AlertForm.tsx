@@ -42,7 +42,7 @@ export default function AlertForm({ onCreated }: Props) {
       onSuccess: () => {
         setSuccess(true);
         setForm({
-          email: "",
+          email: user?.email || "",
           phone: "",
           grade: "특란",
           condition: "above",

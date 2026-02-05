@@ -33,7 +33,7 @@ _MISSING_TABLES_SQL = {
             email VARCHAR(255) NOT NULL,
             phone VARCHAR(20),
             grade VARCHAR(10) NOT NULL,
-            condition VARCHAR(10) NOT NULL,
+            "condition" VARCHAR(10) NOT NULL,
             threshold_price FLOAT NOT NULL,
             notify_email BOOLEAN DEFAULT TRUE,
             notify_sms BOOLEAN DEFAULT FALSE,
