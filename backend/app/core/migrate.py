@@ -20,6 +20,8 @@ _EXPECTED_COLUMNS = [
     ("alerts", "phone", "VARCHAR(20)", None),
     ("alerts", "notify_email", "BOOLEAN", "TRUE"),
     ("alerts", "notify_sms", "BOOLEAN", "FALSE"),
+    ("alerts", "is_active", "BOOLEAN", "TRUE"),
+    ("alerts", "created_at", "TIMESTAMP", "NOW()"),
 ]
 
 # Columns that must be nullable for social login to work
