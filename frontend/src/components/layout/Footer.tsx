@@ -27,6 +27,10 @@ export default function Footer() {
             이용약관
           </Link>
           <span>|</span>
+          <Link href="/refund" className="hover:underline">
+            환불정책
+          </Link>
+          <span>|</span>
           <span>&copy; 2026 계란가격 예측(EggPrice AI)</span>
         </div>
       </div>
