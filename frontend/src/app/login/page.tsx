@@ -70,14 +70,28 @@ function LoginForm() {
     loginMutation.mutate(
       { email, password },
       {
-        onSuccess: (data) => {
-          login(
-            {
-              access_token: data.access_token,
-              refresh_token: data.refresh_token,
-            },
-            { id: data.user?.id ?? 0, email, name: data.user?.name ?? email }
-          );
+        onSuccess: async (data) => {
+          // Store tokens first
+          localStorage.setItem("access_token", data.access_token);
+          localStorage.setItem("refresh_token", data.refresh_token);
+
+          // Fetch full user info (including role) from /auth/me
+          try {
+            const res = await fetch(
+              `${API_BASE}/auth/me`,
+              { headers: { Authorization: `Bearer ${data.access_token}` } }
+            );
+            const me = await res.json();
+            login(
+              { access_token: data.access_token, refresh_token: data.refresh_token },
+              { id: me.id, email: me.email, name: me.name, role: me.role, profile_image: me.profile_image }
+            );
+          } catch {
+            login(
+              { access_token: data.access_token, refresh_token: data.refresh_token },
+              { id: 0, email, name: email }
+            );
+          }
           router.push(redirectTo);
         },
         onError: (err) => {

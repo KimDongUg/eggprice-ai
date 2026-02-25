@@ -14,7 +14,7 @@ export default function MyPage() {
 
   useEffect(() => {
     if (me) {
-      setUser({ id: me.id, email: me.email ?? "", name: me.name ?? "" });
+      setUser({ id: me.id, email: me.email ?? "", name: me.name ?? "", role: me.role, profile_image: me.profile_image });
     }
   }, [me, setUser]);
 

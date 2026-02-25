@@ -38,6 +38,7 @@ export default function OAuthCallbackPage() {
             email: user.email ?? "",
             name: user.name ?? user.email ?? "사용자",
             profile_image: user.profile_image,
+            role: user.role,
           }
         );
         const savedRedirect = localStorage.getItem("login_redirect") || "/";

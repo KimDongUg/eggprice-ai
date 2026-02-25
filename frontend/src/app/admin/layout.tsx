@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import AdminSidebar from "@/components/admin/AdminSidebar";
@@ -9,18 +9,30 @@ import AdminTopBar from "@/components/admin/AdminTopBar";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
+  const [hydrated, setHydrated] = useState(false);
 
+  // Wait for auth hydration (token → /auth/me) before redirecting
   useEffect(() => {
-    if (!isAuthenticated) {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      // No token at all — redirect immediately
       router.replace("/login?redirect=/admin");
       return;
     }
-    if (user && user.role !== "admin" && user.role !== "analyst") {
-      router.replace("/");
+    // Token exists — wait for AuthHydrator to populate user
+    if (isAuthenticated && user) {
+      setHydrated(true);
     }
   }, [isAuthenticated, user, router]);
 
-  if (!isAuthenticated || !user || (user.role !== "admin" && user.role !== "analyst")) {
+  useEffect(() => {
+    if (!hydrated) return;
+    if (user && user.role !== "admin" && user.role !== "analyst") {
+      router.replace("/");
+    }
+  }, [hydrated, user, router]);
+
+  if (!hydrated || !user || (user.role !== "admin" && user.role !== "analyst")) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400" />
