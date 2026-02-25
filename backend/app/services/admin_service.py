@@ -18,8 +18,6 @@ from app.schemas.admin import (
     CorrelationItem,
     MarketFactorAnalysisResponse,
     ModelVersionItem,
-    RetrainRequestResponse,
-    PriceCorrectionResponse,
     DataQualityCheck,
 )
 
@@ -218,7 +216,7 @@ def get_factor_correlations(db: Session, grade: str, days: int = 180) -> MarketF
     try:
         import numpy as np
         common_dates = sorted(price_map.keys())
-        price_arr = [price_map[d] for d in common_dates]
+        _ = [price_map[d] for d in common_dates]
 
         for factor_name, factor_map in factors.items():
             paired = [(price_map[d], factor_map[d]) for d in common_dates if d in factor_map and factor_map[d] is not None]
@@ -289,7 +287,7 @@ def get_retrain_requests(db: Session, grade: str | None = None) -> list[RetrainR
 
 def promote_model(db: Session, grade: str, version: str) -> bool:
     db.query(ModelPerformance).filter(
-        ModelPerformance.grade == grade, ModelPerformance.is_production == True
+        ModelPerformance.grade == grade, ModelPerformance.is_production.is_(True)
     ).update({"is_production": False})
     updated = db.query(ModelPerformance).filter(
         ModelPerformance.grade == grade, ModelPerformance.model_version == version

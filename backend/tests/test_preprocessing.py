@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from app.ml.preprocessing import (
     FEATURE_COLUMNS,

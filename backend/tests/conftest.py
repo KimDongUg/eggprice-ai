@@ -1,7 +1,7 @@
 """Shared test fixtures for the EggPrice AI backend."""
 
 import os
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,7 +22,6 @@ os.environ.setdefault("ALLOWED_HOSTS", "*")
 from app.core.database import Base, get_db
 from app.core.security import create_access_token, hash_password
 from app.main import app
-from app.models.alert import Alert
 from app.models.market_data import (
     AvianFluStatus,
     ExchangeRate,

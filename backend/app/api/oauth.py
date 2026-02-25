@@ -4,9 +4,7 @@ import logging
 import secrets
 from urllib.parse import urlencode
 
-logger = logging.getLogger(__name__)
-
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
@@ -22,6 +20,8 @@ from app.services.oauth_service import (
     get_naver_token,
     get_naver_user,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["oauth"])
 

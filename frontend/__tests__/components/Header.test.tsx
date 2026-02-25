@@ -12,8 +12,6 @@ beforeEach(() => {
   useAuthStore.setState({
     isAuthenticated: false,
     user: null,
-    accessToken: null,
-    refreshToken: null,
   });
 });
 
@@ -41,9 +39,7 @@ describe("Header", () => {
   it("shows user name and logout when authenticated", () => {
     useAuthStore.setState({
       isAuthenticated: true,
-      user: { id: 1, email: "test@example.com", name: "테스터", is_active: true, created_at: "" },
-      accessToken: "token",
-      refreshToken: "refresh",
+      user: { id: 1, email: "test@example.com", name: "테스터", role: "user" },
     });
 
     render(<Header />);
@@ -53,9 +49,7 @@ describe("Header", () => {
   it("calls logout when logout button is clicked", () => {
     useAuthStore.setState({
       isAuthenticated: true,
-      user: { id: 1, email: "test@example.com", name: "테스터", is_active: true, created_at: "" },
-      accessToken: "token",
-      refreshToken: "refresh",
+      user: { id: 1, email: "test@example.com", name: "테스터", role: "user" },
     });
 
     render(<Header />);

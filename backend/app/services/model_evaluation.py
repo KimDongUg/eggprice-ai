@@ -7,8 +7,7 @@ Triggers retraining when MAPE > threshold or on monthly schedule.
 
 import json
 import logging
-from datetime import date, timedelta
-from pathlib import Path
+from datetime import date
 
 import numpy as np
 import torch
@@ -17,14 +16,11 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.database import SessionLocal
 from app.core.metrics import model_mape_gauge
 from app.models.market_data import ModelPerformance
-from app.ml.model import EggPriceLSTM
 from app.ml.predict import load_model
 from app.ml.preprocessing import (
     SEQUENCE_LENGTH,
-    PriceScaler,
     build_features_from_db,
     create_sequences,
 )
@@ -139,7 +135,7 @@ def get_production_metrics(db: Session, grade: str) -> ModelPerformance | None:
     """Get the latest production model performance for a grade."""
     return (
         db.query(ModelPerformance)
-        .filter(ModelPerformance.grade == grade, ModelPerformance.is_production == True)
+        .filter(ModelPerformance.grade == grade, ModelPerformance.is_production.is_(True))
         .order_by(desc(ModelPerformance.eval_date))
         .first()
     )
@@ -203,7 +199,7 @@ def promote_model(db: Session, grade: str, version: str):
     # Demote current production
     current_prod = (
         db.query(ModelPerformance)
-        .filter(ModelPerformance.grade == grade, ModelPerformance.is_production == True)
+        .filter(ModelPerformance.grade == grade, ModelPerformance.is_production.is_(True))
         .all()
     )
     for p in current_prod:
@@ -260,7 +256,7 @@ def check_and_retrain_if_needed(db: Session):
                 else:
                     logger.info(f"  Model OK (MAPE={metrics['mape']}%, {days_since}d old)")
             else:
-                logger.info(f"  No training report found, retraining")
+                logger.info("  No training report found, retraining")
                 _retrain_and_evaluate(db, grade)
 
 

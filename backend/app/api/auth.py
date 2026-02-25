@@ -82,7 +82,7 @@ async def refresh_token(request: Request, data: TokenRefresh, db: Session = Depe
         )
 
     user_id = int(payload["sub"])
-    user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
+    user = db.query(User).filter(User.id == user_id, User.is_active.is_(True)).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

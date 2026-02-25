@@ -2,7 +2,6 @@
 
 import numpy as np
 import torch
-import pytest
 
 from app.ml.model import EggPriceLSTM
 from app.ml.predict import _enable_mc_dropout, CI_Z_SCORE, MC_DROPOUT_PASSES

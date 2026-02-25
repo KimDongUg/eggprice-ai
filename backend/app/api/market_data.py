@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel
-from sqlalchemy import desc, func
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.cache import cache_get, cache_set
@@ -166,7 +166,7 @@ async def current_model_performance(
 
     row = (
         db.query(ModelPerformance)
-        .filter(ModelPerformance.grade == grade, ModelPerformance.is_production == True)
+        .filter(ModelPerformance.grade == grade, ModelPerformance.is_production.is_(True))
         .order_by(ModelPerformance.eval_date.desc())
         .first()
     )
@@ -232,7 +232,7 @@ async def analytics_factors(
         ))
 
     # 2. Avian flu
-    flu = db.query(AvianFluStatus).filter(AvianFluStatus.date >= week_ago, AvianFluStatus.is_outbreak == True).first()
+    flu = db.query(AvianFluStatus).filter(AvianFluStatus.date >= week_ago, AvianFluStatus.is_outbreak.is_(True)).first()
     factors.append(FactorImpact(
         factor="조류독감",
         direction="상승" if flu else "중립",

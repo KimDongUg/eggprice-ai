@@ -5,7 +5,7 @@ from app.core.cache import cache_get, cache_set
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.rate_limit import limiter
-from app.schemas.price import PriceResponse, PriceWithChange
+from app.schemas.price import PriceWithChange
 from app.services.price_service import get_current_prices, get_price_history
 
 router = APIRouter(tags=["prices"])

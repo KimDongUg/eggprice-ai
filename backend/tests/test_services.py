@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.models.alert import Alert
 from app.models.market_data import ModelPerformance
 from app.models.prediction import Prediction
 from app.models.price import EggPrice
