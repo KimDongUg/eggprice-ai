@@ -76,4 +76,5 @@ class ModelPerformance(Base):
     mape: Mapped[float] = mapped_column(Float, nullable=False)
     directional_accuracy: Mapped[float] = mapped_column(Float, nullable=False)
     is_production: Mapped[bool] = mapped_column(Boolean, default=False)
+    horizon_days: Mapped[int] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

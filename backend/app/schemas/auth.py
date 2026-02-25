@@ -21,6 +21,7 @@ class UserResponse(BaseModel):
     name: Optional[str] = None
     provider: str = "email"
     profile_image: Optional[str] = None
+    role: str = "user"
     is_active: bool
     created_at: datetime
 

@@ -22,6 +22,9 @@ _EXPECTED_COLUMNS = [
     ("alerts", "notify_sms", "BOOLEAN", "FALSE"),
     ("alerts", "is_active", "BOOLEAN", "TRUE"),
     ("alerts", "created_at", "TIMESTAMP", "NOW()"),
+    # admin system columns
+    ("users", "role", "VARCHAR(20)", "'user'"),
+    ("model_performance", "horizon_days", "INTEGER", None),
 ]
 
 # Columns that must be nullable for social login to work
@@ -59,6 +62,31 @@ _MISSING_TABLES_SQL = {
             mape FLOAT NOT NULL,
             directional_accuracy FLOAT NOT NULL,
             is_production BOOLEAN DEFAULT FALSE
+        )
+    """,
+    "retrain_requests": """
+        CREATE TABLE IF NOT EXISTS retrain_requests (
+            id SERIAL PRIMARY KEY,
+            requested_by INTEGER NOT NULL,
+            grade VARCHAR(10) NOT NULL,
+            reason TEXT,
+            status VARCHAR(20) DEFAULT 'pending',
+            model_version VARCHAR(50),
+            result_mape FLOAT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            completed_at TIMESTAMP
+        )
+    """,
+    "price_correction_logs": """
+        CREATE TABLE IF NOT EXISTS price_correction_logs (
+            id SERIAL PRIMARY KEY,
+            egg_price_id INTEGER NOT NULL,
+            corrected_by INTEGER NOT NULL,
+            field VARCHAR(50) NOT NULL,
+            old_value VARCHAR(100),
+            new_value VARCHAR(100),
+            reason TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
         )
     """,
 }

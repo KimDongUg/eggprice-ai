@@ -115,6 +115,7 @@ export interface UserResponse {
   name: string | null;
   provider?: string;
   profile_image?: string | null;
+  role?: "user" | "admin" | "analyst";
   is_active: boolean;
   created_at: string;
 }

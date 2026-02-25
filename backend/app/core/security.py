@@ -23,9 +23,9 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, role: str = "user") -> str:
     expire = datetime.utcnow() + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": str(user_id), "exp": expire, "type": "access"}
+    payload = {"sub": str(user_id), "exp": expire, "type": "access", "role": role}
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
@@ -71,4 +71,32 @@ def get_current_user(
             detail="사용자를 찾을 수 없습니다.",
         )
 
+    return user
+
+
+def get_admin_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    """FastAPI dependency: require admin or analyst role."""
+    user = get_current_user(credentials, db)
+    if user.role not in ("admin", "analyst"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="관리자 권한이 필요합니다.",
+        )
+    return user
+
+
+def get_admin_only(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    """FastAPI dependency: require admin role only."""
+    user = get_current_user(credentials, db)
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="최고 관리자 권한이 필요합니다.",
+        )
     return user

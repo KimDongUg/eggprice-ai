@@ -16,5 +16,6 @@ class User(Base):
     provider: Mapped[str] = mapped_column(String(20), default="email")
     provider_id: Mapped[str] = mapped_column(String(255), nullable=True, unique=True)
     profile_image: Mapped[str] = mapped_column(String(500), nullable=True)
+    role: Mapped[str] = mapped_column(String(20), default="user")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
