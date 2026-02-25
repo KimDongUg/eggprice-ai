@@ -216,7 +216,6 @@ def get_factor_correlations(db: Session, grade: str, days: int = 180) -> MarketF
     try:
         import numpy as np
         common_dates = sorted(price_map.keys())
-        _ = [price_map[d] for d in common_dates]
 
         for factor_name, factor_map in factors.items():
             paired = [(price_map[d], factor_map[d]) for d in common_dates if d in factor_map and factor_map[d] is not None]

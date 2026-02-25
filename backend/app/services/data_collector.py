@@ -16,7 +16,6 @@ from app.models.market_data import (
     TradingVolume,
     WeatherData,
 )
-from app.services.kamis_client import fetch_daily_prices
 from app.services.volume_client import fetch_trading_volume
 from app.services.feed_client import fetch_feed_prices
 from app.services.exchange_client import fetch_exchange_rate
