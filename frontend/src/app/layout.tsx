@@ -4,22 +4,25 @@ import Footer from "@/components/layout/Footer";
 import Providers from "@/components/providers";
 import "./globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://eggprice.ai";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://eggprice.kr";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "계란가격 예측(EggPrice AI)",
-    template: "%s | 계란가격 예측(EggPrice AI)",
+    default: "슬기알 - 출하 시점을 결정하는 가격 방향성 브리핑",
+    template: "%s | 슬기알(EggPrice AI)",
   },
   description:
-    "LSTM 기반 AI가 분석하는 계란 가격 예측 서비스. 7일/14일/30일 가격 전망, 시장 요인 분석, 맞춤 알림을 제공합니다.",
+    "15년 업계 실무 경험 + AI 분석 기반 계란 가격 방향성 브리핑 서비스. 출하 권장 시점, 주간 리포트, 급등락 알림을 제공합니다. 양계 농가·도매상·유통업체를 위한 의사결정 도구.",
   keywords: [
-    "계란 가격",
     "계란 가격 예측",
     "달걀 시세",
-    "AI 가격 예측",
-    "축산물 시세",
+    "계란 출하 시점",
+    "계란 도매 가격",
+    "양계 농가",
+    "계란 유통",
+    "슬기알",
+    "EggPrice AI",
     "KAMIS",
     "농산물 유통정보",
   ],
@@ -35,16 +38,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,
-    siteName: "계란가격 예측(EggPrice AI)",
-    title: "계란가격 예측(EggPrice AI)",
+    siteName: "슬기알(EggPrice AI)",
+    title: "슬기알 - 출하 시점을 결정하는 가격 방향성 브리핑",
     description:
-      "LSTM 기반 AI가 분석하는 계란 가격 예측 서비스. 7일/14일/30일 가격 전망, 시장 요인 분석, 맞춤 알림을 제공합니다.",
+      "15년 업계 실무 경험 + AI 분석 기반 계란 가격 방향성 브리핑 서비스. 출하 권장 시점, 주간 리포트, 급등락 알림을 제공합니다.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "계란가격 예측(EggPrice AI)",
+    title: "슬기알 - 출하 시점을 결정하는 가격 방향성 브리핑",
     description:
-      "LSTM 기반 AI가 분석하는 계란 가격 예측 서비스. 7일/14일/30일 가격 전망, 시장 요인 분석, 맞춤 알림을 제공합니다.",
+      "15년 업계 실무 경험 + AI 분석 기반 계란 가격 방향성 브리핑 서비스. 양계 농가·도매상·유통업체를 위한 의사결정 도구.",
   },
 };
 

@@ -1,37 +1,108 @@
 import Link from "next/link";
+import Image from "next/image";
+import { Phone, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-card border-t mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
-          <p>계란가격 예측(EggPrice AI) - LSTM 기반 계란 가격 예측 서비스</p>
-          <p>
-            데이터 출처:{" "}
-            <a
-              href="https://www.kamis.or.kr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary-600 hover:underline"
-            >
-              KAMIS 농산물유통정보
-            </a>
-          </p>
+    <footer className="bg-gray-900 text-gray-400 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* 브랜드 */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Image
+                src="/logo.png"
+                alt="슬기알 로고"
+                width={32}
+                height={32}
+              />
+              <span className="text-lg font-bold text-white">
+                슬기알
+                <span className="text-xs font-medium text-gray-500 ml-1">
+                  EggPrice AI
+                </span>
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed mb-4">
+              업계 실무 경험 + AI 분석 기반
+              <br />
+              출하 의사결정 브리핑 서비스
+            </p>
+            <p className="text-xs text-gray-500">
+              데이터 출처:{" "}
+              <a
+                href="https://www.kamis.or.kr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline text-gray-400"
+              >
+                KAMIS 농산물유통정보
+              </a>
+            </p>
+          </div>
+
+          {/* 링크 */}
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-4">서비스</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/dashboard" className="hover:text-white transition-colors">
+                  실시간 시세
+                </Link>
+              </li>
+              <li>
+                <Link href="/predictions" className="hover:text-white transition-colors">
+                  상세 예측
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare" className="hover:text-white transition-colors">
+                  가격 비교
+                </Link>
+              </li>
+              <li>
+                <a href="/#pricing" className="hover:text-white transition-colors">
+                  요금 안내
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* 연락처 */}
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-4">상담 문의</h3>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <a href="tel:010-0000-0000" className="hover:text-white transition-colors">
+                  010-0000-0000
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <a href="mailto:contact@eggprice.kr" className="hover:text-white transition-colors">
+                  contact@eggprice.kr
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
-          <Link href="/privacy" className="hover:underline">
-            개인정보처리방침
-          </Link>
-          <span>|</span>
-          <Link href="/terms" className="hover:underline">
-            이용약관
-          </Link>
-          <span>|</span>
-          <Link href="/refund" className="hover:underline">
-            환불정책
-          </Link>
-          <span>|</span>
-          <span>&copy; 2026 계란가격 예측(EggPrice AI)</span>
+
+        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              개인정보처리방침
+            </Link>
+            <span className="text-gray-700">|</span>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              이용약관
+            </Link>
+            <span className="text-gray-700">|</span>
+            <Link href="/refund" className="hover:text-white transition-colors">
+              환불정책
+            </Link>
+          </div>
+          <span>&copy; 2026 슬기알(EggPrice AI). All rights reserved.</span>
         </div>
       </div>
     </footer>

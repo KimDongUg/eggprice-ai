@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LogIn, LogOut, User, Menu, X } from "lucide-react";
+import { LogIn, LogOut, User, Menu, X, Phone } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "대시보드", authRequired: false, authOnly: false },
+  { href: "/", label: "홈", authRequired: false, authOnly: false },
+  { href: "/dashboard", label: "대시보드", authRequired: false, authOnly: false },
   { href: "/predictions", label: "상세 예측", authRequired: true, authOnly: false },
   { href: "/compare", label: "가격 비교", authRequired: false, authOnly: false },
   { href: "/alerts", label: "알림 설정", authRequired: true, authOnly: false },
@@ -30,40 +32,20 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-card border-b shadow-sm sticky top-0 z-50">
+    <header className="bg-white border-b shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <Image
+              src="/logo.png"
+              alt="슬기알 로고"
+              width={40}
+              height={40}
               className="shrink-0"
-            >
-              {/* Egg shape */}
-              <ellipse cx="16" cy="17" rx="11" ry="13" fill="#FFC864" />
-              <ellipse cx="16" cy="17" rx="11" ry="13" fill="url(#egg-grad)" />
-              {/* AI circuit lines */}
-              <circle cx="16" cy="14" r="3" fill="#1a56db" />
-              <circle cx="10" cy="20" r="2" fill="#1a56db" opacity="0.8" />
-              <circle cx="22" cy="20" r="2" fill="#1a56db" opacity="0.8" />
-              <line x1="16" y1="17" x2="10" y2="20" stroke="#1a56db" strokeWidth="1.2" opacity="0.6" />
-              <line x1="16" y1="17" x2="22" y2="20" stroke="#1a56db" strokeWidth="1.2" opacity="0.6" />
-              <circle cx="16" cy="14" r="1.2" fill="#fff" />
-              <circle cx="10" cy="20" r="0.8" fill="#fff" />
-              <circle cx="22" cy="20" r="0.8" fill="#fff" />
-              <defs>
-                <linearGradient id="egg-grad" x1="16" y1="4" x2="16" y2="30" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FFF3D6" stopOpacity="0.6" />
-                  <stop offset="1" stopColor="#FFC864" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <span className="text-xl font-bold text-primary-400">
-              계란가격 예측
+            />
+            <span className="text-lg font-bold text-gray-900">
+              슬기알
               <span className="text-xs font-medium text-muted-foreground ml-1">EggPrice AI</span>
             </span>
           </Link>
@@ -89,6 +71,16 @@ export default function Header() {
             ))}
 
             <div className="ml-3 pl-3 border-l flex items-center gap-2">
+              <Button
+                size="sm"
+                className="bg-primary-400 hover:bg-primary-500 text-white"
+                asChild
+              >
+                <a href="tel:010-0000-0000">
+                  <Phone className="h-3.5 w-3.5 mr-1" />
+                  상담 신청
+                </a>
+              </Button>
               {isAuthenticated ? (
                 <>
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -143,7 +135,17 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
-            <div className="pt-2 border-t mt-2 flex gap-2">
+            <div className="pt-2 border-t mt-2 space-y-2">
+              <Button
+                size="sm"
+                className="w-full bg-primary-400 hover:bg-primary-500 text-white"
+                asChild
+              >
+                <a href="tel:010-0000-0000">
+                  <Phone className="h-3.5 w-3.5 mr-1" />
+                  상담 신청
+                </a>
+              </Button>
               {isAuthenticated ? (
                 <Button
                   variant="outline"
