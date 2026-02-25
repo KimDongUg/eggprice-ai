@@ -64,7 +64,7 @@ async def kakao_callback(request: Request, code: str = "", error: str = "", db: 
             name=user_info.get("name"),
             profile_image=user_info.get("profile_image"),
         )
-        jwt_access = create_access_token(user.id)
+        jwt_access = create_access_token(user.id, user.role)
         jwt_refresh = create_refresh_token(user.id)
         return RedirectResponse(_build_frontend_redirect(jwt_access, jwt_refresh))
     except Exception:
@@ -102,7 +102,7 @@ async def naver_callback(request: Request, code: str = "", state: str = "", erro
             name=user_info.get("name"),
             profile_image=user_info.get("profile_image"),
         )
-        jwt_access = create_access_token(user.id)
+        jwt_access = create_access_token(user.id, user.role)
         jwt_refresh = create_refresh_token(user.id)
         return RedirectResponse(_build_frontend_redirect(jwt_access, jwt_refresh))
     except Exception:
@@ -140,7 +140,7 @@ async def google_callback(request: Request, code: str = "", error: str = "", db:
             name=user_info.get("name"),
             profile_image=user_info.get("profile_image"),
         )
-        jwt_access = create_access_token(user.id)
+        jwt_access = create_access_token(user.id, user.role)
         jwt_refresh = create_refresh_token(user.id)
         return RedirectResponse(_build_frontend_redirect(jwt_access, jwt_refresh))
     except Exception:
