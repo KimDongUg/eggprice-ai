@@ -3,6 +3,7 @@ export interface KpiCard {
   label: string;
   horizon_days: number;
   mape: number | null;
+  mae: number | null;
   prev_mape: number | null;
   trend: "up" | "down" | "flat" | null;
   sample_count: number;
@@ -90,11 +91,18 @@ export interface ScatterDataItem {
   price: number;
 }
 
+export interface FactorErrorScatterItem {
+  factor: string;
+  factor_change_pct: number;
+  error_pct: number;
+}
+
 export interface MarketFactorAnalysisResponse {
   grade: string;
   days: number;
   correlations: CorrelationItem[];
   scatter_data: ScatterDataItem[];
+  factor_error_scatter: FactorErrorScatterItem[];
 }
 
 // ── Model Management ──────────────────────────────────

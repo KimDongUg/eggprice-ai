@@ -16,13 +16,18 @@ import type {
 
 // ── Dashboard ──────────────────────────────────────────
 
-export function useAdminDashboard(grade: string, periodDays = 90, modelVersion?: string) {
+export function useAdminDashboard(grade: string, periodDays = 90, modelVersion?: string, trendHorizon?: number) {
   return useQuery<AdminDashboardResponse>({
-    queryKey: ["admin", "dashboard", grade, periodDays, modelVersion],
+    queryKey: ["admin", "dashboard", grade, periodDays, modelVersion, trendHorizon],
     queryFn: () =>
       api
         .get("/admin/dashboard", {
-          params: { grade, period_days: periodDays, ...(modelVersion ? { model_version: modelVersion } : {}) },
+          params: {
+            grade,
+            period_days: periodDays,
+            ...(modelVersion ? { model_version: modelVersion } : {}),
+            ...(trendHorizon ? { trend_horizon: trendHorizon } : {}),
+          },
         })
         .then((r) => r.data),
     staleTime: 60 * 1000,

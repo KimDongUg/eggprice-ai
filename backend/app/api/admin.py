@@ -31,10 +31,11 @@ def dashboard(
     grade: str = Query("대란"),
     period_days: int = Query(90),
     model_version: str = Query(None),
+    trend_horizon: int = Query(None),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_user),
 ):
-    return admin_service.get_dashboard_kpis(db, grade, period_days, model_version)
+    return admin_service.get_dashboard_kpis(db, grade, period_days, model_version, trend_horizon)
 
 
 @router.get("/model-versions-list")

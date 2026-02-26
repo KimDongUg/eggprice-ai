@@ -7,6 +7,7 @@ import { GRADES } from "@/types";
 import CorrelationChart from "@/components/admin/market/CorrelationChart";
 import VolatilityChart from "@/components/admin/market/VolatilityChart";
 import FactorScatterPlot from "@/components/admin/market/FactorScatterPlot";
+import FactorErrorScatter from "@/components/admin/market/FactorErrorScatter";
 
 export default function MarketFactorsPage() {
   const [grade, setGrade] = useState("대란");
@@ -36,6 +37,7 @@ export default function MarketFactorsPage() {
       ) : data ? (
         <>
           <CorrelationChart correlations={data.correlations} />
+          <FactorErrorScatter data={data.factor_error_scatter} />
           <VolatilityChart scatterData={data.scatter_data} />
           <FactorScatterPlot scatterData={data.scatter_data} />
         </>

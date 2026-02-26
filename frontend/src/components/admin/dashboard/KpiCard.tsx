@@ -31,9 +31,13 @@ export default function KpiCard({ data }: { data: KpiCardType }) {
             </span>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          샘플 {data.sample_count}건 · 이전 {data.prev_mape != null ? `${data.prev_mape}%` : "N/A"}
-        </p>
+        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+          {data.mae != null && (
+            <span>MAE {data.mae.toLocaleString()}원</span>
+          )}
+          <span>샘플 {data.sample_count}건</span>
+          <span>이전 {data.prev_mape != null ? `${data.prev_mape}%` : "N/A"}</span>
+        </div>
       </CardContent>
     </Card>
   );

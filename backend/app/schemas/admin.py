@@ -9,6 +9,7 @@ class KpiCard(BaseModel):
     label: str
     horizon_days: int
     mape: Optional[float] = None
+    mae: Optional[float] = None
     prev_mape: Optional[float] = None
     trend: Optional[str] = None  # "up" | "down" | "flat"
     sample_count: int = 0
@@ -76,11 +77,18 @@ class CorrelationItem(BaseModel):
     correlation_with_error: Optional[float] = None
 
 
+class FactorErrorScatterItem(BaseModel):
+    factor: str
+    factor_change_pct: float
+    error_pct: float
+
+
 class MarketFactorAnalysisResponse(BaseModel):
     grade: str
     days: int
     correlations: list[CorrelationItem]
     scatter_data: list[dict]
+    factor_error_scatter: list[FactorErrorScatterItem] = []
 
 
 # ── Model Management ──────────────────────────────────

@@ -18,6 +18,7 @@ from app.schemas.admin import (
     PredVsActualItem,
     PredVsActualResponse,
     CorrelationItem,
+    FactorErrorScatterItem,
     MarketFactorAnalysisResponse,
     ModelVersionItem,
     DataQualityCheck,
@@ -37,7 +38,8 @@ HORIZONS = [7, 14, 30, 60]
 
 # ── Dashboard KPIs ─────────────────────────────────────
 def get_dashboard_kpis(
-    db: Session, grade: str, period_days: int = 90, model_version: str | None = None
+    db: Session, grade: str, period_days: int = 90, model_version: str | None = None,
+    trend_horizon: int | None = None,
 ) -> AdminDashboardResponse:
     kpis: list[KpiCard] = []
     cutoff = date.today() - timedelta(days=period_days)
@@ -61,9 +63,12 @@ def get_dashboard_kpis(
 
         if rows:
             errors = [abs(r.predicted_price - r.wholesale_price) / r.wholesale_price * 100 for r in rows if r.wholesale_price]
+            abs_errors = [abs(r.predicted_price - r.wholesale_price) for r in rows if r.wholesale_price]
             current_mape = sum(errors) / len(errors) if errors else None
+            current_mae = sum(abs_errors) / len(abs_errors) if abs_errors else None
         else:
             current_mape = None
+            current_mae = None
             errors = []
 
         # Previous period for trend
@@ -96,6 +101,7 @@ def get_dashboard_kpis(
             label=label,
             horizon_days=h,
             mape=round(current_mape, 2) if current_mape is not None else None,
+            mae=round(current_mae, 0) if current_mae is not None else None,
             prev_mape=round(prev_mape, 2) if prev_mape is not None else None,
             trend=trend,
             sample_count=len(errors),
@@ -120,6 +126,8 @@ def get_dashboard_kpis(
     )
     if model_version:
         trend_q = trend_q.filter(Prediction.model_version == model_version)
+    if trend_horizon:
+        trend_q = trend_q.filter(Prediction.horizon_days == trend_horizon)
     trend_rows = trend_q.group_by("week").order_by("week").all()
     accuracy_trend = [{"week": str(r.week), "mape": round(float(r.mape), 2)} for r in trend_rows]
 
@@ -389,6 +397,7 @@ def get_factor_correlations(db: Session, grade: str, days: int = 180) -> MarketF
 
     correlations = []
     scatter_data = []
+    factor_error_scatter: list[FactorErrorScatterItem] = []
 
     try:
         import numpy as np
@@ -419,12 +428,29 @@ def get_factor_correlations(db: Session, grade: str, days: int = 180) -> MarketF
                     scatter_data.append({"factor": factor_name, "factor_value": f_val, "price": p_val})
             else:
                 correlations.append(CorrelationItem(factor=factor_name))
+        # Factor change rate vs prediction error scatter data
+        for factor_name, factor_map in factors.items():
+            sorted_factor_dates = sorted(d for d in common_dates if d in factor_map and factor_map[d] is not None)
+            for i in range(1, len(sorted_factor_dates)):
+                d = sorted_factor_dates[i]
+                prev_d = sorted_factor_dates[i - 1]
+                prev_val = factor_map[prev_d]
+                curr_val = factor_map[d]
+                if prev_val and prev_val != 0 and d in error_map:
+                    change_pct = (curr_val - prev_val) / abs(prev_val) * 100
+                    factor_error_scatter.append(FactorErrorScatterItem(
+                        factor=factor_name,
+                        factor_change_pct=round(change_pct, 2),
+                        error_pct=round(error_map[d], 2),
+                    ))
+
     except ImportError:
         for factor_name in factors:
             correlations.append(CorrelationItem(factor=factor_name))
 
     return MarketFactorAnalysisResponse(
-        grade=grade, days=days, correlations=correlations, scatter_data=scatter_data
+        grade=grade, days=days, correlations=correlations, scatter_data=scatter_data,
+        factor_error_scatter=factor_error_scatter,
     )
 
 

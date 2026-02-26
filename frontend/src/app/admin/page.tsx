@@ -16,12 +16,26 @@ const PERIOD_OPTIONS = [
   { value: 90, label: "90일" },
 ];
 
+const HORIZON_OPTIONS = [
+  { value: 0, label: "전체" },
+  { value: 7, label: "7일" },
+  { value: 14, label: "14일" },
+  { value: 30, label: "30일" },
+  { value: 60, label: "익월" },
+];
+
 export default function AdminDashboardPage() {
   const [grade, setGrade] = useState("대란");
   const [periodDays, setPeriodDays] = useState(90);
   const [modelVersion, setModelVersion] = useState<string>("");
+  const [trendHorizon, setTrendHorizon] = useState(0);
   const { data: versions } = useModelVersionsList(grade);
-  const { data, isLoading } = useAdminDashboard(grade, periodDays, modelVersion || undefined);
+  const { data, isLoading } = useAdminDashboard(
+    grade,
+    periodDays,
+    modelVersion || undefined,
+    trendHorizon || undefined,
+  );
 
   return (
     <div className="space-y-6">
@@ -82,7 +96,27 @@ export default function AdminDashboardPage() {
           {data.surge_alerts.length > 0 && (
             <SurgeAlertPanel alerts={data.surge_alerts} />
           )}
-          <AccuracyTrendChart data={data.accuracy_trend} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-muted-foreground">예측 구간</span>
+              <div className="flex gap-1 bg-muted p-0.5 rounded-lg">
+                {HORIZON_OPTIONS.map((h) => (
+                  <button
+                    key={h.value}
+                    onClick={() => setTrendHorizon(h.value)}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                      trendHorizon === h.value
+                        ? "bg-white shadow text-gray-900"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    {h.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <AccuracyTrendChart data={data.accuracy_trend} />
+          </div>
           <ErrorAlertTable data={data.error_alerts} />
         </>
       ) : (
