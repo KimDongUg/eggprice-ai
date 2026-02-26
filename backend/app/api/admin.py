@@ -1,11 +1,13 @@
 """Admin API endpoints — dashboard, analysis, model management, price management."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import get_admin_user, get_admin_only
 from app.models.user import User
+from app.models.prediction import Prediction
 from app.schemas.admin import (
     AdminDashboardResponse,
     PredVsActualResponse,
@@ -17,6 +19,7 @@ from app.schemas.admin import (
     PriceCorrectionResponse,
     DataQualityCheck,
     ErrorAnalysisResponse,
+    MonthlyComparisonResponse,
 )
 from app.services import admin_service
 
@@ -26,10 +29,28 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.get("/dashboard", response_model=AdminDashboardResponse)
 def dashboard(
     grade: str = Query("대란"),
+    period_days: int = Query(90),
+    model_version: str = Query(None),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_user),
 ):
-    return admin_service.get_dashboard_kpis(db, grade)
+    return admin_service.get_dashboard_kpis(db, grade, period_days, model_version)
+
+
+@router.get("/model-versions-list")
+def model_versions_list(
+    grade: str = Query("대란"),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_admin_user),
+):
+    rows = (
+        db.query(Prediction.model_version)
+        .filter(Prediction.grade == grade)
+        .distinct()
+        .order_by(desc(Prediction.model_version))
+        .all()
+    )
+    return [r.model_version for r in rows]
 
 
 @router.get("/pred-vs-actual", response_model=PredVsActualResponse)
@@ -41,6 +62,17 @@ def pred_vs_actual(
     user: User = Depends(get_admin_user),
 ):
     return admin_service.get_pred_vs_actual(db, grade, horizon_days, days)
+
+
+@router.get("/monthly-comparison", response_model=MonthlyComparisonResponse)
+def monthly_comparison(
+    grade: str = Query("대란"),
+    horizon_days: int = Query(7),
+    days: int = Query(365),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_admin_user),
+):
+    return admin_service.get_monthly_comparison(db, grade, horizon_days, days)
 
 
 @router.get("/market-factors", response_model=MarketFactorAnalysisResponse)

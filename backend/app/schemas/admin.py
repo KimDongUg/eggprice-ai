@@ -14,11 +14,28 @@ class KpiCard(BaseModel):
     sample_count: int = 0
 
 
+class SurgeAlert(BaseModel):
+    period_start: str
+    period_end: str
+    price_change_pct: float
+    avg_error_pct: float
+    normal_avg_error_pct: float
+    amplification_ratio: float  # how much worse errors are during surge
+
+
+class DataQualitySummary(BaseModel):
+    error_count: int = 0
+    warning_count: int = 0
+    recent_issues: list[str] = []
+
+
 class AdminDashboardResponse(BaseModel):
     grade: str
     kpis: list[KpiCard]
     accuracy_trend: list[dict]
     error_alerts: list[dict]
+    surge_alerts: list[SurgeAlert] = []
+    data_quality: Optional[DataQualitySummary] = None
 
 
 # ── Prediction vs Actual ──────────────────────────────
@@ -35,6 +52,21 @@ class PredVsActualResponse(BaseModel):
     grade: str
     horizon_days: int
     items: list[PredVsActualItem]
+
+
+# ── Monthly Comparison ────────────────────────────────
+class MonthlyComparisonItem(BaseModel):
+    month: str  # "YYYY-MM"
+    avg_predicted: float
+    avg_actual: float
+    mape: float
+    sample_count: int
+
+
+class MonthlyComparisonResponse(BaseModel):
+    grade: str
+    horizon_days: int
+    items: list[MonthlyComparisonItem]
 
 
 # ── Market Factor Analysis ────────────────────────────

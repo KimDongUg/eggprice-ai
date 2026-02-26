@@ -11,15 +11,29 @@ import type {
   PriceCorrectionResponse,
   DataQualityCheck,
   ErrorAnalysisResponse,
+  MonthlyComparisonResponse,
 } from "@/types/admin";
 
 // ── Dashboard ──────────────────────────────────────────
 
-export function useAdminDashboard(grade: string) {
+export function useAdminDashboard(grade: string, periodDays = 90, modelVersion?: string) {
   return useQuery<AdminDashboardResponse>({
-    queryKey: ["admin", "dashboard", grade],
-    queryFn: () => api.get("/admin/dashboard", { params: { grade } }).then((r) => r.data),
+    queryKey: ["admin", "dashboard", grade, periodDays, modelVersion],
+    queryFn: () =>
+      api
+        .get("/admin/dashboard", {
+          params: { grade, period_days: periodDays, ...(modelVersion ? { model_version: modelVersion } : {}) },
+        })
+        .then((r) => r.data),
     staleTime: 60 * 1000,
+  });
+}
+
+export function useModelVersionsList(grade: string) {
+  return useQuery<string[]>({
+    queryKey: ["admin", "model-versions-list", grade],
+    queryFn: () => api.get("/admin/model-versions-list", { params: { grade } }).then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -31,6 +45,17 @@ export function usePredVsActual(grade: string, horizon_days: number, days = 90) 
     queryFn: () =>
       api.get("/admin/pred-vs-actual", { params: { grade, horizon_days, days } }).then((r) => r.data),
     staleTime: 60 * 1000,
+  });
+}
+
+// ── Monthly Comparison ───────────────────────────────
+
+export function useMonthlyComparison(grade: string, horizon_days: number, days = 365) {
+  return useQuery<MonthlyComparisonResponse>({
+    queryKey: ["admin", "monthly-comparison", grade, horizon_days, days],
+    queryFn: () =>
+      api.get("/admin/monthly-comparison", { params: { grade, horizon_days, days } }).then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

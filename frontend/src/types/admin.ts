@@ -22,11 +22,28 @@ export interface ErrorAlertItem {
   model_version: string;
 }
 
+export interface SurgeAlert {
+  period_start: string;
+  period_end: string;
+  price_change_pct: number;
+  avg_error_pct: number;
+  normal_avg_error_pct: number;
+  amplification_ratio: number;
+}
+
+export interface DataQualitySummary {
+  error_count: number;
+  warning_count: number;
+  recent_issues: string[];
+}
+
 export interface AdminDashboardResponse {
   grade: string;
   kpis: KpiCard[];
   accuracy_trend: AccuracyTrendItem[];
   error_alerts: ErrorAlertItem[];
+  surge_alerts: SurgeAlert[];
+  data_quality: DataQualitySummary | null;
 }
 
 // ── Prediction vs Actual ──────────────────────────────
@@ -43,6 +60,21 @@ export interface PredVsActualResponse {
   grade: string;
   horizon_days: number;
   items: PredVsActualItem[];
+}
+
+// ── Monthly Comparison ──────────────────────────────
+export interface MonthlyComparisonItem {
+  month: string;
+  avg_predicted: number;
+  avg_actual: number;
+  mape: number;
+  sample_count: number;
+}
+
+export interface MonthlyComparisonResponse {
+  grade: string;
+  horizon_days: number;
+  items: MonthlyComparisonItem[];
 }
 
 // ── Market Factor Analysis ────────────────────────────

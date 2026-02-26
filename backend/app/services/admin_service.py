@@ -12,6 +12,8 @@ from app.models.market_data import ModelPerformance, FeedPrice, ExchangeRate, We
 from app.models.admin import RetrainRequest, PriceCorrectionLog
 from app.schemas.admin import (
     KpiCard,
+    SurgeAlert,
+    DataQualitySummary,
     AdminDashboardResponse,
     PredVsActualItem,
     PredVsActualResponse,
@@ -19,6 +21,8 @@ from app.schemas.admin import (
     MarketFactorAnalysisResponse,
     ModelVersionItem,
     DataQualityCheck,
+    MonthlyComparisonItem,
+    MonthlyComparisonResponse,
     TopErrorItem,
     WeekdayAnalysisItem,
     MonthlyAnalysisItem,
@@ -32,14 +36,16 @@ HORIZONS = [7, 14, 30, 60]
 
 
 # ── Dashboard KPIs ─────────────────────────────────────
-def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
+def get_dashboard_kpis(
+    db: Session, grade: str, period_days: int = 90, model_version: str | None = None
+) -> AdminDashboardResponse:
     kpis: list[KpiCard] = []
-    cutoff = date.today() - timedelta(days=90)
+    cutoff = date.today() - timedelta(days=period_days)
 
     for h in HORIZONS:
         label = f"{h}일" if h <= 30 else "익월"
 
-        rows = (
+        q = (
             db.query(Prediction.target_date, Prediction.predicted_price, EggPrice.wholesale_price)
             .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
             .filter(
@@ -48,8 +54,10 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
                 Prediction.target_date >= cutoff,
                 EggPrice.wholesale_price.isnot(None),
             )
-            .all()
         )
+        if model_version:
+            q = q.filter(Prediction.model_version == model_version)
+        rows = q.all()
 
         if rows:
             errors = [abs(r.predicted_price - r.wholesale_price) / r.wholesale_price * 100 for r in rows if r.wholesale_price]
@@ -59,8 +67,8 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
             errors = []
 
         # Previous period for trend
-        prev_cutoff = cutoff - timedelta(days=90)
-        prev_rows = (
+        prev_cutoff = cutoff - timedelta(days=period_days)
+        pq = (
             db.query(Prediction.target_date, Prediction.predicted_price, EggPrice.wholesale_price)
             .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
             .filter(
@@ -70,8 +78,10 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
                 Prediction.target_date < cutoff,
                 EggPrice.wholesale_price.isnot(None),
             )
-            .all()
         )
+        if model_version:
+            pq = pq.filter(Prediction.model_version == model_version)
+        prev_rows = pq.all()
         if prev_rows:
             prev_errors = [abs(r.predicted_price - r.wholesale_price) / r.wholesale_price * 100 for r in prev_rows if r.wholesale_price]
             prev_mape = sum(prev_errors) / len(prev_errors) if prev_errors else None
@@ -91,9 +101,9 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
             sample_count=len(errors),
         ))
 
-    # Accuracy trend (weekly aggregated MAPE over last 180 days)
-    trend_cutoff = date.today() - timedelta(days=180)
-    trend_rows = (
+    # Accuracy trend (weekly aggregated MAPE)
+    trend_cutoff = date.today() - timedelta(days=max(period_days * 2, 180))
+    trend_q = (
         db.query(
             func.date_trunc("week", Prediction.target_date).label("week"),
             func.avg(
@@ -107,14 +117,14 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
             EggPrice.wholesale_price.isnot(None),
             EggPrice.wholesale_price > 0,
         )
-        .group_by("week")
-        .order_by("week")
-        .all()
     )
+    if model_version:
+        trend_q = trend_q.filter(Prediction.model_version == model_version)
+    trend_rows = trend_q.group_by("week").order_by("week").all()
     accuracy_trend = [{"week": str(r.week), "mape": round(float(r.mape), 2)} for r in trend_rows]
 
     # Error alerts (recent predictions with high error)
-    alert_rows = (
+    alert_q = (
         db.query(
             Prediction.target_date,
             Prediction.predicted_price,
@@ -125,14 +135,14 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
         .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
         .filter(
             Prediction.grade == grade,
-            Prediction.target_date >= date.today() - timedelta(days=30),
+            Prediction.target_date >= date.today() - timedelta(days=min(period_days, 30)),
             EggPrice.wholesale_price.isnot(None),
             EggPrice.wholesale_price > 0,
         )
-        .order_by(desc(Prediction.target_date))
-        .limit(100)
-        .all()
     )
+    if model_version:
+        alert_q = alert_q.filter(Prediction.model_version == model_version)
+    alert_rows = alert_q.order_by(desc(Prediction.target_date)).limit(100).all()
     error_alerts = []
     for r in alert_rows:
         error_pct = abs(r.predicted_price - r.wholesale_price) / r.wholesale_price * 100
@@ -146,11 +156,99 @@ def get_dashboard_kpis(db: Session, grade: str) -> AdminDashboardResponse:
                 "model_version": r.model_version,
             })
 
+    # Surge/drop detection — find periods where price changed significantly and errors amplified
+    surge_alerts: list[SurgeAlert] = []
+    try:
+        price_rows = (
+            db.query(EggPrice.date, EggPrice.wholesale_price)
+            .filter(EggPrice.grade == grade, EggPrice.date >= cutoff, EggPrice.wholesale_price.isnot(None))
+            .order_by(EggPrice.date)
+            .all()
+        )
+        if len(price_rows) >= 5:
+            # Build daily change map and error map
+            daily_changes: list[tuple[date, float]] = []
+            for i in range(1, len(price_rows)):
+                prev_p = price_rows[i - 1].wholesale_price
+                curr_p = price_rows[i].wholesale_price
+                if prev_p and prev_p > 0:
+                    change_pct = (curr_p - prev_p) / prev_p * 100
+                    daily_changes.append((price_rows[i].date, change_pct))
+
+            # Build prediction error map for the period
+            pred_err_rows = (
+                db.query(Prediction.target_date, Prediction.predicted_price, EggPrice.wholesale_price)
+                .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
+                .filter(Prediction.grade == grade, Prediction.target_date >= cutoff,
+                        EggPrice.wholesale_price.isnot(None), EggPrice.wholesale_price > 0)
+            )
+            if model_version:
+                pred_err_rows = pred_err_rows.filter(Prediction.model_version == model_version)
+            pred_err_rows = pred_err_rows.all()
+            err_map: dict[date, float] = {}
+            for r in pred_err_rows:
+                err_map[r.target_date] = abs(r.predicted_price - r.wholesale_price) / r.wholesale_price * 100
+
+            if daily_changes and err_map:
+                abs_changes = sorted([abs(c) for _, c in daily_changes], reverse=True)
+                threshold = abs_changes[max(0, len(abs_changes) // 10 - 1)] if abs_changes else 5.0
+                threshold = max(threshold, 2.0)
+
+                # Find surge periods (consecutive high-change days)
+                surge_dates = [(d, c) for d, c in daily_changes if abs(c) >= threshold]
+                normal_errors = [err_map[d] for d, _ in daily_changes if abs(_) < threshold and d in err_map]
+                normal_avg = sum(normal_errors) / len(normal_errors) if normal_errors else 0
+
+                if surge_dates and normal_avg > 0:
+                    # Group consecutive surge dates
+                    groups: list[list[tuple[date, float]]] = []
+                    current_group: list[tuple[date, float]] = [surge_dates[0]]
+                    for j in range(1, len(surge_dates)):
+                        if (surge_dates[j][0] - surge_dates[j - 1][0]).days <= 3:
+                            current_group.append(surge_dates[j])
+                        else:
+                            groups.append(current_group)
+                            current_group = [surge_dates[j]]
+                    groups.append(current_group)
+
+                    for group in groups[:5]:
+                        group_errors = [err_map[d] for d, _ in group if d in err_map]
+                        if group_errors:
+                            avg_err = sum(group_errors) / len(group_errors)
+                            max_change = max(abs(c) for _, c in group)
+                            if avg_err > normal_avg * 1.3:
+                                surge_alerts.append(SurgeAlert(
+                                    period_start=str(group[0][0]),
+                                    period_end=str(group[-1][0]),
+                                    price_change_pct=round(max_change, 2),
+                                    avg_error_pct=round(avg_err, 2),
+                                    normal_avg_error_pct=round(normal_avg, 2),
+                                    amplification_ratio=round(avg_err / normal_avg, 2),
+                                ))
+    except Exception as e:
+        logger.warning(f"Surge detection failed: {e}")
+
+    # Data quality summary (recent 14 days)
+    data_quality = None
+    try:
+        quality_checks = run_data_quality_checks(db, grade, days=14)
+        if quality_checks:
+            err_cnt = sum(1 for c in quality_checks if c.severity == "error")
+            warn_cnt = sum(1 for c in quality_checks if c.severity == "warning")
+            recent = [c.detail for c in quality_checks[:5]]
+            data_quality = DataQualitySummary(
+                error_count=err_cnt, warning_count=warn_cnt, recent_issues=recent
+            )
+    except Exception as e:
+        logger.warning(f"Data quality check failed: {e}")
+
     return AdminDashboardResponse(
         grade=grade,
         kpis=kpis,
         accuracy_trend=accuracy_trend,
         error_alerts=error_alerts[:20],
+        surge_alerts=surge_alerts,
+        data_quality=data_quality,
     )
 
 
@@ -189,6 +287,49 @@ def get_pred_vs_actual(db: Session, grade: str, horizon_days: int = 7, days: int
         ))
 
     return PredVsActualResponse(grade=grade, horizon_days=horizon_days, items=items)
+
+
+# ── Monthly Comparison ────────────────────────────────
+def get_monthly_comparison(
+    db: Session, grade: str, horizon_days: int = 7, days: int = 365
+) -> MonthlyComparisonResponse:
+    from collections import defaultdict
+
+    cutoff = date.today() - timedelta(days=days)
+
+    rows = (
+        db.query(Prediction.target_date, Prediction.predicted_price, EggPrice.wholesale_price)
+        .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
+        .filter(
+            Prediction.grade == grade,
+            Prediction.horizon_days == horizon_days,
+            Prediction.target_date >= cutoff,
+            EggPrice.wholesale_price.isnot(None),
+            EggPrice.wholesale_price > 0,
+        )
+        .order_by(Prediction.target_date)
+        .all()
+    )
+
+    monthly: dict[str, list[tuple[float, float]]] = defaultdict(list)
+    for r in rows:
+        month_key = r.target_date.strftime("%Y-%m")
+        monthly[month_key].append((r.predicted_price, r.wholesale_price))
+
+    items = []
+    for month, pairs in sorted(monthly.items()):
+        preds = [p for p, _ in pairs]
+        actuals = [a for _, a in pairs]
+        errors = [abs(p - a) / a * 100 for p, a in pairs]
+        items.append(MonthlyComparisonItem(
+            month=month,
+            avg_predicted=round(sum(preds) / len(preds), 0),
+            avg_actual=round(sum(actuals) / len(actuals), 0),
+            mape=round(sum(errors) / len(errors), 2),
+            sample_count=len(pairs),
+        ))
+
+    return MonthlyComparisonResponse(grade=grade, horizon_days=horizon_days, items=items)
 
 
 # ── Market Factor Correlations ────────────────────────

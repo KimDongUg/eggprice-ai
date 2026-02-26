@@ -5,6 +5,7 @@ import { useAdminModels } from "@/lib/admin-queries";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GRADES } from "@/types";
 import ModelVersionTable from "@/components/admin/models/ModelVersionTable";
+import ModelComparisonChart from "@/components/admin/models/ModelComparisonChart";
 import RetrainRequestForm from "@/components/admin/models/RetrainRequestForm";
 
 export default function ModelsPage() {
@@ -29,7 +30,10 @@ export default function ModelsPage() {
       {isLoading ? (
         <Skeleton className="h-48 rounded-xl" />
       ) : models ? (
-        <ModelVersionTable models={models} grade={grade} />
+        <>
+          <ModelComparisonChart models={models} />
+          <ModelVersionTable models={models} grade={grade} />
+        </>
       ) : (
         <p className="text-muted-foreground text-center py-12">데이터를 불러올 수 없습니다.</p>
       )}
