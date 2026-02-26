@@ -110,3 +110,44 @@ class DataQualityCheck(BaseModel):
     date: Optional[str] = None
     grade: Optional[str] = None
     detail: str
+
+
+# ── Error Analysis ───────────────────────────────────
+class TopErrorItem(BaseModel):
+    target_date: str
+    predicted_price: float
+    actual_price: float
+    error: float
+    error_pct: float
+    horizon_days: int
+    model_version: str
+
+
+class WeekdayAnalysisItem(BaseModel):
+    weekday: int  # 0=Mon … 6=Sun
+    weekday_name: str
+    avg_error_pct: float
+    sample_count: int
+
+
+class MonthlyAnalysisItem(BaseModel):
+    month: str  # "YYYY-MM"
+    mape: float
+    sample_count: int
+
+
+class VolatilityAnalysis(BaseModel):
+    volatile_avg_error_pct: float
+    volatile_sample_count: int
+    normal_avg_error_pct: float
+    normal_sample_count: int
+    threshold_pct: float
+
+
+class ErrorAnalysisResponse(BaseModel):
+    grade: str
+    horizon_days: int
+    top_errors: list[TopErrorItem]
+    weekday_analysis: list[WeekdayAnalysisItem]
+    monthly_analysis: list[MonthlyAnalysisItem]
+    volatility: Optional[VolatilityAnalysis] = None

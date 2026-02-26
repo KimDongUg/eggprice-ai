@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.models.price import EggPrice
 from app.models.prediction import Prediction
-from app.models.market_data import ModelPerformance, FeedPrice, ExchangeRate, WeatherData
+from app.models.market_data import ModelPerformance, FeedPrice, ExchangeRate, WeatherData, TradingVolume, AvianFluStatus
 from app.models.admin import RetrainRequest, PriceCorrectionLog
 from app.schemas.admin import (
     KpiCard,
@@ -19,6 +19,11 @@ from app.schemas.admin import (
     MarketFactorAnalysisResponse,
     ModelVersionItem,
     DataQualityCheck,
+    TopErrorItem,
+    WeekdayAnalysisItem,
+    MonthlyAnalysisItem,
+    VolatilityAnalysis,
+    ErrorAnalysisResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -209,7 +214,38 @@ def get_factor_correlations(db: Session, grade: str, days: int = 180) -> MarketF
     weather_rows = db.query(WeatherData.date, WeatherData.avg_temperature).filter(WeatherData.date >= cutoff).all()
     weather_map = {r.date: r.avg_temperature for r in weather_rows}
 
-    factors = {"사료가격": feed_map, "환율(USD/KRW)": exchange_map, "평균기온": weather_map}
+    volume_rows = db.query(TradingVolume.date, TradingVolume.volume_kg).filter(TradingVolume.date >= cutoff).all()
+    volume_map = {r.date: r.volume_kg for r in volume_rows}
+
+    flu_rows = db.query(AvianFluStatus.date, AvianFluStatus.case_count).filter(AvianFluStatus.date >= cutoff).all()
+    flu_map = {r.date: float(r.case_count) for r in flu_rows}
+
+    factors = {
+        "사료가격": feed_map,
+        "환율(USD/KRW)": exchange_map,
+        "평균기온": weather_map,
+        "거래량": volume_map,
+        "조류독감": flu_map,
+    }
+    # Build prediction error map: date → absolute error percentage
+    pred_rows = (
+        db.query(Prediction.target_date, Prediction.predicted_price, EggPrice.wholesale_price)
+        .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
+        .filter(
+            Prediction.grade == grade,
+            Prediction.target_date >= cutoff,
+            EggPrice.wholesale_price.isnot(None),
+            EggPrice.wholesale_price > 0,
+        )
+        .all()
+    )
+    error_map: dict[date, float] = {}
+    for r in pred_rows:
+        err = abs(r.predicted_price - r.wholesale_price) / r.wholesale_price * 100
+        d = r.target_date
+        if d not in error_map or err > error_map[d]:
+            error_map[d] = err
+
     correlations = []
     scatter_data = []
 
@@ -223,9 +259,20 @@ def get_factor_correlations(db: Session, grade: str, days: int = 180) -> MarketF
                 p_arr = [x[0] for x in paired]
                 f_arr = [x[1] for x in paired]
                 corr = float(np.corrcoef(p_arr, f_arr)[0, 1])
+
+                # Error correlation
+                error_paired = [(error_map[d], factor_map[d]) for d in common_dates
+                                if d in factor_map and factor_map[d] is not None and d in error_map]
+                corr_err = None
+                if len(error_paired) >= 10:
+                    e_arr = [x[0] for x in error_paired]
+                    fe_arr = [x[1] for x in error_paired]
+                    corr_err = round(float(np.corrcoef(e_arr, fe_arr)[0, 1]), 4)
+
                 correlations.append(CorrelationItem(
                     factor=factor_name,
                     correlation_with_price=round(corr, 4),
+                    correlation_with_error=corr_err,
                 ))
                 for p_val, f_val in paired[-60:]:
                     scatter_data.append({"factor": factor_name, "factor_value": f_val, "price": p_val})
@@ -293,6 +340,145 @@ def promote_model(db: Session, grade: str, version: str) -> bool:
     ).update({"is_production": True})
     db.commit()
     return updated > 0
+
+
+# ── Error Analysis ────────────────────────────────────
+def get_error_analysis(
+    db: Session, grade: str, horizon_days: int = 7, days: int = 180
+) -> ErrorAnalysisResponse:
+    import numpy as np
+    from collections import defaultdict
+
+    cutoff = date.today() - timedelta(days=days)
+
+    rows = (
+        db.query(
+            Prediction.target_date,
+            Prediction.predicted_price,
+            EggPrice.wholesale_price,
+            Prediction.horizon_days,
+            Prediction.model_version,
+        )
+        .join(EggPrice, (Prediction.target_date == EggPrice.date) & (Prediction.grade == EggPrice.grade))
+        .filter(
+            Prediction.grade == grade,
+            Prediction.horizon_days == horizon_days,
+            Prediction.target_date >= cutoff,
+            EggPrice.wholesale_price.isnot(None),
+            EggPrice.wholesale_price > 0,
+        )
+        .order_by(Prediction.target_date)
+        .all()
+    )
+
+    # Build error list
+    error_items = []
+    for r in rows:
+        err = r.predicted_price - r.wholesale_price
+        err_pct = err / r.wholesale_price * 100
+        error_items.append({
+            "target_date": r.target_date,
+            "predicted_price": r.predicted_price,
+            "actual_price": r.wholesale_price,
+            "error": round(err, 2),
+            "error_pct": round(err_pct, 2),
+            "abs_error_pct": abs(err_pct),
+            "horizon_days": r.horizon_days,
+            "model_version": r.model_version,
+        })
+
+    # TOP 50 by absolute error percentage
+    top_sorted = sorted(error_items, key=lambda x: x["abs_error_pct"], reverse=True)[:50]
+    top_errors = [
+        TopErrorItem(
+            target_date=str(e["target_date"]),
+            predicted_price=e["predicted_price"],
+            actual_price=e["actual_price"],
+            error=e["error"],
+            error_pct=e["error_pct"],
+            horizon_days=e["horizon_days"],
+            model_version=e["model_version"],
+        )
+        for e in top_sorted
+    ]
+
+    # Weekday analysis
+    weekday_names = ["월", "화", "수", "목", "금", "토", "일"]
+    weekday_groups: dict[int, list[float]] = defaultdict(list)
+    for e in error_items:
+        wd = e["target_date"].weekday()
+        weekday_groups[wd].append(e["abs_error_pct"])
+
+    weekday_analysis = [
+        WeekdayAnalysisItem(
+            weekday=wd,
+            weekday_name=weekday_names[wd],
+            avg_error_pct=round(float(np.mean(vals)), 2),
+            sample_count=len(vals),
+        )
+        for wd, vals in sorted(weekday_groups.items())
+    ]
+
+    # Monthly MAPE
+    monthly_groups: dict[str, list[float]] = defaultdict(list)
+    for e in error_items:
+        month_key = e["target_date"].strftime("%Y-%m")
+        monthly_groups[month_key].append(e["abs_error_pct"])
+
+    monthly_analysis = [
+        MonthlyAnalysisItem(
+            month=m,
+            mape=round(float(np.mean(vals)), 2),
+            sample_count=len(vals),
+        )
+        for m, vals in sorted(monthly_groups.items())
+    ]
+
+    # Volatility analysis: top 10% daily price change days vs normal
+    price_rows = (
+        db.query(EggPrice.date, EggPrice.wholesale_price)
+        .filter(EggPrice.grade == grade, EggPrice.date >= cutoff, EggPrice.wholesale_price.isnot(None))
+        .order_by(EggPrice.date)
+        .all()
+    )
+
+    volatility = None
+    if len(price_rows) >= 10:
+        daily_changes: dict[date, float] = {}
+        for i in range(1, len(price_rows)):
+            prev_p = price_rows[i - 1].wholesale_price
+            curr_p = price_rows[i].wholesale_price
+            if prev_p and prev_p > 0:
+                daily_changes[price_rows[i].date] = abs(curr_p - prev_p) / prev_p * 100
+
+        if daily_changes:
+            sorted_changes = sorted(daily_changes.values(), reverse=True)
+            threshold_idx = max(1, len(sorted_changes) // 10)
+            threshold_pct = sorted_changes[threshold_idx - 1]
+
+            volatile_dates = {d for d, c in daily_changes.items() if c >= threshold_pct}
+            normal_dates = {d for d, c in daily_changes.items() if c < threshold_pct}
+
+            volatile_errors = [e["abs_error_pct"] for e in error_items if e["target_date"] in volatile_dates]
+            normal_errors = [e["abs_error_pct"] for e in error_items if e["target_date"] in normal_dates]
+
+            if volatile_errors and normal_errors:
+                volatility = VolatilityAnalysis(
+                    volatile_avg_error_pct=round(float(np.mean(volatile_errors)), 2),
+                    volatile_sample_count=len(volatile_errors),
+                    normal_avg_error_pct=round(float(np.mean(normal_errors)), 2),
+                    normal_sample_count=len(normal_errors),
+                    threshold_pct=round(threshold_pct, 2),
+                )
+
+    return ErrorAnalysisResponse(
+        grade=grade,
+        horizon_days=horizon_days,
+        top_errors=top_errors,
+        weekday_analysis=weekday_analysis,
+        monthly_analysis=monthly_analysis,
+        volatility=volatility,
+    )
 
 
 # ── Price Management ──────────────────────────────────

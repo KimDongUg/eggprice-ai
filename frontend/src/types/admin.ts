@@ -119,3 +119,44 @@ export interface DataQualityCheck {
   grade: string | null;
   detail: string;
 }
+
+// ── Error Analysis ──────────────────────────────────
+export interface TopErrorItem {
+  target_date: string;
+  predicted_price: number;
+  actual_price: number;
+  error: number;
+  error_pct: number;
+  horizon_days: number;
+  model_version: string;
+}
+
+export interface WeekdayAnalysisItem {
+  weekday: number;
+  weekday_name: string;
+  avg_error_pct: number;
+  sample_count: number;
+}
+
+export interface MonthlyAnalysisItem {
+  month: string;
+  mape: number;
+  sample_count: number;
+}
+
+export interface VolatilityAnalysis {
+  volatile_avg_error_pct: number;
+  volatile_sample_count: number;
+  normal_avg_error_pct: number;
+  normal_sample_count: number;
+  threshold_pct: number;
+}
+
+export interface ErrorAnalysisResponse {
+  grade: string;
+  horizon_days: number;
+  top_errors: TopErrorItem[];
+  weekday_analysis: WeekdayAnalysisItem[];
+  monthly_analysis: MonthlyAnalysisItem[];
+  volatility: VolatilityAnalysis | null;
+}

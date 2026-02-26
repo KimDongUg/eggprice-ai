@@ -10,6 +10,7 @@ import type {
   ManualPriceInput,
   PriceCorrectionResponse,
   DataQualityCheck,
+  ErrorAnalysisResponse,
 } from "@/types/admin";
 
 // ── Dashboard ──────────────────────────────────────────
@@ -82,6 +83,17 @@ export function usePromoteModel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "models"] });
     },
+  });
+}
+
+// ── Error Analysis ───────────────────────────────────
+
+export function useErrorAnalysis(grade: string, horizon_days: number, days = 180) {
+  return useQuery<ErrorAnalysisResponse>({
+    queryKey: ["admin", "error-analysis", grade, horizon_days, days],
+    queryFn: () =>
+      api.get("/admin/error-analysis", { params: { grade, horizon_days, days } }).then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

@@ -16,6 +16,7 @@ from app.schemas.admin import (
     ManualPriceInput,
     PriceCorrectionResponse,
     DataQualityCheck,
+    ErrorAnalysisResponse,
 )
 from app.services import admin_service
 
@@ -50,6 +51,17 @@ def market_factors(
     user: User = Depends(get_admin_user),
 ):
     return admin_service.get_factor_correlations(db, grade, days)
+
+
+@router.get("/error-analysis", response_model=ErrorAnalysisResponse)
+def error_analysis(
+    grade: str = Query("대란"),
+    horizon_days: int = Query(7),
+    days: int = Query(180),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_admin_user),
+):
+    return admin_service.get_error_analysis(db, grade, horizon_days, days)
 
 
 @router.get("/models", response_model=list[ModelVersionItem])

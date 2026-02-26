@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, LineChart, TrendingUp, Cpu, Database } from "lucide-react";
+import { BarChart3, LineChart, TrendingUp, Cpu, Database, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
   { href: "/admin", label: "예측 성능 대시보드", icon: BarChart3 },
   { href: "/admin/analysis", label: "예측 vs 실제 분석", icon: LineChart },
   { href: "/admin/market-factors", label: "시장요인 분석", icon: TrendingUp },
+  { href: "/admin/error-analysis", label: "오차 분석", icon: AlertTriangle },
   { href: "/admin/models", label: "모델 관리", icon: Cpu },
   { href: "/admin/prices", label: "실제가격 관리", icon: Database },
 ];

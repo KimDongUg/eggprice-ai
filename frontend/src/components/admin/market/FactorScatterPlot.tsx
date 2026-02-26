@@ -13,7 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import type { ScatterDataItem } from "@/types/admin";
 
-const COLORS = ["#2563eb", "#f59e0b", "#10b981", "#ef4444"];
+const COLORS = ["#2563eb", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6"];
 
 export default function FactorScatterPlot({ scatterData }: { scatterData: ScatterDataItem[] }) {
   const factors = Array.from(new Set(scatterData.map((d) => d.factor)));
