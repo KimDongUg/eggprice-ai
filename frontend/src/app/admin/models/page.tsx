@@ -9,7 +9,7 @@ import ModelComparisonChart from "@/components/admin/models/ModelComparisonChart
 import RetrainRequestForm from "@/components/admin/models/RetrainRequestForm";
 
 export default function ModelsPage() {
-  const [grade, setGrade] = useState("대란");
+  const [grade, setGrade] = useState("특란");
   const { data: models, isLoading } = useAdminModels(grade);
 
   return (

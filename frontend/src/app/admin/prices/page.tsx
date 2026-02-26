@@ -7,7 +7,7 @@ import CorrectionLogTable from "@/components/admin/prices/CorrectionLogTable";
 import DataQualityPanel from "@/components/admin/prices/DataQualityPanel";
 
 export default function PricesPage() {
-  const [grade, setGrade] = useState("대란");
+  const [grade, setGrade] = useState("특란");
 
   return (
     <div className="space-y-6">

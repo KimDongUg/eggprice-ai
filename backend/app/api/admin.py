@@ -28,7 +28,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/dashboard", response_model=AdminDashboardResponse)
 def dashboard(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     period_days: int = Query(90),
     model_version: str = Query(None),
     trend_horizon: int = Query(None),
@@ -40,7 +40,7 @@ def dashboard(
 
 @router.get("/model-versions-list")
 def model_versions_list(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_user),
 ):
@@ -56,7 +56,7 @@ def model_versions_list(
 
 @router.get("/pred-vs-actual", response_model=PredVsActualResponse)
 def pred_vs_actual(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     horizon_days: int = Query(7),
     days: int = Query(90),
     db: Session = Depends(get_db),
@@ -67,7 +67,7 @@ def pred_vs_actual(
 
 @router.get("/monthly-comparison", response_model=MonthlyComparisonResponse)
 def monthly_comparison(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     horizon_days: int = Query(7),
     days: int = Query(365),
     db: Session = Depends(get_db),
@@ -78,7 +78,7 @@ def monthly_comparison(
 
 @router.get("/market-factors", response_model=MarketFactorAnalysisResponse)
 def market_factors(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     days: int = Query(180),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_user),
@@ -88,7 +88,7 @@ def market_factors(
 
 @router.get("/error-analysis", response_model=ErrorAnalysisResponse)
 def error_analysis(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     horizon_days: int = Query(7),
     days: int = Query(180),
     db: Session = Depends(get_db),
@@ -99,7 +99,7 @@ def error_analysis(
 
 @router.get("/models", response_model=list[ModelVersionItem])
 def model_versions(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_user),
 ):
@@ -128,7 +128,7 @@ def retrain_requests(
 @router.post("/models/{version}/promote")
 def promote_model(
     version: str,
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_only),
 ):
@@ -150,7 +150,7 @@ def upsert_price(
 
 @router.get("/prices/quality", response_model=list[DataQualityCheck])
 def data_quality(
-    grade: str = Query("대란"),
+    grade: str = Query("특란"),
     days: int = Query(30),
     db: Session = Depends(get_db),
     user: User = Depends(get_admin_user),

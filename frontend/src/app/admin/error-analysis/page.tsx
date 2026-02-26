@@ -17,7 +17,7 @@ const HORIZONS = [
 ];
 
 export default function ErrorAnalysisPage() {
-  const [grade, setGrade] = useState("대란");
+  const [grade, setGrade] = useState("특란");
   const [horizon, setHorizon] = useState(7);
   const { data, isLoading } = useErrorAnalysis(grade, horizon);
 

@@ -25,7 +25,7 @@ const HORIZON_OPTIONS = [
 ];
 
 export default function AdminDashboardPage() {
-  const [grade, setGrade] = useState("대란");
+  const [grade, setGrade] = useState("특란");
   const [periodDays, setPeriodDays] = useState(90);
   const [modelVersion, setModelVersion] = useState<string>("");
   const [trendHorizon, setTrendHorizon] = useState(0);

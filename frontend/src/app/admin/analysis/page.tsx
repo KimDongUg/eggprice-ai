@@ -17,7 +17,7 @@ const HORIZONS = [
 ];
 
 export default function AnalysisPage() {
-  const [grade, setGrade] = useState("대란");
+  const [grade, setGrade] = useState("특란");
   const [horizon, setHorizon] = useState(7);
   const [view, setView] = useState<"daily" | "monthly">("daily");
   const { data, isLoading } = usePredVsActual(grade, horizon);

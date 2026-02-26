@@ -10,7 +10,7 @@ import FactorScatterPlot from "@/components/admin/market/FactorScatterPlot";
 import FactorErrorScatter from "@/components/admin/market/FactorErrorScatter";
 
 export default function MarketFactorsPage() {
-  const [grade, setGrade] = useState("대란");
+  const [grade, setGrade] = useState("특란");
   const { data, isLoading } = useMarketFactorAnalysis(grade);
 
   return (
