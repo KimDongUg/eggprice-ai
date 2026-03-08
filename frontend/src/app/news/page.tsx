@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Newspaper, Clock, ChevronRight } from "lucide-react";
+import { Newspaper, Clock, ExternalLink, RefreshCw } from "lucide-react";
 import api from "@/lib/axios";
-import Link from "next/link";
 
 const CATEGORIES = [
   { label: "전체", value: "" },
@@ -20,21 +19,26 @@ interface NewsItem {
   title: string;
   summary: string;
   category: string;
+  source: string | null;
+  source_name: string | null;
   published_at: string;
   seo_slug: string;
-  thumbnail: string | null;
 }
 
 export default function NewsPage() {
   const [category, setCategory] = useState("");
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     setLoading(true);
     api
       .get("/news", { params: category ? { category } : {} })
-      .then((r) => setNews(r.data.items))
+      .then((r) => {
+        setNews(r.data.items);
+        setTotal(r.data.total);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [category]);
@@ -43,7 +47,13 @@ export default function NewsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold mb-1">뉴스</h1>
-        <p className="text-muted-foreground text-sm">계란 가격, 양계 산업, 사료 가격 관련 최신 뉴스</p>
+        <p className="text-muted-foreground text-sm">
+          계란 가격, 양계 산업, 사료 가격 관련 최신 뉴스
+        </p>
+        <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+          <RefreshCw className="h-3 w-3" />
+          매일 자동 수집 · 네이버 뉴스 기반
+        </div>
       </div>
 
       {/* Category filter */}
@@ -61,34 +71,62 @@ export default function NewsPage() {
             {cat.label}
           </button>
         ))}
+        {total > 0 && (
+          <span className="self-center text-xs text-muted-foreground ml-2">
+            총 {total}건
+          </span>
+        )}
       </div>
 
       {/* News list */}
       {loading ? (
         <div className="space-y-4">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 rounded-xl" />
+          ))}
         </div>
       ) : news.length > 0 ? (
         <div className="space-y-4">
           {news.map((item) => (
-            <Card key={item.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs">{item.category}</Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(item.published_at).toLocaleDateString("ko-KR")}
-                      </span>
+            <a
+              key={item.id}
+              href={item.source || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-xs">
+                          {item.category}
+                        </Badge>
+                        {item.source_name && (
+                          <span className="text-xs font-medium text-primary-400">
+                            {item.source_name}
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(item.published_at).toLocaleDateString(
+                            "ko-KR"
+                          )}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {item.summary}
+                      </p>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{item.summary}</p>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-6" />
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0 mt-6" />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </a>
           ))}
         </div>
       ) : (
@@ -96,13 +134,18 @@ export default function NewsPage() {
           <CardContent className="py-12 text-center">
             <Newspaper className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground">뉴스가 없습니다.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              매일 오전 7시, 오후 7시에 자동으로 최신 뉴스를 수집합니다.
+            </p>
           </CardContent>
         </Card>
       )}
 
       {/* AdSense placeholder */}
       <div className="bg-gray-100 border border-dashed border-gray-300 rounded-lg p-4 text-center">
-        <span className="text-xs text-muted-foreground">광고 영역 (Google AdSense)</span>
+        <span className="text-xs text-muted-foreground">
+          광고 영역 (Google AdSense)
+        </span>
       </div>
     </div>
   );

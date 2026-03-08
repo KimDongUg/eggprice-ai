@@ -20,6 +20,7 @@ from app.api import accuracy, news, analysis, data
 from app.models import price, prediction, alert, user  # noqa: F401
 from app.models import market_data as market_data_models  # noqa: F401
 from app.models import admin as admin_models  # noqa: F401
+from app.models import news as news_models  # noqa: F401
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -67,6 +68,19 @@ async def lifespan(app: FastAPI):
         db.close()
     except Exception:
         pass  # non-fatal: first request will populate cache
+
+    # Initial news crawl if tables are empty
+    try:
+        from app.services.news_crawler import crawl_all
+        from app.models.news import NewsArticle
+        db = SessionLocal()
+        count = db.query(NewsArticle).count()
+        if count == 0:
+            import asyncio
+            asyncio.get_event_loop().run_until_complete(crawl_all(db))
+        db.close()
+    except Exception:
+        pass  # non-fatal
 
     yield
     shutdown_scheduler()

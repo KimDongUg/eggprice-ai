@@ -85,6 +85,20 @@ def daily_prediction_job():
             db.close()
 
 
+def daily_news_crawl_job():
+    """Crawl news and analysis articles daily."""
+    from app.services.news_crawler import crawl_all
+    logger.info("Scheduler: Running daily news crawl")
+    db = SessionLocal()
+    try:
+        result = _run_async(crawl_all(db))
+        logger.info(f"Scheduler: News crawl result: {result}")
+    except Exception as e:
+        logger.error(f"Scheduler: News crawl failed: {e}")
+    finally:
+        db.close()
+
+
 def monthly_retrain_check_job():
     if _celery_available():
         from app.tasks.training_tasks import check_retrain_task
@@ -113,6 +127,18 @@ def start_scheduler():
         daily_prediction_job,
         CronTrigger(hour=22, minute=0),
         id="daily_prediction",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        daily_news_crawl_job,
+        CronTrigger(hour=7, minute=0),
+        id="daily_news_crawl",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        daily_news_crawl_job,
+        CronTrigger(hour=19, minute=0),
+        id="evening_news_crawl",
         replace_existing=True,
     )
     scheduler.add_job(
