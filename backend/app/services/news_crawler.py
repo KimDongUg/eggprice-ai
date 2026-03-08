@@ -152,7 +152,11 @@ async def crawl_news(db: Session) -> int:
                     published_at=pub_date,
                 )
                 db.add(article)
-                count += 1
+                try:
+                    db.flush()
+                    count += 1
+                except Exception:
+                    db.rollback()
         except Exception as e:
             logger.error(f"News crawl error for '{q['query']}': {e}")
             continue
@@ -192,7 +196,11 @@ async def crawl_analysis(db: Session) -> int:
                     published_at=pub_date,
                 )
                 db.add(article)
-                count += 1
+                try:
+                    db.flush()
+                    count += 1
+                except Exception:
+                    db.rollback()
         except Exception as e:
             logger.error(f"Analysis crawl error for '{q['query']}': {e}")
             continue
