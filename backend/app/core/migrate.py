@@ -34,6 +34,12 @@ _NULLABLE_COLUMNS = [
     ("users", "name"),
 ]
 
+# Columns that need their type altered (table, column, new_type)
+_ALTER_COLUMN_TYPE = [
+    ("news_articles", "source", "VARCHAR(2000)"),
+    ("analysis_articles", "source", "VARCHAR(2000)"),
+]
+
 
 _MISSING_TABLES_SQL = {
     "alerts": """
@@ -142,5 +148,16 @@ def run_migrations(engine: Engine) -> None:
                 logger.info("Migration: %s", stmt)
             except Exception:
                 pass  # already nullable
+
+        # Alter column types (e.g. widen VARCHAR)
+        for table, column, new_type in _ALTER_COLUMN_TYPE:
+            if not insp.has_table(table):
+                continue
+            stmt = f"ALTER TABLE {table} ALTER COLUMN {column} TYPE {new_type}"
+            try:
+                conn.execute(text(stmt))
+                logger.info("Migration: %s", stmt)
+            except Exception:
+                pass  # already correct type or table doesn't exist
 
         conn.commit()

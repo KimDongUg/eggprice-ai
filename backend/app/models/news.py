@@ -21,7 +21,7 @@ class NewsArticle(Base):
     summary: Mapped[str] = mapped_column(Text, nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=True)
     category: Mapped[str] = mapped_column(String(50), nullable=False)  # 가격, 산업, 사료
-    source: Mapped[str] = mapped_column(String(200), nullable=True)  # 출처 URL
+    source: Mapped[str] = mapped_column(String(2000), nullable=True)  # 출처 URL
     source_name: Mapped[str] = mapped_column(String(100), nullable=True)  # 출처 이름
     seo_slug: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
     published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
