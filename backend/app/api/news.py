@@ -58,9 +58,13 @@ def list_news(
 @router.post("/crawl")
 async def trigger_crawl(db: Session = Depends(get_db)):
     """Manually trigger news + analysis crawl."""
+    import traceback
     from app.services.news_crawler import crawl_all
-    result = await crawl_all(db)
-    return {"status": "ok", "crawled": result}
+    try:
+        result = await crawl_all(db)
+        return {"status": "ok", "crawled": result}
+    except Exception as e:
+        return {"status": "error", "detail": str(e), "traceback": traceback.format_exc()}
 
 
 @router.get("/{slug}")
