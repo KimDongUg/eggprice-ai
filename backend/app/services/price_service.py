@@ -47,39 +47,24 @@ async def fetch_and_store_prices(db: Session, target_date: date | None = None) -
 def get_current_prices(db: Session) -> list[dict]:
     """Get today's (or most recent) prices with daily change.
 
-    Optimized: 2 queries instead of 5 (one per grade).
+    Per-grade: picks the most recent row that has a non-null wholesale_price,
+    then computes change vs the previous such row.
     """
-    # 1) Find the 2 most recent distinct dates
-    recent_dates = (
-        db.query(EggPrice.date)
-        .distinct()
-        .order_by(desc(EggPrice.date))
-        .limit(2)
-        .all()
-    )
-    if not recent_dates:
-        return []
-
-    dates = [r[0] for r in recent_dates]
-
-    # 2) Single query for all grades on those dates
-    rows = (
-        db.query(EggPrice)
-        .filter(EggPrice.date.in_(dates))
-        .all()
-    )
-
-    # 3) Group by grade and compute changes
-    by_grade: dict[str, list] = {}
-    for row in rows:
-        by_grade.setdefault(row.grade, []).append(row)
-
     results = []
     for grade in GRADES:
-        entries = by_grade.get(grade, [])
+        # Get the 2 most recent rows with valid wholesale_price for this grade
+        entries = (
+            db.query(EggPrice)
+            .filter(
+                EggPrice.grade == grade,
+                EggPrice.wholesale_price.isnot(None),
+            )
+            .order_by(desc(EggPrice.date))
+            .limit(2)
+            .all()
+        )
         if not entries:
             continue
-        entries.sort(key=lambda x: x.date, reverse=True)
 
         current = entries[0]
         entry = {
@@ -92,12 +77,12 @@ def get_current_prices(db: Session) -> list[dict]:
             "daily_change_pct": None,
         }
 
-        if len(entries) > 1 and entries[1].retail_price and current.retail_price:
+        if len(entries) > 1 and current.wholesale_price and entries[1].wholesale_price:
             prev = entries[1]
-            change = current.retail_price - prev.retail_price
+            change = current.wholesale_price - prev.wholesale_price
             entry["daily_change"] = round(change, 1)
-            if prev.retail_price > 0:
-                entry["daily_change_pct"] = round(change / prev.retail_price * 100, 2)
+            if prev.wholesale_price > 0:
+                entry["daily_change_pct"] = round(change / prev.wholesale_price * 100, 2)
 
         results.append(entry)
     return results
