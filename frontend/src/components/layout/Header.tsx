@@ -11,10 +11,14 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "홈", authRequired: false, authOnly: false },
-  { href: "/dashboard", label: "대시보드", authRequired: false, authOnly: false },
-  { href: "/predictions", label: "상세 예측", authRequired: true, authOnly: false },
+  { href: "/price", label: "오늘 가격", authRequired: false, authOnly: false },
+  { href: "/prediction", label: "AI 예측", authRequired: false, authOnly: false },
+  { href: "/accuracy", label: "예측 정확도", authRequired: false, authOnly: false },
+  { href: "/news", label: "뉴스", authRequired: false, authOnly: false },
+  { href: "/analysis", label: "시장 분석", authRequired: false, authOnly: false },
+  { href: "/data", label: "가격 데이터", authRequired: false, authOnly: false },
   { href: "/compare", label: "가격 비교", authRequired: false, authOnly: false },
-  { href: "/alerts", label: "알림 설정", authRequired: true, authOnly: false },
+  { href: "/community", label: "커뮤니티", authRequired: false, authOnly: false },
   { href: "/mypage", label: "마이페이지", authRequired: true, authOnly: true },
 ];
 

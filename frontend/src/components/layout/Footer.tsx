@@ -41,18 +41,38 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* 링크 */}
+          {/* 서비스 링크 */}
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">서비스</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/dashboard" className="hover:text-white transition-colors">
-                  실시간 시세
+                <Link href="/price" className="hover:text-white transition-colors">
+                  오늘 계란 가격
                 </Link>
               </li>
               <li>
-                <Link href="/predictions" className="hover:text-white transition-colors">
-                  상세 예측
+                <Link href="/prediction" className="hover:text-white transition-colors">
+                  AI 가격 예측
+                </Link>
+              </li>
+              <li>
+                <Link href="/accuracy" className="hover:text-white transition-colors">
+                  예측 정확도
+                </Link>
+              </li>
+              <li>
+                <Link href="/news" className="hover:text-white transition-colors">
+                  뉴스
+                </Link>
+              </li>
+              <li>
+                <Link href="/analysis" className="hover:text-white transition-colors">
+                  시장 분석
+                </Link>
+              </li>
+              <li>
+                <Link href="/data" className="hover:text-white transition-colors">
+                  가격 데이터
                 </Link>
               </li>
               <li>
@@ -61,9 +81,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="/#pricing" className="hover:text-white transition-colors">
-                  요금 안내
-                </a>
+                <Link href="/community" className="hover:text-white transition-colors">
+                  커뮤니티
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-white transition-colors">
+                  구독 서비스
+                </Link>
               </li>
             </ul>
           </div>

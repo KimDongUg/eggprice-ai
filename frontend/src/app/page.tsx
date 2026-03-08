@@ -21,8 +21,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCurrentPrices, useForecast } from "@/lib/queries";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LandingPage() {
+  const { data: prices } = useCurrentPrices();
+  const { data: forecast } = useForecast("특란");
+
+  const teukranPrice = prices?.find((p) => p.grade === "특란");
+
   return (
     <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
       {/* ─── 창립 멤버 배너 ─── */}
@@ -30,12 +37,12 @@ export default function LandingPage() {
         <p className="text-sm font-semibold">
           <Target className="inline h-4 w-4 mr-1 -mt-0.5" />
           창립 멤버 20명 한정 &mdash; 월 49,000원 (6개월 고정가)
-          <a
-            href="#pricing"
+          <Link
+            href="/pricing"
             className="ml-2 underline underline-offset-2 hover:no-underline"
           >
             자세히 보기
-          </a>
+          </Link>
         </p>
       </div>
 
@@ -54,18 +61,33 @@ export default function LandingPage() {
                 <span className="text-2xl font-bold text-gray-900">슬기알</span>
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
-                출하 시점을 결정하는
+                AI 기반
                 <br />
-                <span className="text-primary-400">가격 방향성 브리핑</span>
+                <span className="text-primary-400">계란 가격 예측 플랫폼</span>
               </h1>
               <p className="text-lg text-gray-600 mb-4 leading-relaxed">
-                단순 수치가 아닌{" "}
-                <strong className="text-gray-900">실전 판단 가이드</strong>를 제공합니다.
+                KAMIS 데이터 + AI 분석으로{" "}
+                <strong className="text-gray-900">정확한 가격 예측</strong>을 제공합니다.
                 <br />
-                15년 업계 실무 경험 + AI 분석으로
-                <br />
-                <strong className="text-gray-900">&ldquo;지금 출하할까, 기다릴까?&rdquo;</strong>에 답합니다.
+                15년 업계 실무 경험 기반의 실전 판단 가이드.
               </p>
+
+              {/* 오늘 특란 가격 표시 */}
+              {teukranPrice && (
+                <div className="bg-white border rounded-xl p-4 mb-6 inline-block shadow-sm">
+                  <span className="text-sm text-muted-foreground">오늘 특란 30구 도매가</span>
+                  <p className="text-2xl font-bold font-mono-num text-gray-900">
+                    {teukranPrice.wholesale_price?.toLocaleString() ?? "-"}
+                    <span className="text-base font-normal text-muted-foreground ml-1">원</span>
+                    {teukranPrice.daily_change !== null && teukranPrice.daily_change !== undefined && (
+                      <span className={`text-sm ml-2 ${teukranPrice.daily_change > 0 ? "text-danger-500" : teukranPrice.daily_change < 0 ? "text-success-500" : "text-muted-foreground"}`}>
+                        {teukranPrice.daily_change > 0 ? "+" : ""}{teukranPrice.daily_change.toLocaleString()}원
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
               <p className="text-sm text-muted-foreground mb-8">
                 양계 농가 &middot; 계란 도매상 &middot; 유통업체 &middot; 식자재 납품업체를 위한 서비스
               </p>
@@ -75,10 +97,10 @@ export default function LandingPage() {
                   className="bg-primary-400 hover:bg-primary-500 text-white text-base px-8 py-6"
                   asChild
                 >
-                  <a href="tel:010-0000-0000">
-                    <Phone className="h-5 w-5 mr-2" />
-                    무료 상담 신청
-                  </a>
+                  <Link href="/prediction">
+                    <BarChart3 className="h-5 w-5 mr-2" />
+                    AI 예측 전체 보기
+                  </Link>
                 </Button>
                 <Button
                   size="lg"
@@ -86,74 +108,82 @@ export default function LandingPage() {
                   className="text-base px-8 py-6 border-gray-300"
                   asChild
                 >
-                  <Link href="/dashboard">
-                    <BarChart3 className="h-5 w-5 mr-2" />
-                    실시간 시세 보기
+                  <Link href="/price">
+                    <TrendingUp className="h-5 w-5 mr-2" />
+                    오늘 시세 보기
                   </Link>
                 </Button>
               </div>
             </div>
 
-            {/* Hero 우측: 이번 주 브리핑 예시 */}
+            {/* Hero 우측: 7일 예측 요약 카드 */}
             <div className="relative">
               <Card className="border-2 border-primary-100 shadow-xl">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                     <span className="text-xs font-medium text-muted-foreground">
-                      LIVE 브리핑 예시
+                      AI 7일 예측 요약
                     </span>
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-4">
-                    이번 주 전망 요약
+                    이번 주 가격 전망
                   </h3>
-                  <div className="space-y-3 mb-5">
-                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <span className="font-medium text-gray-900">특란 (30개)</span>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-danger-500" />
-                        <span className="text-sm font-semibold text-danger-500">
-                          상승 가능성 68%
-                        </span>
+                  {forecast ? (
+                    <>
+                      <div className="space-y-3 mb-5">
+                        <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                          <span className="font-medium text-gray-900">특란 (30개)</span>
+                          <div className="flex items-center gap-2">
+                            {forecast.trend === "상승" && <TrendingUp className="h-4 w-4 text-danger-500" />}
+                            {forecast.trend === "하락" && <TrendingDown className="h-4 w-4 text-blue-600" />}
+                            <span className={`text-sm font-semibold ${forecast.trend === "상승" ? "text-danger-500" : forecast.trend === "하락" ? "text-blue-600" : "text-orange-600"}`}>
+                              {forecast.trend} 전망
+                            </span>
+                          </div>
+                        </div>
+                        {forecast.predictions.length >= 7 && (
+                          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <span className="font-medium text-gray-900">7일 후 예측가</span>
+                            <span className="text-sm font-semibold text-gray-900 font-mono-num">
+                              {forecast.predictions[6].price.toLocaleString()}원
+                              <span className={`ml-1 text-xs ${forecast.predictions[6].change_percent > 0 ? "text-danger-500" : forecast.predictions[6].change_percent < 0 ? "text-success-500" : "text-muted-foreground"}`}>
+                                ({forecast.predictions[6].change_percent > 0 ? "+" : ""}{forecast.predictions[6].change_percent}%)
+                              </span>
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                          <span className="font-medium text-gray-900">현재가</span>
+                          <span className="text-sm font-semibold text-gray-900 font-mono-num">
+                            {forecast.current_price?.toLocaleString() ?? "-"}원
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                      <span className="font-medium text-gray-900">대란 (30개)</span>
-                      <div className="flex items-center gap-2">
-                        <TrendingDown className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-semibold text-blue-600">
-                          보합 예상
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                      <span className="font-medium text-gray-900">변동성 지수</span>
-                      <span className="text-sm font-semibold text-orange-600">
-                        중간
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
-                    <h4 className="text-sm font-bold text-primary-700 mb-2 flex items-center gap-1">
-                      <Zap className="h-4 w-4" />
-                      권장 전략
-                    </h4>
-                    <ul className="text-sm text-gray-700 space-y-1">
-                      <li className="flex items-start gap-2">
-                        <ArrowRight className="h-4 w-4 text-primary-400 mt-0.5 shrink-0" />
-                        출하 2~4일 지연 권장
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <ArrowRight className="h-4 w-4 text-primary-400 mt-0.5 shrink-0" />
-                        대량 계약은 분할 출하 권장
-                      </li>
-                    </ul>
-                  </div>
+                      <Link
+                        href="/prediction"
+                        className="block bg-primary-50 border border-primary-200 rounded-lg p-4 hover:bg-primary-100 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-primary-700">
+                            AI 예측 전체 보기
+                          </span>
+                          <ArrowRight className="h-4 w-4 text-primary-400" />
+                        </div>
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="space-y-3">
+                      <Skeleton className="h-12 rounded-lg" />
+                      <Skeleton className="h-12 rounded-lg" />
+                      <Skeleton className="h-12 rounded-lg" />
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               <div className="absolute -top-3 -right-3 bg-secondary-400 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                매주 월요일 발송
+                매일 업데이트
               </div>
             </div>
           </div>
