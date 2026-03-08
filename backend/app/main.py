@@ -76,8 +76,7 @@ async def lifespan(app: FastAPI):
         db = SessionLocal()
         count = db.query(NewsArticle).count()
         if count == 0:
-            import asyncio
-            asyncio.get_event_loop().run_until_complete(crawl_all(db))
+            await crawl_all(db)
         db.close()
     except Exception:
         pass  # non-fatal
