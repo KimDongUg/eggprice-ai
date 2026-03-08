@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
-  description: "EggPrice AI 개인정보처리방침",
+  description: "계란가격예측 AI 개인정보처리방침",
 };
 
 export default function PrivacyPage() {
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <p className="text-sm text-muted-foreground">시행일: 2026년 1월 1일</p>
 
       <p>
-        EggPrice AI(이하 &quot;서비스&quot;)는 「개인정보 보호법」에 따라
+        계란가격예측 AI(이하 &quot;서비스&quot;)는 「개인정보 보호법」에 따라
         이용자의 개인정보를 보호하고, 이와 관련한 고충을 신속하고 원활하게 처리할
         수 있도록 하기 위하여 다음과 같이 개인정보처리방침을 수립·공개합니다.
       </p>

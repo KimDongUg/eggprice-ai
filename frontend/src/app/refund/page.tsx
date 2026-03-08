@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "환불정책",
-  description: "EggPrice AI 프리미엄 구독 환불정책",
+  description: "계란가격예측 AI 프리미엄 구독 환불정책",
 };
 
 export default function RefundPage() {

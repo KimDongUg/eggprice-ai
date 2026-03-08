@@ -44,13 +44,13 @@ export default function Header() {
             <Image
               src="/logo.png"
               alt="슬기알 로고"
-              width={40}
-              height={40}
+              width={48}
+              height={48}
               className="shrink-0"
             />
             <span className="text-lg font-bold text-gray-900">
               슬기알
-              <span className="text-xs font-medium text-muted-foreground ml-1">EggPrice AI</span>
+              <span className="text-xs font-medium text-muted-foreground ml-1">계란가격예측 AI</span>
             </span>
           </Link>
 

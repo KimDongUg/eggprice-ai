@@ -55,7 +55,7 @@ export default function RegisterPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">회원가입</CardTitle>
           <CardDescription>
-            EggPrice AI 서비스에 가입하세요
+            계란가격예측 AI 서비스에 가입하세요
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

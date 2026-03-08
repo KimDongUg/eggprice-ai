@@ -135,7 +135,7 @@ function LoginForm() {
 
           {/* Title */}
           <h1 className="text-center text-2xl font-bold bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">
-            EggPrice AI
+            계란가격예측 AI
           </h1>
 
           {/* Welcome */}

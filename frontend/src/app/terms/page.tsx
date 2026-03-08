@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "이용약관",
-  description: "EggPrice AI 서비스 이용약관",
+  description: "계란가격예측 AI 서비스 이용약관",
 };
 
 export default function TermsPage() {
@@ -13,7 +13,7 @@ export default function TermsPage() {
 
       <h2>제1조 (목적)</h2>
       <p>
-        본 약관은 EggPrice AI(이하 &quot;서비스&quot;)가 제공하는 계란 가격 예측
+        본 약관은 계란가격예측 AI(이하 &quot;서비스&quot;)가 제공하는 계란 가격 예측
         서비스의 이용 조건 및 절차, 이용자와 서비스 간의 권리·의무 및 책임
         사항을 규정함을 목적으로 합니다.
       </p>
@@ -21,7 +21,7 @@ export default function TermsPage() {
       <h2>제2조 (정의)</h2>
       <ul>
         <li>
-          <strong>&quot;서비스&quot;</strong>란 EggPrice AI가 제공하는 계란 가격
+          <strong>&quot;서비스&quot;</strong>란 계란가격예측 AI가 제공하는 계란 가격
           예측, 시세 조회, 가격 알림 등 관련 서비스를 의미합니다.
         </li>
         <li>

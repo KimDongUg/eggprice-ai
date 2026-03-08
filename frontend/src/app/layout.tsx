@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "슬기알 - 출하 시점을 결정하는 가격 방향성 브리핑",
-    template: "%s | 슬기알(EggPrice AI)",
+    template: "%s | 슬기알(계란가격예측 AI)",
   },
   description:
     "15년 업계 실무 경험 + AI 분석 기반 계란 가격 방향성 브리핑 서비스. 출하 권장 시점, 주간 리포트, 급등락 알림을 제공합니다. 양계 농가·도매상·유통업체를 위한 의사결정 도구.",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "양계 농가",
     "계란 유통",
     "슬기알",
-    "EggPrice AI",
+    "계란가격예측 AI",
     "KAMIS",
     "농산물 유통정보",
   ],
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,
-    siteName: "슬기알(EggPrice AI)",
+    siteName: "슬기알(계란가격예측 AI)",
     title: "슬기알 - 출하 시점을 결정하는 가격 방향성 브리핑",
     description:
       "15년 업계 실무 경험 + AI 분석 기반 계란 가격 방향성 브리핑 서비스. 출하 권장 시점, 주간 리포트, 급등락 알림을 제공합니다.",

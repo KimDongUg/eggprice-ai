@@ -19,7 +19,7 @@ export default function Footer() {
               <span className="text-lg font-bold text-white">
                 슬기알
                 <span className="text-xs font-medium text-gray-500 ml-1">
-                  EggPrice AI
+                  계란가격예측 AI
                 </span>
               </span>
             </div>
@@ -127,7 +127,7 @@ export default function Footer() {
               환불정책
             </Link>
           </div>
-          <span>&copy; 2026 슬기알(EggPrice AI). All rights reserved.</span>
+          <span>&copy; 2026 슬기알(계란가격예측 AI). All rights reserved.</span>
         </div>
       </div>
     </footer>
