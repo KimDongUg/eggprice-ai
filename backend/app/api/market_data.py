@@ -61,7 +61,7 @@ async def market_snapshot(
         )
         .all()
     )
-    prices = {row.grade: row.retail_price for row in price_rows}
+    prices = {row.grade: row.wholesale_price for row in price_rows}
     
     # ✅ 가격 데이터가 없으면 기본값 사용
     if not prices:
@@ -214,13 +214,13 @@ async def analytics_factors(
     # 1. Price trend
     recent_prices = (
         db.query(EggPrice)
-        .filter(EggPrice.grade == grade, EggPrice.date >= week_ago, EggPrice.retail_price.isnot(None))
+        .filter(EggPrice.grade == grade, EggPrice.date >= week_ago, EggPrice.wholesale_price.isnot(None))
         .order_by(EggPrice.date)
         .all()
     )
     if len(recent_prices) >= 2:
-        first_p = recent_prices[0].retail_price
-        last_p = recent_prices[-1].retail_price
+        first_p = recent_prices[0].wholesale_price
+        last_p = recent_prices[-1].wholesale_price
         change = last_p - first_p
         pct = (change / first_p * 100) if first_p else 0
         direction = "상승" if change > 0 else "하락" if change < 0 else "중립"

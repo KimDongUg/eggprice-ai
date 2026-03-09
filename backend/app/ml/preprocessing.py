@@ -29,8 +29,8 @@ REGION_NAME_MAP = {
 
 # 15 input features
 FEATURE_COLUMNS = [
-    "price",                # 1. 소비자가
-    "wholesale_price",      # 2. 산지가
+    "price",                # 1. 도매가 (KAMIS 기준)
+    "retail_price_feat",    # 2. 소비자가 (보조 피처)
     "volume",               # 3. 거래량
     "corn_price",           # 4. 사료(옥수수) 가격
     "exchange_rate",        # 5. 환율 (USD/KRW)
@@ -50,21 +50,21 @@ FEATURE_COLUMNS = [
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
     """Build all 15 features from a merged DataFrame.
 
-    Expected input columns: date, retail_price.
+    Expected input columns: date, wholesale_price.
     Optional columns (filled with defaults if missing):
-        wholesale_price, volume, corn_price, exchange_rate,
+        retail_price, volume, corn_price, exchange_rate,
         avian_flu, temperature.
     """
     df = df.copy()
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
 
-    # Core price
-    df["price"] = df["retail_price"].astype(float)
+    # Core price — 도매가 기준
+    df["price"] = df["wholesale_price"].astype(float)
 
     # Fill optional columns with forward-fill then default
     optional_defaults = {
-        "wholesale_price": df["price"],  # fallback to retail
+        "retail_price": df["price"],  # fallback to wholesale
         "volume": 0.0,
         "corn_price": 0.0,
         "exchange_rate": 0.0,
@@ -83,7 +83,13 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
             )
 
     # Ensure numeric
-    for col in ["wholesale_price", "volume", "corn_price", "exchange_rate", "avian_flu", "temperature"]:
+    # Rename retail_price → retail_price_feat for feature column
+    if "retail_price" in df.columns:
+        df["retail_price_feat"] = pd.to_numeric(df["retail_price"], errors="coerce").fillna(0.0)
+    else:
+        df["retail_price_feat"] = df["price"]
+
+    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
 
     # Cyclical day-of-week encoding
@@ -132,7 +138,7 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
         .filter(
             EggPrice.grade == grade,
             EggPrice.region == region,
-            EggPrice.retail_price.isnot(None),
+            EggPrice.wholesale_price.isnot(None),
         )
         .order_by(EggPrice.date)
         .all()
@@ -145,7 +151,7 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
             .filter(
                 EggPrice.grade == grade,
                 EggPrice.region == "seoul",
-                EggPrice.retail_price.isnot(None),
+                EggPrice.wholesale_price.isnot(None),
             )
             .order_by(EggPrice.date)
             .all()

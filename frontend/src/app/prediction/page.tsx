@@ -69,6 +69,7 @@ export default function PredictionPage() {
         <h1 className="text-2xl font-bold mb-1">AI 가격 예측</h1>
         <p className="text-muted-foreground text-sm">
           머신러닝 기반 계란 가격 단기·중기 예측 정보
+          <Badge variant="outline" className="ml-2 text-[10px] align-middle">KAMIS 도매가 기준</Badge>
         </p>
       </div>
 
@@ -128,7 +129,7 @@ export default function PredictionPage() {
                 </div>
                 {forecast.current_price && (
                   <div>
-                    <span className="text-xs text-muted-foreground">현재가</span>
+                    <span className="text-xs text-muted-foreground">현재 도매가</span>
                     <p className="font-mono-num font-bold">{forecast.current_price.toLocaleString()}원</p>
                   </div>
                 )}

@@ -118,7 +118,7 @@ def predict_prices(
         .filter(
             EggPrice.grade == grade,
             EggPrice.region == region,
-            EggPrice.retail_price.isnot(None),
+            EggPrice.wholesale_price.isnot(None),
         )
         .order_by(EggPrice.date.desc())
         .first()
@@ -130,7 +130,7 @@ def predict_prices(
             .filter(
                 EggPrice.grade == grade,
                 EggPrice.region == "seoul",
-                EggPrice.retail_price.isnot(None),
+                EggPrice.wholesale_price.isnot(None),
             )
             .order_by(EggPrice.date.desc())
             .first()

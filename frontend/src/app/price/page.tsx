@@ -51,6 +51,7 @@ export default function PricePage() {
         <h1 className="text-2xl font-bold mb-1">오늘 계란 가격</h1>
         <p className="text-muted-foreground text-sm">
           KAMIS (한국농수산식품유통공사) 데이터 기반 실시간 계란 가격 정보
+          <span className="inline-block ml-2 px-1.5 py-0.5 text-[10px] border rounded text-muted-foreground align-middle">도매가 기준</span>
         </p>
       </div>
 

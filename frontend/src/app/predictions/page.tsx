@@ -45,6 +45,7 @@ export default function PredictionsPage() {
         <h1 className="text-2xl font-bold mb-1">상세 예측</h1>
         <p className="text-muted-foreground text-sm">
           등급별 AI 가격 예측, 신뢰구간, 변동 요인을 확인하세요.
+          <Badge variant="outline" className="ml-2 text-[10px] align-middle">KAMIS 도매가 기준</Badge>
         </p>
       </div>
 
@@ -106,7 +107,7 @@ export default function PredictionsPage() {
                     </div>
                     {forecast.current_price && (
                       <div>
-                        <span className="text-xs text-muted-foreground">현재가</span>
+                        <span className="text-xs text-muted-foreground">현재 도매가</span>
                         <p className="font-mono-num font-bold">
                           {forecast.current_price.toLocaleString()}원
                         </p>

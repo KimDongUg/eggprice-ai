@@ -39,7 +39,7 @@ export default function ForecastSummaryCard({ data }: Props) {
         <div className="flex flex-wrap items-center gap-6">
           {data.current_price && (
             <div>
-              <p className="text-xs text-muted-foreground">현재 가격</p>
+              <p className="text-xs text-muted-foreground">현재 도매가</p>
               <p className="text-lg font-bold">
                 {data.current_price.toLocaleString()}원
               </p>

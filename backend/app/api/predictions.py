@@ -42,7 +42,7 @@ async def forecast(
         .filter(
             EggPrice.grade == grade,
             EggPrice.region == region,
-            EggPrice.retail_price.isnot(None),
+            EggPrice.wholesale_price.isnot(None),
         )
         .order_by(desc(EggPrice.date))
         .first()
@@ -54,12 +54,12 @@ async def forecast(
             .filter(
                 EggPrice.grade == grade,
                 EggPrice.region == "seoul",
-                EggPrice.retail_price.isnot(None),
+                EggPrice.wholesale_price.isnot(None),
             )
             .order_by(desc(EggPrice.date))
             .first()
         )
-    current_price = latest.retail_price if latest else None
+    current_price = latest.wholesale_price if latest else None
 
     # Build forecast items
     items = []

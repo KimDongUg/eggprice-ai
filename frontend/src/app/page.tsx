@@ -154,7 +154,7 @@ export default function LandingPage() {
                           </div>
                         )}
                         <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                          <span className="font-medium text-gray-900">현재가</span>
+                          <span className="font-medium text-gray-900">현재 도매가</span>
                           <span className="text-sm font-semibold text-gray-900 font-mono-num">
                             {forecast.current_price?.toLocaleString() ?? "-"}원
                           </span>
