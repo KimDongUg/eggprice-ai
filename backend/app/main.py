@@ -14,13 +14,14 @@ from app.core.migrate import run_migrations
 from app.core.rate_limit import limiter
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.api import prices, predictions, alerts, market_data, auth, email_report, oauth, admin
-from app.api import accuracy, news, analysis, data
+from app.api import accuracy, news, analysis, data, community
 
 # Import all models so Base.metadata knows about them
 from app.models import price, prediction, alert, user  # noqa: F401
 from app.models import market_data as market_data_models  # noqa: F401
 from app.models import admin as admin_models  # noqa: F401
 from app.models import news as news_models  # noqa: F401
+from app.models import community as community_models  # noqa: F401
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -133,6 +134,7 @@ app.include_router(accuracy.router, prefix="/api/v1")
 app.include_router(news.router, prefix="/api/v1")
 app.include_router(analysis.router, prefix="/api/v1")
 app.include_router(data.router, prefix="/api/v1")
+app.include_router(community.router, prefix="/api/v1")
 
 
 @app.get("/")

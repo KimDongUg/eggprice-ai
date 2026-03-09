@@ -13,15 +13,33 @@ import Link from "next/link";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart,
 } from "recharts";
+import { MapPin } from "lucide-react";
 
 const GRADE_OPTIONS = ["특란", "대란", "중란", "소란"];
 
+const REGIONS = [
+  { code: "seoul", name: "서울" },
+  { code: "busan", name: "부산" },
+  { code: "daegu", name: "대구" },
+  { code: "gwangju", name: "광주" },
+  { code: "daejeon", name: "대전" },
+  { code: "incheon", name: "인천" },
+  { code: "gyeonggi", name: "경기" },
+  { code: "chungcheong", name: "충청" },
+  { code: "jeolla", name: "전라" },
+  { code: "gyeongsang", name: "경상" },
+  { code: "gangwon", name: "강원" },
+  { code: "jeju", name: "제주" },
+];
+
 export default function PredictionPage() {
   const [selectedGrade, setSelectedGrade] = useState("특란");
+  const [selectedRegion, setSelectedRegion] = useState("seoul");
   const { data: forecast, isLoading } = useForecast(selectedGrade);
 
   const predictions7d = forecast?.predictions?.slice(0, 7) ?? [];
   const predictions30d = forecast?.predictions?.slice(0, 30) ?? [];
+  const regionName = REGIONS.find((r) => r.code === selectedRegion)?.name ?? "서울";
 
   return (
     <div className="space-y-6">
@@ -30,6 +48,26 @@ export default function PredictionPage() {
         <p className="text-muted-foreground text-sm">
           머신러닝 기반 계란 가격 단기·중기 예측 정보
         </p>
+      </div>
+
+      {/* Region selector */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <MapPin className="h-4 w-4 text-primary-400 shrink-0" />
+        <span className="text-sm font-medium">지역:</span>
+        {REGIONS.map((region) => (
+          <button
+            key={region.code}
+            onClick={() => setSelectedRegion(region.code)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+              selectedRegion === region.code
+                ? "bg-primary-400 text-white"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+            )}
+          >
+            {region.name}
+          </button>
+        ))}
       </div>
 
       {/* Grade tabs */}
@@ -99,6 +137,7 @@ export default function PredictionPage() {
               <CardTitle className="text-lg flex items-center gap-2">
                 7일 예측
                 <Badge variant="outline" className="text-xs">FREE</Badge>
+                <Badge variant="outline" className="text-xs gap-1"><MapPin className="h-3 w-3" />{regionName}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>

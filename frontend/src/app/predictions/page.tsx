@@ -9,13 +9,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, MapPin } from "lucide-react";
 import { usePredictions, usePriceHistory, useForecast } from "@/lib/queries";
 import { GRADES } from "@/types";
 import { cn } from "@/lib/utils";
 
+const REGIONS = [
+  { code: "seoul", name: "서울" },
+  { code: "busan", name: "부산" },
+  { code: "daegu", name: "대구" },
+  { code: "gwangju", name: "광주" },
+  { code: "daejeon", name: "대전" },
+  { code: "incheon", name: "인천" },
+  { code: "gyeonggi", name: "경기" },
+  { code: "chungcheong", name: "충청" },
+  { code: "jeolla", name: "전라" },
+  { code: "gyeongsang", name: "경상" },
+  { code: "gangwon", name: "강원" },
+  { code: "jeju", name: "제주" },
+];
+
 export default function PredictionsPage() {
   const [selectedGrade, setSelectedGrade] = useState<string>("특란");
+  const [selectedRegion, setSelectedRegion] = useState("seoul");
 
   const { data: predData, isLoading: predLoading } = usePredictions(selectedGrade);
   const { data: history, isLoading: histLoading } = usePriceHistory(selectedGrade, 180);
@@ -30,6 +46,26 @@ export default function PredictionsPage() {
         <p className="text-muted-foreground text-sm">
           등급별 AI 가격 예측, 신뢰구간, 변동 요인을 확인하세요.
         </p>
+      </div>
+
+      {/* 지역 선택 */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <MapPin className="h-4 w-4 text-primary-400 shrink-0" />
+        <span className="text-sm font-medium">지역:</span>
+        {REGIONS.map((region) => (
+          <button
+            key={region.code}
+            onClick={() => setSelectedRegion(region.code)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+              selectedRegion === region.code
+                ? "bg-primary-400 text-white"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+            )}
+          >
+            {region.name}
+          </button>
+        ))}
       </div>
 
       <Tabs value={selectedGrade} onValueChange={setSelectedGrade}>

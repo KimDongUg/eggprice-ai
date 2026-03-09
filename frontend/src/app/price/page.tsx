@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { MapPin } from "lucide-react";
 
 const PERIODS = [
   { label: "30일", days: 30 },
@@ -19,13 +20,30 @@ const PERIODS = [
   { label: "180일", days: 180 },
 ];
 
+const REGIONS = [
+  { code: "seoul", name: "서울" },
+  { code: "busan", name: "부산" },
+  { code: "daegu", name: "대구" },
+  { code: "gwangju", name: "광주" },
+  { code: "daejeon", name: "대전" },
+  { code: "incheon", name: "인천" },
+  { code: "gyeonggi", name: "경기" },
+  { code: "chungcheong", name: "충청" },
+  { code: "jeolla", name: "전라" },
+  { code: "gyeongsang", name: "경상" },
+  { code: "gangwon", name: "강원" },
+  { code: "jeju", name: "제주" },
+];
+
 export default function PricePage() {
   const [selectedGrade, setSelectedGrade] = useState("특란");
+  const [selectedRegion, setSelectedRegion] = useState("seoul");
   const [periodDays, setPeriodDays] = useState(30);
   const { data: prices, isLoading: pricesLoading } = useCurrentPrices();
   const { data: history, isLoading: historyLoading } = usePriceHistory(selectedGrade, periodDays);
 
   const selectedPrice = prices?.find((p) => p.grade === selectedGrade);
+  const regionName = REGIONS.find((r) => r.code === selectedRegion)?.name ?? "서울";
 
   return (
     <div className="space-y-6">
@@ -34,6 +52,26 @@ export default function PricePage() {
         <p className="text-muted-foreground text-sm">
           KAMIS (한국농수산식품유통공사) 데이터 기반 실시간 계란 가격 정보
         </p>
+      </div>
+
+      {/* 지역 선택 */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <MapPin className="h-4 w-4 text-primary-400 shrink-0" />
+        <span className="text-sm font-medium">지역:</span>
+        {REGIONS.map((region) => (
+          <button
+            key={region.code}
+            onClick={() => setSelectedRegion(region.code)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+              selectedRegion === region.code
+                ? "bg-primary-400 text-white"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+            )}
+          >
+            {region.name}
+          </button>
+        ))}
       </div>
 
       {/* 등급별 가격 카드 */}
@@ -87,7 +125,10 @@ export default function PricePage() {
       {selectedPrice && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">{selectedGrade} 상세 가격</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              {selectedGrade} 상세 가격
+              <Badge variant="outline" className="text-xs gap-1"><MapPin className="h-3 w-3" />{regionName}</Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -124,7 +165,10 @@ export default function PricePage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardTitle className="text-lg">{selectedGrade} 가격 추이</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+                {selectedGrade} 가격 추이
+                <Badge variant="outline" className="text-xs gap-1"><MapPin className="h-3 w-3" />{regionName}</Badge>
+              </CardTitle>
             <div className="flex gap-2">
               {PERIODS.map((p) => (
                 <button

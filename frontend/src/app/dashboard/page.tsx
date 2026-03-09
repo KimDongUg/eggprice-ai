@@ -8,9 +8,10 @@ import MarketFactorsCard from "@/components/dashboard/MarketFactorsCard";
 import QuickAlertSetup from "@/components/dashboard/QuickAlertSetup";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import { useCurrentPrices, useForecast, useMarketSnapshot } from "@/lib/queries";
 import type { PriceWithChange } from "@/types";
+import { Badge } from "@/components/ui/badge";
 
 const PRICES_CACHE_KEY = "egg-prices-cache";
 
@@ -77,6 +78,7 @@ export default function DashboardPage() {
           <span className="text-sm font-normal text-muted-foreground">
             (30개)
           </span>
+          <Badge variant="outline" className="text-xs gap-1 font-normal"><MapPin className="h-3 w-3" />서울</Badge>
           <span className="text-sm">
             {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })}
           </span>

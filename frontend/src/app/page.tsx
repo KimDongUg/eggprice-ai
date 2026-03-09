@@ -75,7 +75,7 @@ export default function LandingPage() {
               {/* 오늘 특란 가격 표시 */}
               {teukranPrice && (
                 <div className="bg-white border rounded-xl p-4 mb-6 inline-block shadow-sm">
-                  <span className="text-sm text-muted-foreground">오늘 특란 30구 도매가</span>
+                  <span className="text-sm text-muted-foreground">오늘 특란 30구 도매가 (서울)</span>
                   <p className="text-2xl font-bold font-mono-num text-gray-900">
                     {teukranPrice.wholesale_price?.toLocaleString() ?? "-"}
                     <span className="text-base font-normal text-muted-foreground ml-1">원</span>
@@ -203,7 +203,7 @@ export default function LandingPage() {
             {[
               {
                 icon: "😰",
-                title: "출하 시점 판단이 어렵다",
+                title: "구매 시점 판단이 어렵다",
                 desc: "지금 팔까, 며칠 더 기다릴까? 매번 고민됩니다.",
               },
               {
@@ -255,8 +255,8 @@ export default function LandingPage() {
               },
               {
                 icon: <Target className="h-6 w-6 text-primary-400" />,
-                title: "출하 권장 시점",
-                desc: '단순 수치가 아닌 "출하 3~4일 지연 권장" 같은 실전 판단 가이드를 제시합니다.',
+                title: "구매 권장 시점",
+                desc: '단순 수치가 아닌 "구매 3~4일 지연 권장" 같은 실전 판단 가이드를 제시합니다.',
               },
               {
                 icon: <FileText className="h-6 w-6 text-primary-400" />,
@@ -367,7 +367,7 @@ export default function LandingPage() {
               {
                 icon: <Phone className="h-8 w-8" />,
                 title: "월 1회 전화 브리핑",
-                desc: "담당자가 직접 전화로 이달의 시장 상황과 출하 전략을 안내합니다. (Pro)",
+                desc: "담당자가 직접 전화로 이달의 시장 상황과 구매 전략을 안내합니다. (Pro)",
               },
             ].map((item) => (
               <div
@@ -430,7 +430,7 @@ export default function LandingPage() {
                   className="w-full bg-secondary-500 hover:bg-secondary-600 text-white"
                   asChild
                 >
-                  <a href="tel:010-0000-0000">
+                  <a href="tel:010-3526-4754">
                     지금 신청하기
                   </a>
                 </Button>
@@ -456,7 +456,7 @@ export default function LandingPage() {
                     "30일 가격 예측",
                     "방향성 요약 (상승/하락 확률)",
                     "변동성 지수",
-                    "출하 권장 시점 제안",
+                    "구매 권장 시점 제안",
                     "주간 브리핑 리포트 (PDF/이메일)",
                     "리스크 경고 메시지",
                   ].map((f) => (
@@ -467,7 +467,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Button className="w-full" variant="outline" asChild>
-                  <a href="tel:010-0000-0000">
+                  <a href="tel:010-3526-4754">
                     상담 후 가입
                   </a>
                 </Button>
@@ -507,7 +507,7 @@ export default function LandingPage() {
                   className="w-full bg-primary-400 hover:bg-primary-500 text-white"
                   asChild
                 >
-                  <a href="tel:010-0000-0000">
+                  <a href="tel:010-3526-4754">
                     상담 후 가입
                   </a>
                 </Button>
@@ -524,7 +524,7 @@ export default function LandingPage() {
             지금 바로 상담 받으세요
           </h2>
           <p className="text-primary-100 mb-8 leading-relaxed">
-            감으로 판단하던 출하 시점, 이제 데이터와 경험이 함께합니다.
+            감으로 판단하던 구매 시점, 이제 데이터와 경험이 함께합니다.
             <br />
             창립 멤버 마감 전에 상담 신청하세요.
           </p>
@@ -534,7 +534,7 @@ export default function LandingPage() {
               className="bg-white text-primary-500 hover:bg-gray-100 text-base px-8 py-6"
               asChild
             >
-              <a href="tel:010-0000-0000">
+              <a href="tel:010-3526-4754">
                 <Phone className="h-5 w-5 mr-2" />
                 전화 상담 신청
               </a>
@@ -545,7 +545,7 @@ export default function LandingPage() {
               className="border-white text-white hover:bg-white/10 text-base px-8 py-6"
               asChild
             >
-              <a href="mailto:contact@eggprice.kr">
+              <a href="mailto:kduaro124@naver.com">
                 <Mail className="h-5 w-5 mr-2" />
                 이메일 문의
               </a>

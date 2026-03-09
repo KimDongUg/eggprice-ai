@@ -5,15 +5,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, Lock, Database, Calendar } from "lucide-react";
+import { Download, Lock, Database, Calendar, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
 import Link from "next/link";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { Badge } from "@/components/ui/badge";
 
 const GRADE_OPTIONS = ["특란", "대란", "중란", "소란"];
+
+const REGIONS = [
+  { code: "seoul", name: "서울" },
+  { code: "busan", name: "부산" },
+  { code: "daegu", name: "대구" },
+  { code: "gwangju", name: "광주" },
+  { code: "daejeon", name: "대전" },
+  { code: "incheon", name: "인천" },
+  { code: "gyeonggi", name: "경기" },
+  { code: "chungcheong", name: "충청" },
+  { code: "jeolla", name: "전라" },
+  { code: "gyeongsang", name: "경상" },
+  { code: "gangwon", name: "강원" },
+  { code: "jeju", name: "제주" },
+];
 
 interface YearlyItem {
   year: number;
@@ -34,6 +50,7 @@ interface MonthlyItem {
 
 export default function DataPage() {
   const [grade, setGrade] = useState("특란");
+  const [selectedRegion, setSelectedRegion] = useState("seoul");
   const [view, setView] = useState<"yearly" | "monthly">("yearly");
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [yearlyData, setYearlyData] = useState<YearlyItem[]>([]);
@@ -64,6 +81,26 @@ export default function DataPage() {
         <p className="text-muted-foreground text-sm">
           연도별 · 월별 · 등급별 계란 가격 히스토리 데이터
         </p>
+      </div>
+
+      {/* 지역 선택 */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <MapPin className="h-4 w-4 text-primary-400 shrink-0" />
+        <span className="text-sm font-medium">지역:</span>
+        {REGIONS.map((region) => (
+          <button
+            key={region.code}
+            onClick={() => setSelectedRegion(region.code)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+              selectedRegion === region.code
+                ? "bg-primary-400 text-white"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+            )}
+          >
+            {region.name}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -106,6 +143,7 @@ export default function DataPage() {
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary-400" />
                 연도별 평균 가격
+                <Badge variant="outline" className="text-xs gap-1"><MapPin className="h-3 w-3" />{REGIONS.find((r) => r.code === selectedRegion)?.name ?? "서울"}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>

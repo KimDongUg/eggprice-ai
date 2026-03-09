@@ -26,7 +26,7 @@ export default function Footer() {
             <p className="text-sm leading-relaxed mb-4">
               업계 실무 경험 + AI 분석 기반
               <br />
-              출하 의사결정 브리핑 서비스
+              구매 의사결정 브리핑 서비스
             </p>
             <p className="text-xs text-gray-500">
               데이터 출처:{" "}
@@ -99,14 +99,14 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <a href="tel:010-0000-0000" className="hover:text-white transition-colors">
-                  010-0000-0000
+                <a href="tel:010-3526-4754" className="hover:text-white transition-colors">
+                  010-3526-4754
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <a href="mailto:contact@eggprice.kr" className="hover:text-white transition-colors">
-                  contact@eggprice.kr
+                <a href="mailto:kduaro124@naver.com" className="hover:text-white transition-colors">
+                  kduaro124@naver.com
                 </a>
               </li>
             </ul>

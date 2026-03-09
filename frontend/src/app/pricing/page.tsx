@@ -63,7 +63,7 @@ export default function PricingPage() {
               <span className="text-muted-foreground">원/월</span>
             </div>
             <ul className="space-y-2 mb-6 text-sm">
-              {["Free 기능 전체 포함", "30일 가격 예측", "주간 브리핑 리포트", "가격 알림 (이메일)", "출하 권장 시점 제안"].map((f) => (
+              {["Free 기능 전체 포함", "30일 가격 예측", "주간 브리핑 리포트", "가격 알림 (이메일)", "구매 권장 시점 제안"].map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-secondary-500 shrink-0" />
                   {f}
@@ -71,7 +71,7 @@ export default function PricingPage() {
               ))}
             </ul>
             <Button className="w-full bg-secondary-500 hover:bg-secondary-600 text-white" asChild>
-              <a href="tel:010-0000-0000">상담 후 가입</a>
+              <a href="tel:010-3526-4754">상담 후 가입</a>
             </Button>
           </CardContent>
         </Card>
@@ -97,7 +97,7 @@ export default function PricingPage() {
               ))}
             </ul>
             <Button className="w-full bg-primary-400 hover:bg-primary-500 text-white" asChild>
-              <a href="tel:010-0000-0000">상담 후 가입</a>
+              <a href="tel:010-3526-4754">상담 후 가입</a>
             </Button>
           </CardContent>
         </Card>
@@ -143,10 +143,10 @@ export default function PricingPage() {
         <p className="text-sm text-muted-foreground mb-4">전화 또는 이메일로 편하게 문의하세요.</p>
         <div className="flex gap-3 justify-center">
           <Button className="bg-primary-400 hover:bg-primary-500 text-white" asChild>
-            <a href="tel:010-0000-0000"><Phone className="h-4 w-4 mr-1" />전화 상담</a>
+            <a href="tel:010-3526-4754"><Phone className="h-4 w-4 mr-1" />전화 상담</a>
           </Button>
           <Button variant="outline" asChild>
-            <a href="mailto:contact@eggprice.kr"><Mail className="h-4 w-4 mr-1" />이메일 문의</a>
+            <a href="mailto:kduaro124@naver.com"><Mail className="h-4 w-4 mr-1" />이메일 문의</a>
           </Button>
         </div>
       </div>
