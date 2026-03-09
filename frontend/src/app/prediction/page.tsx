@@ -7,13 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, Minus, Lock, ArrowRight } from "lucide-react";
-import { useForecast } from "@/lib/queries";
+import { useForecast, useMultiRegionForecasts } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart, Legend,
 } from "recharts";
 import { MapPin } from "lucide-react";
+
+const REGION_COLORS: Record<string, string> = {
+  seoul: "#f97316", busan: "#3b82f6", daegu: "#10b981", incheon: "#8b5cf6",
+  gwangju: "#ec4899", daejeon: "#06b6d4", gyeonggi: "#f59e0b", gangwon: "#6366f1",
+  chungcheong: "#14b8a6", jeolla: "#e11d48", gyeongsang: "#84cc16", jeju: "#a855f7",
+};
 
 const GRADE_OPTIONS = ["특란", "대란", "중란", "소란"];
 
@@ -36,10 +42,26 @@ export default function PredictionPage() {
   const [selectedGrade, setSelectedGrade] = useState("특란");
   const [selectedRegion, setSelectedRegion] = useState("seoul");
   const { data: forecast, isLoading } = useForecast(selectedGrade, true, selectedRegion);
+  const { data: multiForecasts, isLoading: multiLoading } = useMultiRegionForecasts(selectedGrade);
 
   const predictions7d = forecast?.predictions?.slice(0, 7) ?? [];
   const predictions30d = forecast?.predictions?.slice(0, 30) ?? [];
   const regionName = REGIONS.find((r) => r.code === selectedRegion)?.name ?? "서울";
+
+  // Build multi-region comparison data (7-day)
+  const multiRegionChartData = (() => {
+    if (!multiForecasts) return [];
+    const dateMap = new Map<string, Record<string, string | number>>();
+    for (const region of REGIONS) {
+      const preds = multiForecasts[region.code]?.predictions?.slice(0, 7) ?? [];
+      for (const p of preds) {
+        const row = dateMap.get(p.date) ?? { date: p.date };
+        row[region.code] = p.price;
+        dateMap.set(p.date, row);
+      }
+    }
+    return Array.from(dateMap.values()).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  })();
 
   return (
     <div className="space-y-6">
@@ -215,6 +237,63 @@ export default function PredictionPage() {
                   </tbody>
                 </table>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Multi-region comparison chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary-400" />
+                전국 지역별 7일 예측 비교
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {multiLoading ? (
+                <Skeleton className="h-[400px]" />
+              ) : multiRegionChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={multiRegionChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(v) => {
+                        const d = new Date(v);
+                        return `${d.getMonth() + 1}/${d.getDate()}`;
+                      }}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => {
+                        const regionLabel = REGIONS.find((r) => r.code === name)?.name ?? name;
+                        return [`${value?.toLocaleString()}원`, regionLabel];
+                      }}
+                      labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
+                    />
+                    <Legend
+                      formatter={(value) => REGIONS.find((r) => r.code === value)?.name ?? value}
+                      wrapperStyle={{ fontSize: "0.75rem" }}
+                    />
+                    {REGIONS.map((region) => (
+                      <Line
+                        key={region.code}
+                        type="monotone"
+                        dataKey={region.code}
+                        stroke={REGION_COLORS[region.code]}
+                        strokeWidth={region.code === selectedRegion ? 3 : 1.5}
+                        strokeOpacity={region.code === selectedRegion ? 1 : 0.6}
+                        dot={false}
+                        name={region.code}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+                  지역별 예측 데이터가 없습니다.
+                </div>
+              )}
             </CardContent>
           </Card>
 

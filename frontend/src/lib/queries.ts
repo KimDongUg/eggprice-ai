@@ -49,6 +49,31 @@ export function useForecast(grade: string, enabled = true, region = "seoul") {
   });
 }
 
+const ALL_REGIONS = [
+  "seoul","busan","daegu","incheon","gwangju","daejeon",
+  "gyeonggi","gangwon","chungcheong","jeolla","gyeongsang","jeju",
+] as const;
+
+export function useMultiRegionForecasts(grade: string, enabled = true) {
+  return useQuery<Record<string, ForecastResponse>>({
+    queryKey: ["forecast", "multi", grade],
+    queryFn: async () => {
+      const results: Record<string, ForecastResponse> = {};
+      const settled = await Promise.allSettled(
+        ALL_REGIONS.map((r) =>
+          api.get("/predictions/forecast", { params: { grade, region: r } }).then((res) => ({ region: r, data: res.data }))
+        )
+      );
+      for (const s of settled) {
+        if (s.status === "fulfilled") results[s.value.region] = s.value.data;
+      }
+      return results;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled,
+  });
+}
+
 export function usePredictions(grade: string) {
   return useQuery<PredictionSummary>({
     queryKey: ["predictions", grade],
