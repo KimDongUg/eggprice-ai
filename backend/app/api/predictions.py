@@ -99,26 +99,6 @@ async def forecast(
     return result
 
 
-@router.get("/predictions/{grade}", response_model=PredictionSummary)
-@limiter.limit(settings.RATE_LIMIT_API)
-async def predictions_for_grade(
-    request: Request,
-    grade: str,
-    region: str = "seoul",
-    db: Session = Depends(get_db),
-):
-    """특정 등급의 가격 예측 결과 (지역별)"""
-    cache_key = f"predictions:{grade}:{region}"
-    hit = cache_get(cache_key)
-    if hit is not None:
-        return hit
-
-    preds = get_predictions(db, grade, region=region)
-    result = PredictionSummary(grade=grade, predictions=preds)
-    cache_set(cache_key, result.model_dump(mode="json"), ttl=300)
-    return result
-
-
 @router.post("/predictions/refresh", response_model=list[PredictionResponse])
 @limiter.limit(settings.RATE_LIMIT_API)
 async def refresh_predictions(request: Request, db: Session = Depends(get_db)):
@@ -138,3 +118,23 @@ async def regenerate_predictions(request: Request, db: Session = Depends(get_db)
     """전 등급 × 전 지역 폴백 예측 재생성 (동일 base_date)"""
     count = regenerate_all_fallback_predictions(db)
     return {"message": f"{count}개 예측 데이터 재생성 완료", "count": count}
+
+
+@router.get("/predictions/{grade}", response_model=PredictionSummary)
+@limiter.limit(settings.RATE_LIMIT_API)
+async def predictions_for_grade(
+    request: Request,
+    grade: str,
+    region: str = "seoul",
+    db: Session = Depends(get_db),
+):
+    """특정 등급의 가격 예측 결과 (지역별)"""
+    cache_key = f"predictions:{grade}:{region}"
+    hit = cache_get(cache_key)
+    if hit is not None:
+        return hit
+
+    preds = get_predictions(db, grade, region=region)
+    result = PredictionSummary(grade=grade, predictions=preds)
+    cache_set(cache_key, result.model_dump(mode="json"), ttl=300)
+    return result
