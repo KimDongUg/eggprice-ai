@@ -47,18 +47,6 @@ async def forecast(
         .order_by(desc(EggPrice.date))
         .first()
     )
-    # Fallback to Seoul
-    if not latest and region != "seoul":
-        latest = (
-            db.query(EggPrice)
-            .filter(
-                EggPrice.grade == grade,
-                EggPrice.region == "seoul",
-                EggPrice.wholesale_price.isnot(None),
-            )
-            .order_by(desc(EggPrice.date))
-            .first()
-        )
     current_price = latest.wholesale_price if latest else None
 
     # Build forecast items

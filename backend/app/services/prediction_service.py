@@ -45,13 +45,6 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
             .order_by(desc(EggPrice.date))
             .first()
         )
-        if not latest and region != "seoul":
-            latest = (
-                db.query(EggPrice)
-                .filter(EggPrice.grade == grade, EggPrice.region == "seoul")
-                .order_by(desc(EggPrice.date))
-                .first()
-            )
 
         base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
         base_date = latest.date if latest else date.today()
@@ -151,13 +144,6 @@ def regenerate_all_fallback_predictions(db: Session) -> int:
                 .order_by(desc(EggPrice.date))
                 .first()
             )
-            if not latest and region != "seoul":
-                latest = (
-                    db.query(EggPrice)
-                    .filter(EggPrice.grade == grade, EggPrice.region == "seoul")
-                    .order_by(desc(EggPrice.date))
-                    .first()
-                )
             base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
 
             for days in range(1, 31):

@@ -123,18 +123,6 @@ def predict_prices(
         .order_by(EggPrice.date.desc())
         .first()
     )
-    if not latest:
-        # Fallback to Seoul
-        latest = (
-            db.query(EggPrice)
-            .filter(
-                EggPrice.grade == grade,
-                EggPrice.region == "seoul",
-                EggPrice.wholesale_price.isnot(None),
-            )
-            .order_by(EggPrice.date.desc())
-            .first()
-        )
     base = latest.date if latest else date.today()
 
     horizons = [7, 14, 30]

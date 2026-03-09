@@ -144,18 +144,6 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
         .all()
     )
 
-    # Fallback to Seoul if no regional data
-    if not prices and region != "seoul":
-        prices = (
-            db_session.query(EggPrice)
-            .filter(
-                EggPrice.grade == grade,
-                EggPrice.region == "seoul",
-                EggPrice.wholesale_price.isnot(None),
-            )
-            .order_by(EggPrice.date)
-            .all()
-        )
 
     if not prices:
         raise ValueError(f"No price data for grade '{grade}' region '{region}'")

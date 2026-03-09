@@ -26,10 +26,6 @@ async def current_prices(
 
     result = get_current_prices(db, region=region)
 
-    # If no data for this region, fallback to Seoul
-    if not result and region != "seoul":
-        result = get_current_prices(db, region="seoul")
-
     cache_set(cache_key, result, ttl=180)
     return result
 
@@ -51,10 +47,6 @@ async def price_history(
         return hit
 
     result = get_price_history(db, grade, days, region=region)
-
-    # If no data for this region, fallback to Seoul
-    if not result and region != "seoul":
-        result = get_price_history(db, grade, days, region="seoul")
 
     if compact:
         serialized = [

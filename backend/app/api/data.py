@@ -34,25 +34,6 @@ def yearly_data(
     )
     rows = q.all()
 
-    # Fallback to Seoul if no data
-    if not rows and region != "seoul":
-        rows = (
-            db.query(
-                extract("year", EggPrice.date).label("year"),
-                func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
-                func.avg(EggPrice.retail_price).label("avg_retail"),
-                func.count(EggPrice.id).label("count"),
-            )
-            .filter(
-                EggPrice.grade == grade,
-                EggPrice.region == "seoul",
-                EggPrice.wholesale_price.isnot(None),
-            )
-            .group_by(extract("year", EggPrice.date))
-            .order_by(extract("year", EggPrice.date))
-            .all()
-        )
-
     return {
         "grade": grade,
         "region": region,
@@ -98,29 +79,6 @@ def monthly_data(
         .order_by(extract("year", EggPrice.date), extract("month", EggPrice.date))
         .all()
     )
-
-    # Fallback to Seoul if no data
-    if not rows and region != "seoul":
-        q2 = db.query(
-            extract("year", EggPrice.date).label("year"),
-            extract("month", EggPrice.date).label("month"),
-            func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
-            func.avg(EggPrice.retail_price).label("avg_retail"),
-            func.min(EggPrice.wholesale_price).label("min_wholesale"),
-            func.max(EggPrice.wholesale_price).label("max_wholesale"),
-            func.count(EggPrice.id).label("count"),
-        ).filter(
-            EggPrice.grade == grade,
-            EggPrice.region == "seoul",
-            EggPrice.wholesale_price.isnot(None),
-        )
-        if year:
-            q2 = q2.filter(extract("year", EggPrice.date) == year)
-        rows = (
-            q2.group_by(extract("year", EggPrice.date), extract("month", EggPrice.date))
-            .order_by(extract("year", EggPrice.date), extract("month", EggPrice.date))
-            .all()
-        )
 
     return {
         "grade": grade,
