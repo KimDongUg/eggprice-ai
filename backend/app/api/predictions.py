@@ -99,17 +99,16 @@ async def forecast(
     return result
 
 
-@router.post("/predictions/refresh", response_model=list[PredictionResponse])
+@router.post("/predictions/refresh")
 @limiter.limit(settings.RATE_LIMIT_API)
 async def refresh_predictions(request: Request, db: Session = Depends(get_db)):
-    """전 등급 × 전 지역 예측 재실행"""
+    """전 등급 × 전 지역 예측 재실행 (모델 없으면 폴백 재생성)"""
     results = run_all_predictions(db)
-    if not results:
-        raise HTTPException(
-            status_code=404,
-            detail="모델이 학습되지 않았거나 데이터가 부족합니다.",
-        )
-    return results
+    if results:
+        return {"message": f"{len(results)}개 예측 생성 완료 (ML 모델)", "count": len(results)}
+    # ML 모델이 없으면 폴백 예측 재생성
+    count = regenerate_all_fallback_predictions(db)
+    return {"message": f"{count}개 폴백 예측 재생성 완료", "count": count}
 
 
 @router.post("/predictions/regenerate")
