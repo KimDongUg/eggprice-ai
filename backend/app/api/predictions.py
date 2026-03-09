@@ -10,7 +10,6 @@ from app.models.price import EggPrice
 from app.schemas.prediction import (
     ForecastItem,
     ForecastResponse,
-    PredictionResponse,
     PredictionSummary,
 )
 from app.services.prediction_service import get_predictions, run_all_predictions, regenerate_all_fallback_predictions
