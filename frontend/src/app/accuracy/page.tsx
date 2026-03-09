@@ -168,7 +168,7 @@ export default function AccuracyPage() {
                       }}
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
                     <Tooltip
                       formatter={(value: number, name: string) => [`${value?.toLocaleString()}원`, name]}
                       labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}

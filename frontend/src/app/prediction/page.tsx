@@ -153,7 +153,7 @@ export default function PredictionPage() {
                       }}
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
                     <Tooltip
                       formatter={(value: number, name: string) => {
                         if (name === "신뢰구간") return [`${value?.toLocaleString()}원`];

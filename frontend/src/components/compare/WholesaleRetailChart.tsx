@@ -49,7 +49,7 @@ export default function WholesaleRetailChart() {
             />
             <YAxis
               tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
-              tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => `${v.toLocaleString()}원`}
               width={45}
             />
             <Tooltip

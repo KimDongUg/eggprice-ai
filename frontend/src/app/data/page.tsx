@@ -152,7 +152,7 @@ export default function DataPage() {
                   <BarChart data={yearlyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="year" tick={{ fontSize: 12 }} />
-                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
                     <Tooltip formatter={(value: number) => [`${value?.toLocaleString()}원`]} />
                     <Legend />
                     <Bar dataKey="avg_wholesale" name="도매가 평균" fill="#f97316" radius={[4, 4, 0, 0]} />
