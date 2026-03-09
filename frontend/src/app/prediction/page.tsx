@@ -153,19 +153,21 @@ export default function PredictionPage() {
             </CardContent>
           </Card>
 
-          {/* FREE: 7-day prediction chart */}
+          {/* FREE: 7-day prediction chart — all regions */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 7일 예측
                 <Badge variant="outline" className="text-xs">FREE</Badge>
-                <Badge variant="outline" className="text-xs gap-1"><MapPin className="h-3 w-3" />{regionName}</Badge>
+                <Badge variant="outline" className="text-xs gap-1"><MapPin className="h-3 w-3" />전국</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {predictions7d.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={predictions7d}>
+              {multiLoading ? (
+                <Skeleton className="h-[350px]" />
+              ) : multiRegionChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={multiRegionChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis
                       dataKey="date"
@@ -178,24 +180,51 @@ export default function PredictionPage() {
                     <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
                     <Tooltip
                       formatter={(value: number, name: string) => {
-                        if (name === "신뢰구간") return [`${value?.toLocaleString()}원`];
-                        return [`${value?.toLocaleString()}원`, name];
+                        const regionLabel = REGIONS.find((r) => r.code === name)?.name ?? name;
+                        return [`${value?.toLocaleString()}원`, regionLabel];
                       }}
                       labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
                     />
-                    <Area
-                      type="monotone"
-                      dataKey="confidence_interval"
-                      fill="#f97316"
-                      fillOpacity={0.1}
-                      stroke="none"
-                      name="신뢰구간"
+                    <Legend
+                      formatter={(value) => REGIONS.find((r) => r.code === value)?.name ?? value}
+                      wrapperStyle={{ fontSize: "0.75rem" }}
+                    />
+                    {REGIONS.map((region) => (
+                      <Line
+                        key={region.code}
+                        type="monotone"
+                        dataKey={region.code}
+                        stroke={REGION_COLORS[region.code]}
+                        strokeWidth={region.code === selectedRegion ? 3 : 1.5}
+                        strokeOpacity={region.code === selectedRegion ? 1 : 0.5}
+                        dot={region.code === selectedRegion ? { r: 4 } : false}
+                        name={region.code}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : predictions7d.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <ComposedChart data={predictions7d}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(v) => {
+                        const d = new Date(v);
+                        return `${d.getMonth() + 1}/${d.getDate()}`;
+                      }}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`${value?.toLocaleString()}원`, name]}
+                      labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
                     />
                     <Line type="monotone" dataKey="price" stroke="#f97316" strokeWidth={2} dot={{ r: 4 }} name="예측가" />
                   </ComposedChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[350px] flex items-center justify-center text-muted-foreground">
                   예측 데이터가 없습니다.
                 </div>
               )}
@@ -237,63 +266,6 @@ export default function PredictionPage() {
                   </tbody>
                 </table>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Multi-region comparison chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary-400" />
-                전국 지역별 7일 예측 비교
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {multiLoading ? (
-                <Skeleton className="h-[400px]" />
-              ) : multiRegionChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={multiRegionChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="date"
-                      tickFormatter={(v) => {
-                        const d = new Date(v);
-                        return `${d.getMonth() + 1}/${d.getDate()}`;
-                      }}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      formatter={(value: number, name: string) => {
-                        const regionLabel = REGIONS.find((r) => r.code === name)?.name ?? name;
-                        return [`${value?.toLocaleString()}원`, regionLabel];
-                      }}
-                      labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
-                    />
-                    <Legend
-                      formatter={(value) => REGIONS.find((r) => r.code === value)?.name ?? value}
-                      wrapperStyle={{ fontSize: "0.75rem" }}
-                    />
-                    {REGIONS.map((region) => (
-                      <Line
-                        key={region.code}
-                        type="monotone"
-                        dataKey={region.code}
-                        stroke={REGION_COLORS[region.code]}
-                        strokeWidth={region.code === selectedRegion ? 3 : 1.5}
-                        strokeOpacity={region.code === selectedRegion ? 1 : 0.6}
-                        dot={false}
-                        name={region.code}
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                  지역별 예측 데이터가 없습니다.
-                </div>
-              )}
             </CardContent>
           </Card>
 
