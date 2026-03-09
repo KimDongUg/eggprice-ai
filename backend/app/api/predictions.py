@@ -13,7 +13,7 @@ from app.schemas.prediction import (
     PredictionResponse,
     PredictionSummary,
 )
-from app.services.prediction_service import get_predictions, run_all_predictions
+from app.services.prediction_service import get_predictions, run_all_predictions, regenerate_all_fallback_predictions
 
 router = APIRouter(tags=["predictions"])
 
@@ -130,3 +130,11 @@ async def refresh_predictions(request: Request, db: Session = Depends(get_db)):
             detail="모델이 학습되지 않았거나 데이터가 부족합니다.",
         )
     return results
+
+
+@router.post("/predictions/regenerate")
+@limiter.limit(settings.RATE_LIMIT_API)
+async def regenerate_predictions(request: Request, db: Session = Depends(get_db)):
+    """전 등급 × 전 지역 폴백 예측 재생성 (동일 base_date)"""
+    count = regenerate_all_fallback_predictions(db)
+    return {"message": f"{count}개 예측 데이터 재생성 완료", "count": count}

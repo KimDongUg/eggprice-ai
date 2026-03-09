@@ -4,6 +4,8 @@ from datetime import date, timedelta
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
+from sqlalchemy import delete
+
 from app.core.config import settings
 from app.models.prediction import Prediction
 from app.models.price import EggPrice
@@ -127,3 +129,55 @@ def run_all_predictions(db: Session) -> list[Prediction]:
             except Exception as e:
                 logger.error(f"Prediction failed for {grade}/{region}: {e}")
     return all_preds
+
+
+def regenerate_all_fallback_predictions(db: Session) -> int:
+    """Delete all existing predictions and regenerate fallback for all grades × regions.
+
+    Uses a unified base_date (today) so all regions align on the same dates.
+    """
+    # Delete all existing predictions
+    db.execute(delete(Prediction))
+    db.commit()
+    logger.info("Deleted all existing predictions")
+
+    unified_base = date.today()
+    count = 0
+
+    for grade in ALL_GRADES:
+        # Get the best base_price per region
+        for region in ALL_REGIONS:
+            latest = (
+                db.query(EggPrice)
+                .filter(EggPrice.grade == grade, EggPrice.region == region)
+                .order_by(desc(EggPrice.date))
+                .first()
+            )
+            if not latest and region != "seoul":
+                latest = (
+                    db.query(EggPrice)
+                    .filter(EggPrice.grade == grade, EggPrice.region == "seoul")
+                    .order_by(desc(EggPrice.date))
+                    .first()
+                )
+            base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
+
+            for days in range(1, 31):
+                predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
+                pred = Prediction(
+                    base_date=unified_base,
+                    target_date=unified_base + timedelta(days=days),
+                    grade=grade,
+                    region=region,
+                    predicted_price=round(predicted, 2),
+                    confidence_lower=round(predicted * 0.97, 2),
+                    confidence_upper=round(predicted * 1.03, 2),
+                    horizon_days=days,
+                    model_version="sample_v1",
+                )
+                db.add(pred)
+                count += 1
+
+    db.commit()
+    logger.info(f"Regenerated {count} fallback predictions with base_date={unified_base}")
+    return count
