@@ -1,10 +1,8 @@
 import logging
 from datetime import date, timedelta
 
-from sqlalchemy import desc, func
+from sqlalchemy import delete, desc, func
 from sqlalchemy.orm import Session
-
-from sqlalchemy import delete
 
 from app.core.config import settings
 from app.models.prediction import Prediction
