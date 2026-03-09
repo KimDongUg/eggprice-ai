@@ -60,17 +60,17 @@ export default function DataPage() {
   useEffect(() => {
     setLoading(true);
     if (view === "yearly") {
-      api.get("/data/yearly", { params: { grade } })
+      api.get("/data/yearly", { params: { grade, region: selectedRegion } })
         .then((r) => setYearlyData(r.data.items))
         .catch(() => {})
         .finally(() => setLoading(false));
     } else {
-      api.get("/data/monthly", { params: { grade, ...(selectedYear ? { year: selectedYear } : {}) } })
+      api.get("/data/monthly", { params: { grade, region: selectedRegion, ...(selectedYear ? { year: selectedYear } : {}) } })
         .then((r) => setMonthlyData(r.data.items))
         .catch(() => {})
         .finally(() => setLoading(false));
     }
-  }, [grade, view, selectedYear]);
+  }, [grade, view, selectedYear, selectedRegion]);
 
   const availableYears = yearlyData.map((d) => d.year);
 

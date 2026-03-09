@@ -170,6 +170,7 @@ def warm_cache(db):
                     db.add(EggPrice(
                         date=d,
                         grade=grade,
+                        region="seoul",
                         retail_price=round(BASE_RETAIL[grade] + drift),
                         wholesale_price=round(BASE_WHOLESALE[grade] + drift * 0.8),
                         unit="30개",
@@ -187,6 +188,7 @@ def warm_cache(db):
                         base_date=today,
                         target_date=today + timedelta(days=days),
                         grade=grade,
+                        region="seoul",
                         predicted_price=round(predicted, 2),
                         confidence_lower=round(predicted * 0.97, 2),
                         confidence_upper=round(predicted * 1.03, 2),

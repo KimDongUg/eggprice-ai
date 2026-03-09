@@ -15,20 +15,20 @@ import type {
 
 // ── Prices ──────────────────────────────────────────
 
-export function useCurrentPrices() {
+export function useCurrentPrices(region = "seoul") {
   return useQuery<PriceWithChange[]>({
-    queryKey: ["prices", "current"],
-    queryFn: () => api.get("/prices/current").then((r) => r.data),
+    queryKey: ["prices", "current", region],
+    queryFn: () => api.get("/prices/current", { params: { region } }).then((r) => r.data),
     staleTime: 3 * 60 * 1000,
   });
 }
 
-export function usePriceHistory(grade: string, days = 180, enabled = true) {
+export function usePriceHistory(grade: string, days = 180, enabled = true, region = "seoul") {
   return useQuery<PriceHistory[]>({
-    queryKey: ["prices", "history", grade, days],
+    queryKey: ["prices", "history", grade, days, region],
     queryFn: () =>
       api
-        .get("/prices/history", { params: { grade, days } })
+        .get("/prices/history", { params: { grade, days, region } })
         .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
     enabled,
@@ -37,12 +37,12 @@ export function usePriceHistory(grade: string, days = 180, enabled = true) {
 
 // ── Predictions ─────────────────────────────────────
 
-export function useForecast(grade: string, enabled = true) {
+export function useForecast(grade: string, enabled = true, region = "seoul") {
   return useQuery<ForecastResponse>({
-    queryKey: ["forecast", grade],
+    queryKey: ["forecast", grade, region],
     queryFn: () =>
       api
-        .get("/predictions/forecast", { params: { grade } })
+        .get("/predictions/forecast", { params: { grade, region } })
         .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
     enabled,

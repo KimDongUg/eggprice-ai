@@ -34,8 +34,8 @@ export default function PredictionsPage() {
   const [selectedRegion, setSelectedRegion] = useState("seoul");
 
   const { data: predData, isLoading: predLoading } = usePredictions(selectedGrade);
-  const { data: history, isLoading: histLoading } = usePriceHistory(selectedGrade, 180);
-  const { data: forecast } = useForecast(selectedGrade);
+  const { data: history, isLoading: histLoading } = usePriceHistory(selectedGrade, 180, true, selectedRegion);
+  const { data: forecast } = useForecast(selectedGrade, true, selectedRegion);
 
   const isLoading = predLoading || histLoading;
 

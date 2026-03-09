@@ -10,12 +10,14 @@ class Prediction(Base):
     __tablename__ = "predictions"
     __table_args__ = (
         Index("ix_prediction_grade_basedate", "grade", "base_date"),
+        Index("ix_prediction_region", "region"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     base_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     target_date: Mapped[date] = mapped_column(Date, nullable=False)
     grade: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    region: Mapped[str] = mapped_column(String(20), nullable=False, default="seoul", server_default="seoul")
     predicted_price: Mapped[float] = mapped_column(Float, nullable=False)
     confidence_lower: Mapped[float] = mapped_column(Float, nullable=False)
     confidence_upper: Mapped[float] = mapped_column(Float, nullable=False)

@@ -23,25 +23,42 @@ router = APIRouter(tags=["predictions"])
 async def forecast(
     request: Request,
     grade: str = "특란",
+    region: str = "seoul",
     db: Session = Depends(get_db),
 ):
-    """AI 예측 결과 (스펙 응답 형식)"""
-    cache_key = f"forecast:{grade}"
+    """AI 예측 결과 (지역별)"""
+    cache_key = f"forecast:{grade}:{region}"
     hit = cache_get(cache_key)
     if hit is not None:
         return hit
 
-    preds = get_predictions(db, grade)
+    preds = get_predictions(db, grade, region=region)
     if not preds:
         raise HTTPException(status_code=404, detail="예측 데이터가 없습니다.")
 
-    # Get current price
+    # Get current price for this region
     latest = (
         db.query(EggPrice)
-        .filter(EggPrice.grade == grade, EggPrice.retail_price.isnot(None))
+        .filter(
+            EggPrice.grade == grade,
+            EggPrice.region == region,
+            EggPrice.retail_price.isnot(None),
+        )
         .order_by(desc(EggPrice.date))
         .first()
     )
+    # Fallback to Seoul
+    if not latest and region != "seoul":
+        latest = (
+            db.query(EggPrice)
+            .filter(
+                EggPrice.grade == grade,
+                EggPrice.region == "seoul",
+                EggPrice.retail_price.isnot(None),
+            )
+            .order_by(desc(EggPrice.date))
+            .first()
+        )
     current_price = latest.retail_price if latest else None
 
     # Build forecast items
@@ -87,15 +104,16 @@ async def forecast(
 async def predictions_for_grade(
     request: Request,
     grade: str,
+    region: str = "seoul",
     db: Session = Depends(get_db),
 ):
-    """특정 등급의 가격 예측 결과 (7/14/30일)"""
-    cache_key = f"predictions:{grade}"
+    """특정 등급의 가격 예측 결과 (지역별)"""
+    cache_key = f"predictions:{grade}:{region}"
     hit = cache_get(cache_key)
     if hit is not None:
         return hit
 
-    preds = get_predictions(db, grade)
+    preds = get_predictions(db, grade, region=region)
     result = PredictionSummary(grade=grade, predictions=preds)
     cache_set(cache_key, result.model_dump(mode="json"), ttl=300)
     return result
@@ -104,7 +122,7 @@ async def predictions_for_grade(
 @router.post("/predictions/refresh", response_model=list[PredictionResponse])
 @limiter.limit(settings.RATE_LIMIT_API)
 async def refresh_predictions(request: Request, db: Session = Depends(get_db)):
-    """전 등급 예측 재실행"""
+    """전 등급 × 전 지역 예측 재실행"""
     results = run_all_predictions(db)
     if not results:
         raise HTTPException(

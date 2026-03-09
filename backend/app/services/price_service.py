@@ -5,22 +5,29 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.models.price import EggPrice
-from app.services.kamis_client import fetch_daily_prices
+from app.services.kamis_client import fetch_daily_prices, REGION_CODE_MAP
 
 logger = logging.getLogger(__name__)
 
 GRADES = ["왕란", "특란", "대란", "중란", "소란"]
+ALL_REGIONS = list(REGION_CODE_MAP.keys())
 
 
-async def fetch_and_store_prices(db: Session, target_date: date | None = None) -> list[EggPrice]:
-    """Fetch prices from KAMIS and store in DB."""
-    prices_data = await fetch_daily_prices(target_date)
+async def fetch_and_store_prices(
+    db: Session, target_date: date | None = None, region: str = "seoul",
+) -> list[EggPrice]:
+    """Fetch prices from KAMIS and store in DB for a specific region."""
+    prices_data = await fetch_daily_prices(target_date, region=region)
     stored = []
 
     for p in prices_data:
         existing = (
             db.query(EggPrice)
-            .filter(EggPrice.date == p["date"], EggPrice.grade == p["grade"])
+            .filter(
+                EggPrice.date == p["date"],
+                EggPrice.grade == p["grade"],
+                EggPrice.region == region,
+            )
             .first()
         )
         if existing:
@@ -31,6 +38,7 @@ async def fetch_and_store_prices(db: Session, target_date: date | None = None) -
             egg_price = EggPrice(
                 date=p["date"],
                 grade=p["grade"],
+                region=region,
                 retail_price=p.get("retail_price"),
                 wholesale_price=p.get("wholesale_price"),
                 unit=p.get("unit", "30개"),
@@ -44,19 +52,33 @@ async def fetch_and_store_prices(db: Session, target_date: date | None = None) -
     return stored
 
 
-def get_current_prices(db: Session) -> list[dict]:
-    """Get today's (or most recent) prices with daily change.
+async def fetch_and_store_all_regions(db: Session, target_date: date | None = None) -> dict:
+    """Fetch and store prices for ALL regions."""
+    if target_date is None:
+        target_date = date.today()
 
-    Per-grade: picks the most recent row that has a non-null wholesale_price,
-    then computes change vs the previous such row.
-    """
+    results = {}
+    for region in ALL_REGIONS:
+        try:
+            stored = await fetch_and_store_prices(db, target_date, region=region)
+            results[region] = len(stored)
+            logger.info(f"  region={region}: {len(stored)} records")
+        except Exception as e:
+            results[region] = f"error: {e}"
+            logger.error(f"  region={region} failed: {e}")
+
+    return results
+
+
+def get_current_prices(db: Session, region: str = "seoul") -> list[dict]:
+    """Get today's (or most recent) prices with daily change for a region."""
     results = []
     for grade in GRADES:
-        # Get the 2 most recent rows with valid wholesale_price for this grade
         entries = (
             db.query(EggPrice)
             .filter(
                 EggPrice.grade == grade,
+                EggPrice.region == region,
                 EggPrice.wholesale_price.isnot(None),
             )
             .order_by(desc(EggPrice.date))
@@ -88,12 +110,16 @@ def get_current_prices(db: Session) -> list[dict]:
     return results
 
 
-def get_price_history(db: Session, grade: str, days: int = 180) -> list[EggPrice]:
-    """Get historical prices for a grade."""
+def get_price_history(db: Session, grade: str, days: int = 180, region: str = "seoul") -> list[EggPrice]:
+    """Get historical prices for a grade and region."""
     since = date.today() - timedelta(days=days)
     return (
         db.query(EggPrice)
-        .filter(EggPrice.grade == grade, EggPrice.date >= since)
+        .filter(
+            EggPrice.grade == grade,
+            EggPrice.region == region,
+            EggPrice.date >= since,
+        )
         .order_by(EggPrice.date)
         .all()
     )

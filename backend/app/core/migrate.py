@@ -25,6 +25,9 @@ _EXPECTED_COLUMNS = [
     # admin system columns
     ("users", "role", "VARCHAR(20)", "'user'"),
     ("model_performance", "horizon_days", "INTEGER", None),
+    # regional support columns
+    ("egg_prices", "region", "VARCHAR(20)", "'seoul'"),
+    ("predictions", "region", "VARCHAR(20)", "'seoul'"),
 ]
 
 # Columns that must be nullable for social login to work
@@ -159,5 +162,29 @@ def run_migrations(engine: Engine) -> None:
                 logger.info("Migration: %s", stmt)
             except Exception:
                 pass  # already correct type or table doesn't exist
+
+        # Replace egg_prices unique constraint to include region
+        if insp.has_table("egg_prices"):
+            try:
+                conn.execute(text(
+                    "ALTER TABLE egg_prices DROP CONSTRAINT IF EXISTS uq_date_grade"
+                ))
+                conn.execute(text(
+                    "ALTER TABLE egg_prices ADD CONSTRAINT uq_date_grade_region "
+                    "UNIQUE (date, grade, region)"
+                ))
+                logger.info("Migration: updated egg_prices unique constraint to include region")
+            except Exception:
+                pass  # constraint already updated or different DB
+
+        # Create index on region columns
+        for tbl, col in [("egg_prices", "region"), ("predictions", "region")]:
+            if insp.has_table(tbl):
+                try:
+                    conn.execute(text(
+                        f"CREATE INDEX IF NOT EXISTS ix_{tbl}_{col} ON {tbl}({col})"
+                    ))
+                except Exception:
+                    pass
 
         conn.commit()

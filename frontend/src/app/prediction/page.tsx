@@ -35,7 +35,7 @@ const REGIONS = [
 export default function PredictionPage() {
   const [selectedGrade, setSelectedGrade] = useState("특란");
   const [selectedRegion, setSelectedRegion] = useState("seoul");
-  const { data: forecast, isLoading } = useForecast(selectedGrade);
+  const { data: forecast, isLoading } = useForecast(selectedGrade, true, selectedRegion);
 
   const predictions7d = forecast?.predictions?.slice(0, 7) ?? [];
   const predictions30d = forecast?.predictions?.slice(0, 30) ?? [];

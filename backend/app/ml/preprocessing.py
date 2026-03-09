@@ -1,6 +1,7 @@
 """Feature engineering and data preprocessing for the LSTM model.
 
 15 features, 30-day lookback window.
+Regional avian flu weighting: 3x when outbreak is in the prediction region.
 """
 
 import numpy as np
@@ -10,6 +11,22 @@ from sklearn.preprocessing import MinMaxScaler
 
 SEQUENCE_LENGTH = 30
 
+# KAMIS 지역 코드 → 한글 지역명 매핑 (avian flu 지역 매칭용)
+REGION_NAME_MAP = {
+    "seoul": "서울",
+    "busan": "부산",
+    "daegu": "대구",
+    "incheon": "인천",
+    "gwangju": "광주",
+    "daejeon": "대전",
+    "gyeonggi": "경기",
+    "gangwon": "강원",
+    "chungcheong": "충",  # 충남/충북 매칭
+    "jeolla": "전",       # 전남/전북 매칭
+    "gyeongsang": "경",   # 경남/경북 매칭
+    "jeju": "제주",
+}
+
 # 15 input features
 FEATURE_COLUMNS = [
     "price",                # 1. 소비자가
@@ -17,7 +34,7 @@ FEATURE_COLUMNS = [
     "volume",               # 3. 거래량
     "corn_price",           # 4. 사료(옥수수) 가격
     "exchange_rate",        # 5. 환율 (USD/KRW)
-    "avian_flu",            # 6. 조류독감 발생 여부 (0/1)
+    "avian_flu",            # 6. 조류독감 발생 여부 (0/1, 해당 지역 3x 가중치)
     "temperature",          # 7. 평균 기온
     "day_of_week_sin",      # 8. 요일 sin
     "day_of_week_cos",      # 9. 요일 cos
@@ -94,8 +111,12 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def build_features_from_db(db_session, grade: str) -> pd.DataFrame:
-    """Load all data sources from DB and build a merged feature DataFrame."""
+def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.DataFrame:
+    """Load all data sources from DB and build a merged feature DataFrame.
+
+    For avian flu: if outbreak region matches the prediction region,
+    the avian_flu feature is weighted 3x (higher impact signal).
+    """
     from app.models.price import EggPrice
     from app.models.market_data import (
         TradingVolume,
@@ -105,15 +126,33 @@ def build_features_from_db(db_session, grade: str) -> pd.DataFrame:
         WeatherData,
     )
 
-    # Load egg prices
+    # Load egg prices for the specific region
     prices = (
         db_session.query(EggPrice)
-        .filter(EggPrice.grade == grade, EggPrice.retail_price.isnot(None))
+        .filter(
+            EggPrice.grade == grade,
+            EggPrice.region == region,
+            EggPrice.retail_price.isnot(None),
+        )
         .order_by(EggPrice.date)
         .all()
     )
+
+    # Fallback to Seoul if no regional data
+    if not prices and region != "seoul":
+        prices = (
+            db_session.query(EggPrice)
+            .filter(
+                EggPrice.grade == grade,
+                EggPrice.region == "seoul",
+                EggPrice.retail_price.isnot(None),
+            )
+            .order_by(EggPrice.date)
+            .all()
+        )
+
     if not prices:
-        raise ValueError(f"No price data for grade '{grade}'")
+        raise ValueError(f"No price data for grade '{grade}' region '{region}'")
 
     df = pd.DataFrame([{
         "date": p.date,
@@ -146,13 +185,27 @@ def build_features_from_db(db_session, grade: str) -> pd.DataFrame:
         rate_df = pd.DataFrame([{"date": r.date, "exchange_rate": r.usd_krw} for r in rates])
         df = df.merge(rate_df, on="date", how="left")
 
-    # Avian flu
+    # Avian flu — regional weighting
+    # 해당 지역에서 AI가 발생하면 가중치 3배, 다른 지역이면 1배
     flu_records = db_session.query(AvianFluStatus).filter(AvianFluStatus.date >= min_date).all()
     if flu_records:
-        flu_df = pd.DataFrame([{
-            "date": f.date,
-            "avian_flu": 1.0 if f.is_outbreak else 0.0,
-        } for f in flu_records])
+        region_keyword = REGION_NAME_MAP.get(region, "")
+        flu_rows = []
+        for f in flu_records:
+            if not f.is_outbreak:
+                flu_rows.append({"date": f.date, "avian_flu": 0.0})
+                continue
+
+            # Check if this outbreak matches the prediction region
+            flu_region_str = (f.region or "").lower()
+            if region_keyword and region_keyword in flu_region_str:
+                # 해당 지역 발생 → 3배 가중치
+                flu_rows.append({"date": f.date, "avian_flu": 3.0})
+            else:
+                # 다른 지역 발생 → 기본 1배
+                flu_rows.append({"date": f.date, "avian_flu": 1.0})
+
+        flu_df = pd.DataFrame(flu_rows)
         df = df.merge(flu_df, on="date", how="left")
 
     # Weather
@@ -174,17 +227,7 @@ def create_sequences(
     targets: np.ndarray | None = None,
     seq_length: int = SEQUENCE_LENGTH,
 ) -> tuple[np.ndarray, np.ndarray | None]:
-    """Create sliding window sequences for LSTM input.
-
-    Args:
-        features: (N, num_features) array
-        targets: (N, num_targets) array or None for inference
-        seq_length: lookback window size
-
-    Returns:
-        X: (num_sequences, seq_length, num_features)
-        y: (num_sequences, num_targets) or None
-    """
+    """Create sliding window sequences for LSTM input."""
     X = []
     y = [] if targets is not None else None
 
@@ -207,12 +250,7 @@ class PriceScaler:
         self.target_scaler = MinMaxScaler()
 
     def fit_transform(self, df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
-        """Fit scalers and return scaled features + targets.
-
-        Returns:
-            features: (N, 15) scaled feature array
-            targets: (N, 3) target array with 7d/14d/30d future prices
-        """
+        """Fit scalers and return scaled features + targets."""
         features = df[FEATURE_COLUMNS].values
         scaled_features = self.feature_scaler.fit_transform(features)
 

@@ -22,13 +22,32 @@ GRADE_MAP = {
     "소란": "06",
 }
 
+# KAMIS 지역 코드 매핑
+REGION_CODE_MAP = {
+    "seoul": "1101",
+    "busan": "2100",
+    "daegu": "2200",
+    "incheon": "2300",
+    "gwangju": "2401",
+    "daejeon": "2501",
+    "gyeonggi": "3111",
+    "gangwon": "3211",
+    "chungcheong": "3411",  # 충남 대표
+    "jeolla": "3611",       # 전남 대표
+    "gyeongsang": "3711",   # 경북 대표
+    "jeju": "3911",
+}
+
 
 async def fetch_daily_prices(
     target_date: date | None = None,
+    region: str = "seoul",
 ) -> list[dict]:
-    """Fetch egg prices from KAMIS API for a specific date."""
+    """Fetch egg prices from KAMIS API for a specific date and region."""
     if target_date is None:
         target_date = date.today()
+
+    country_code = REGION_CODE_MAP.get(region, "1101")
 
     params = {
         "action": "dailyPriceByCategoryList",
@@ -41,6 +60,7 @@ async def fetch_daily_prices(
         "p_kind_code": KIND_CODE,
         "p_regday": target_date.strftime("%Y-%m-%d"),
         "p_convert_kg_yn": "N",
+        "p_country_code": country_code,
     }
 
     results = []
@@ -103,9 +123,25 @@ async def fetch_daily_prices(
     return results
 
 
+async def fetch_regional_current_prices(region: str) -> list[dict]:
+    """Fetch current prices for a specific region from KAMIS.
+
+    Returns data in the same format as get_current_prices() service.
+    """
+    today = date.today()
+    # Try today first, then yesterday (weekends/holidays may have no data)
+    for offset in range(0, 4):
+        target = today - timedelta(days=offset)
+        prices = await fetch_daily_prices(target, region=region)
+        if prices:
+            return prices
+    return []
+
+
 async def fetch_historical_prices(
     start_date: date,
     end_date: date | None = None,
+    region: str = "seoul",
 ) -> list[dict]:
     """Fetch historical egg prices day by day."""
     if end_date is None:
@@ -114,7 +150,7 @@ async def fetch_historical_prices(
     all_results = []
     current = start_date
     while current <= end_date:
-        daily = await fetch_daily_prices(current)
+        daily = await fetch_daily_prices(current, region=region)
         all_results.extend(daily)
         current += timedelta(days=1)
 

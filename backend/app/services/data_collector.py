@@ -21,7 +21,7 @@ from app.services.feed_client import fetch_feed_prices
 from app.services.exchange_client import fetch_exchange_rate
 from app.services.avian_flu_client import fetch_avian_flu_status
 from app.services.weather_client import fetch_weather_data
-from app.services.price_service import fetch_and_store_prices
+from app.services.price_service import fetch_and_store_all_regions
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +34,15 @@ async def collect_all_daily_data(db: Session, target_date: date | None = None):
     logger.info(f"Starting full data collection for {target_date}")
     results = {"date": target_date, "sources": {}}
 
-    # 1. Egg prices (KAMIS) — daily
+    # 1. Egg prices (KAMIS) — ALL REGIONS daily
     try:
-        stored = await fetch_and_store_prices(db, target_date)
-        results["sources"]["egg_prices"] = len(stored)
-        logger.info(f"  egg_prices: {len(stored)} records")
+        region_results = await fetch_and_store_all_regions(db, target_date)
+        total = sum(v for v in region_results.values() if isinstance(v, int))
+        results["sources"]["egg_prices"] = {
+            "total_records": total,
+            "regions": region_results,
+        }
+        logger.info(f"  egg_prices: {total} records across {len(region_results)} regions")
     except Exception as e:
         results["sources"]["egg_prices"] = f"error: {e}"
         logger.error(f"  egg_prices failed: {e}")

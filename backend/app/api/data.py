@@ -13,23 +13,49 @@ router = APIRouter(prefix="/data", tags=["data"])
 @router.get("/yearly")
 def yearly_data(
     grade: str = Query("특란"),
+    region: str = Query("seoul"),
     db: Session = Depends(get_db),
 ):
-    """Yearly average prices."""
-    rows = (
+    """Yearly average prices (지역별)."""
+    q = (
         db.query(
             extract("year", EggPrice.date).label("year"),
             func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
             func.avg(EggPrice.retail_price).label("avg_retail"),
             func.count(EggPrice.id).label("count"),
         )
-        .filter(EggPrice.grade == grade, EggPrice.wholesale_price.isnot(None))
+        .filter(
+            EggPrice.grade == grade,
+            EggPrice.region == region,
+            EggPrice.wholesale_price.isnot(None),
+        )
         .group_by(extract("year", EggPrice.date))
         .order_by(extract("year", EggPrice.date))
-        .all()
     )
+    rows = q.all()
+
+    # Fallback to Seoul if no data
+    if not rows and region != "seoul":
+        rows = (
+            db.query(
+                extract("year", EggPrice.date).label("year"),
+                func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
+                func.avg(EggPrice.retail_price).label("avg_retail"),
+                func.count(EggPrice.id).label("count"),
+            )
+            .filter(
+                EggPrice.grade == grade,
+                EggPrice.region == "seoul",
+                EggPrice.wholesale_price.isnot(None),
+            )
+            .group_by(extract("year", EggPrice.date))
+            .order_by(extract("year", EggPrice.date))
+            .all()
+        )
+
     return {
         "grade": grade,
+        "region": region,
         "items": [
             {
                 "year": int(r.year),
@@ -45,10 +71,11 @@ def yearly_data(
 @router.get("/monthly")
 def monthly_data(
     grade: str = Query("특란"),
+    region: str = Query("seoul"),
     year: int = Query(None),
     db: Session = Depends(get_db),
 ):
-    """Monthly average prices."""
+    """Monthly average prices (지역별)."""
     q = db.query(
         extract("year", EggPrice.date).label("year"),
         extract("month", EggPrice.date).label("month"),
@@ -57,7 +84,11 @@ def monthly_data(
         func.min(EggPrice.wholesale_price).label("min_wholesale"),
         func.max(EggPrice.wholesale_price).label("max_wholesale"),
         func.count(EggPrice.id).label("count"),
-    ).filter(EggPrice.grade == grade, EggPrice.wholesale_price.isnot(None))
+    ).filter(
+        EggPrice.grade == grade,
+        EggPrice.region == region,
+        EggPrice.wholesale_price.isnot(None),
+    )
 
     if year:
         q = q.filter(extract("year", EggPrice.date) == year)
@@ -67,8 +98,33 @@ def monthly_data(
         .order_by(extract("year", EggPrice.date), extract("month", EggPrice.date))
         .all()
     )
+
+    # Fallback to Seoul if no data
+    if not rows and region != "seoul":
+        q2 = db.query(
+            extract("year", EggPrice.date).label("year"),
+            extract("month", EggPrice.date).label("month"),
+            func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
+            func.avg(EggPrice.retail_price).label("avg_retail"),
+            func.min(EggPrice.wholesale_price).label("min_wholesale"),
+            func.max(EggPrice.wholesale_price).label("max_wholesale"),
+            func.count(EggPrice.id).label("count"),
+        ).filter(
+            EggPrice.grade == grade,
+            EggPrice.region == "seoul",
+            EggPrice.wholesale_price.isnot(None),
+        )
+        if year:
+            q2 = q2.filter(extract("year", EggPrice.date) == year)
+        rows = (
+            q2.group_by(extract("year", EggPrice.date), extract("month", EggPrice.date))
+            .order_by(extract("year", EggPrice.date), extract("month", EggPrice.date))
+            .all()
+        )
+
     return {
         "grade": grade,
+        "region": region,
         "items": [
             {
                 "year": int(r.year),

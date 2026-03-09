@@ -33,7 +33,10 @@ def _enable_mc_dropout(model: EggPriceLSTM):
 
 
 def load_model(grade: str, model_version: str | None = None) -> tuple[EggPriceLSTM, PriceScaler]:
-    """Load trained model and scaler from disk."""
+    """Load trained model and scaler from disk.
+
+    Models are shared across regions (trained on Seoul data).
+    """
     if model_version is None:
         model_version = settings.MODEL_VERSION
 
@@ -61,12 +64,12 @@ def predict_prices(
     db: Session,
     grade: str,
     model_version: str | None = None,
+    region: str = "seoul",
 ) -> list[dict]:
     """Run prediction with MC Dropout for 90% confidence intervals.
 
-    Returns list of dicts with keys:
-        base_date, target_date, grade, predicted_price,
-        confidence_lower, confidence_upper, horizon_days, model_version
+    Uses the shared model (trained on Seoul) but feeds regional price data.
+    Avian flu in the target region gets 3x weight in features.
     """
     if model_version is None:
         model_version = settings.MODEL_VERSION
@@ -74,8 +77,8 @@ def predict_prices(
     model, scaler = load_model(grade, model_version)
     device = next(model.parameters()).device
 
-    # Build features from all DB sources for this grade
-    df = build_features_from_db(db, grade)
+    # Build features from regional DB data (with regional avian flu weighting)
+    df = build_features_from_db(db, grade, region=region)
 
     if len(df) < SEQUENCE_LENGTH:
         raise ValueError(
@@ -112,10 +115,26 @@ def predict_prices(
     from app.models.price import EggPrice
     latest = (
         db.query(EggPrice)
-        .filter(EggPrice.grade == grade, EggPrice.retail_price.isnot(None))
+        .filter(
+            EggPrice.grade == grade,
+            EggPrice.region == region,
+            EggPrice.retail_price.isnot(None),
+        )
         .order_by(EggPrice.date.desc())
         .first()
     )
+    if not latest:
+        # Fallback to Seoul
+        latest = (
+            db.query(EggPrice)
+            .filter(
+                EggPrice.grade == grade,
+                EggPrice.region == "seoul",
+                EggPrice.retail_price.isnot(None),
+            )
+            .order_by(EggPrice.date.desc())
+            .first()
+        )
     base = latest.date if latest else date.today()
 
     horizons = [7, 14, 30]
@@ -131,6 +150,7 @@ def predict_prices(
             "base_date": base,
             "target_date": target,
             "grade": grade,
+            "region": region,
             "predicted_price": round(float(mean_preds[i]), 1),
             "confidence_lower": round(max(lower, 0), 1),
             "confidence_upper": round(upper, 1),

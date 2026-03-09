@@ -39,8 +39,8 @@ export default function PricePage() {
   const [selectedGrade, setSelectedGrade] = useState("특란");
   const [selectedRegion, setSelectedRegion] = useState("seoul");
   const [periodDays, setPeriodDays] = useState(30);
-  const { data: prices, isLoading: pricesLoading } = useCurrentPrices();
-  const { data: history, isLoading: historyLoading } = usePriceHistory(selectedGrade, periodDays);
+  const { data: prices, isLoading: pricesLoading } = useCurrentPrices(selectedRegion);
+  const { data: history, isLoading: historyLoading } = usePriceHistory(selectedGrade, periodDays, true, selectedRegion);
 
   const selectedPrice = prices?.find((p) => p.grade === selectedGrade);
   const regionName = REGIONS.find((r) => r.code === selectedRegion)?.name ?? "서울";
