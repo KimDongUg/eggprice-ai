@@ -17,7 +17,6 @@ import {
   Target,
   Zap,
   Newspaper,
-  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,8 +31,14 @@ export default function LandingPage() {
   const [news, setNews] = useState<{ id: number; title: string; summary: string; category: string; source_name: string | null; published_at: string; seo_slug: string }[]>([]);
 
   useEffect(() => {
-    api.get("/news", { params: { limit: 5 } })
-      .then((r) => setNews(r.data.items || []))
+    api.get("/news", { params: { limit: 10, category: "가격" } })
+      .then((r) => {
+        const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const recent = (r.data.items || []).filter(
+          (item: { published_at: string }) => new Date(item.published_at).getTime() >= weekAgo
+        );
+        setNews(recent.slice(0, 3));
+      })
       .catch(() => {});
   }, []);
 
@@ -198,6 +203,43 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── 가격 변동 뉴스 ─── */}
+      {news.length > 0 && (
+        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Newspaper className="h-6 w-6 text-primary-400" />
+                가격 변동 뉴스
+              </h2>
+              <Link href="/news" className="text-sm text-primary-400 hover:underline flex items-center gap-1">
+                전체 보기 <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {news.map((item) => (
+                <Link key={item.id} href={`/news/${item.seo_slug}`}>
+                  <Card className="h-full hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-primary-400">
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-2 line-clamp-2">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                        {item.summary}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{item.source_name || "뉴스"}</span>
+                        <span>{new Date(item.published_at).toLocaleDateString("ko-KR")}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── 문제 제기 섹션 ─── */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
@@ -510,50 +552,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* ─── 뉴스 ─── */}
-      {news.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Newspaper className="h-7 w-7 text-primary-400" />
-                계란 시장 뉴스
-              </h2>
-              <Link href="/news" className="text-sm text-primary-400 hover:underline flex items-center gap-1">
-                전체 보기 <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {news.slice(0, 6).map((item) => (
-                <Link key={item.id} href={`/news/${item.seo_slug}`}>
-                  <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-400">
-                          {item.category}
-                        </span>
-                        {item.source_name && (
-                          <span className="text-xs text-muted-foreground">{item.source_name}</span>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-2 line-clamp-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {item.summary}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-3">
-                        {new Date(item.published_at).toLocaleDateString("ko-KR")}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ─── FAQ ─── */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
