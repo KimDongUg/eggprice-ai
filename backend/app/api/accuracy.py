@@ -16,6 +16,7 @@ router = APIRouter(prefix="/accuracy", tags=["accuracy"])
 @router.get("/summary")
 def accuracy_summary(
     grade: str = Query("특란"),
+    region: str = Query("seoul"),
     db: Session = Depends(get_db),
 ):
     """Public accuracy summary — MAPE for 30/90/180 days."""
@@ -27,10 +28,12 @@ def accuracy_summary(
             .join(
                 EggPrice,
                 (Prediction.target_date == EggPrice.date)
-                & (Prediction.grade == EggPrice.grade),
+                & (Prediction.grade == EggPrice.grade)
+                & (Prediction.region == EggPrice.region),
             )
             .filter(
                 Prediction.grade == grade,
+                Prediction.region == region,
                 Prediction.horizon_days == 7,
                 Prediction.target_date >= cutoff,
                 EggPrice.wholesale_price.isnot(None),
@@ -53,12 +56,13 @@ def accuracy_summary(
             "accuracy": accuracy,
             "sample_count": len(rows),
         }
-    return {"grade": grade, "periods": results}
+    return {"grade": grade, "region": region, "periods": results}
 
 
 @router.get("/history")
 def accuracy_history(
     grade: str = Query("특란"),
+    region: str = Query("seoul"),
     days: int = Query(90),
     db: Session = Depends(get_db),
 ):
@@ -73,10 +77,12 @@ def accuracy_history(
         .join(
             EggPrice,
             (Prediction.target_date == EggPrice.date)
-            & (Prediction.grade == EggPrice.grade),
+            & (Prediction.grade == EggPrice.grade)
+            & (Prediction.region == EggPrice.region),
         )
         .filter(
             Prediction.grade == grade,
+            Prediction.region == region,
             Prediction.horizon_days == 7,
             Prediction.target_date >= cutoff,
             EggPrice.wholesale_price.isnot(None),
@@ -99,7 +105,7 @@ def accuracy_history(
                 "error_pct": error_pct,
             }
         )
-    return {"grade": grade, "items": items}
+    return {"grade": grade, "region": region, "items": items}
 
 
 @router.get("/metrics")

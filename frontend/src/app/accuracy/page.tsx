@@ -4,19 +4,26 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, BarChart3, Target, Activity } from "lucide-react";
+import {
+  CheckCircle2, Activity, Info, Database, MapPin, BarChart3,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  BarChart, Bar,
 } from "recharts";
 
-const GRADE_OPTIONS = ["특란", "대란", "중란", "소란"];
+const REGIONS = [
+  { code: "seoul", name: "서울" },
+  { code: "busan", name: "부산" },
+  { code: "daegu", name: "대구" },
+  { code: "gwangju", name: "광주" },
+  { code: "daejeon", name: "대전" },
+];
 
 interface AccuracySummary {
   grade: string;
+  region: string;
   periods: Record<string, { mape: number | null; accuracy: number | null; sample_count: number }>;
 }
 
@@ -39,7 +46,8 @@ interface ModelMetrics {
 }
 
 export default function AccuracyPage() {
-  const [grade, setGrade] = useState("특란");
+  const grade = "특란";
+  const [region, setRegion] = useState("seoul");
   const [summary, setSummary] = useState<AccuracySummary | null>(null);
   const [history, setHistory] = useState<AccuracyHistoryItem[]>([]);
   const [metrics, setMetrics] = useState<ModelMetrics | null>(null);
@@ -48,8 +56,8 @@ export default function AccuracyPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      api.get("/accuracy/summary", { params: { grade } }).then((r) => r.data),
-      api.get("/accuracy/history", { params: { grade, days: 90 } }).then((r) => r.data),
+      api.get("/accuracy/summary", { params: { grade, region } }).then((r) => r.data),
+      api.get("/accuracy/history", { params: { grade, region, days: 90 } }).then((r) => r.data),
       api.get("/accuracy/metrics", { params: { grade } }).then((r) => r.data),
     ])
       .then(([s, h, m]) => {
@@ -59,7 +67,9 @@ export default function AccuracyPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [grade]);
+  }, [region]);
+
+  const regionName = REGIONS.find((r) => r.code === region)?.name ?? "서울";
 
   return (
     <div className="space-y-6">
@@ -67,16 +77,29 @@ export default function AccuracyPage() {
         <h1 className="text-2xl font-bold mb-1">예측 정확도</h1>
         <p className="text-muted-foreground text-sm">
           AI 모델 예측 정확도를 투명하게 공개합니다 — 신뢰도의 핵심 근거
+          <Badge variant="outline" className="ml-2 text-[10px] align-middle">특란 · KAMIS 도매 유통가 기준</Badge>
         </p>
       </div>
 
-      <Tabs value={grade} onValueChange={setGrade}>
-        <TabsList>
-          {GRADE_OPTIONS.map((g) => (
-            <TabsTrigger key={g} value={g}>{g}</TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      {/* Region selector */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <MapPin className="h-4 w-4 text-primary-400 shrink-0" />
+        <span className="text-sm font-medium">지역:</span>
+        {REGIONS.map((r) => (
+          <button
+            key={r.code}
+            onClick={() => setRegion(r.code)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+              region === r.code
+                ? "bg-primary-400 text-white"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+            )}
+          >
+            {r.name}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="space-y-4">
@@ -96,7 +119,7 @@ export default function AccuracyPage() {
                 <Card key={period}>
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+                      <span className="text-sm font-medium text-muted-foreground">{label} ({regionName})</span>
                       <CheckCircle2 className="h-4 w-4 text-success-500" />
                     </div>
                     <div className="text-3xl font-bold font-mono-num">
@@ -153,7 +176,7 @@ export default function AccuracyPage() {
           {/* Predicted vs Actual chart */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">예측 vs 실제 가격 비교 (최근 90일)</CardTitle>
+              <CardTitle className="text-lg">예측 vs 실제 가격 비교 — {regionName} (최근 90일)</CardTitle>
             </CardHeader>
             <CardContent>
               {history.length > 0 ? (
@@ -168,7 +191,11 @@ export default function AccuracyPage() {
                       }}
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
+                    <YAxis
+                      domain={["dataMin - 200", "dataMax + 200"]}
+                      tickFormatter={(v) => `${v.toLocaleString()}원`}
+                      tick={{ fontSize: 12 }}
+                    />
                     <Tooltip
                       formatter={(value: number, name: string) => [`${value?.toLocaleString()}원`, name]}
                       labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
@@ -190,7 +217,7 @@ export default function AccuracyPage() {
           {history.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">정확도 이력</CardTitle>
+                <CardTitle className="text-lg">정확도 이력 — {regionName}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
@@ -225,6 +252,87 @@ export default function AccuracyPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* MAPE 설명 + 사용 데이터 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* MAPE 설명 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Info className="h-5 w-5 text-blue-500" />
+                  MAPE란?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <p>
+                  <strong className="text-foreground">MAPE (Mean Absolute Percentage Error)</strong>는
+                  예측값과 실제값의 차이를 백분율로 나타낸 지표입니다.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-center">
+                  MAPE = (1/n) × Σ |실제값 - 예측값| / |실제값| × 100%
+                </div>
+                <ul className="space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <Badge className="bg-success-50 text-success-500 text-[10px] mt-0.5 shrink-0">0~5%</Badge>
+                    <span>매우 정확한 예측</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="bg-blue-50 text-blue-600 text-[10px] mt-0.5 shrink-0">5~10%</Badge>
+                    <span>양호한 예측</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="bg-yellow-50 text-yellow-600 text-[10px] mt-0.5 shrink-0">10~20%</Badge>
+                    <span>보통 수준의 예측</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="bg-danger-50 text-danger-500 text-[10px] mt-0.5 shrink-0">20%+</Badge>
+                    <span>개선이 필요한 예측</span>
+                  </li>
+                </ul>
+                <p>
+                  MAPE가 <strong className="text-foreground">낮을수록</strong> 예측이 정확합니다.
+                  정확도(%) = 100% - MAPE 로 계산됩니다.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* 사용 데이터 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Database className="h-5 w-5 text-green-500" />
+                  예측에 사용하는 데이터
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <p className="mb-3">
+                  슬기알 AI는 다양한 시장 데이터를 종합 분석하여 가격을 예측합니다.
+                </p>
+                <div className="space-y-2.5">
+                  {[
+                    { icon: "📊", label: "KAMIS 도매 유통가", desc: "전국 5대 도시 일일 계란 도매 시세" },
+                    { icon: "🌾", label: "사료 가격 (배합사료)", desc: "aT 농산물유통정보 — 생산비의 핵심 변수" },
+                    { icon: "💱", label: "원/달러 환율", desc: "한국은행 기준율 — 수입 사료·원자재에 영향" },
+                    { icon: "🐔", label: "조류인플루엔자 현황", desc: "검역본부 발생 데이터 — 공급 충격 감지" },
+                    { icon: "🌡️", label: "기상 데이터", desc: "기상청 평균 기온 — 산란율·수요 변동" },
+                    { icon: "📦", label: "거래량 (다봄)", desc: "일일 거래 물량 — 수요/공급 균형 파악" },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50">
+                      <span className="text-lg shrink-0">{item.icon}</span>
+                      <div>
+                        <span className="text-foreground font-medium text-sm">{item.label}</span>
+                        <p className="text-xs text-muted-foreground">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs border-t pt-3">
+                  이 데이터들을 LSTM(장단기 기억 신경망) 모델에 입력하여 7일~60일 후 가격을 예측합니다.
+                  모델은 매월 자동 재훈련되며, 새로운 데이터를 반영합니다.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </>
       )}
     </div>
