@@ -15,7 +15,6 @@ const FEATURES = [
   { name: "60일 예측", free: false, standard: false, pro: true },
   { name: "시장 분석", free: false, standard: false, pro: true },
   { name: "SMS 알림", free: false, standard: false, pro: true },
-  { name: "전화 브리핑", free: false, standard: false, pro: true },
 ];
 
 export default function PricingPage() {
@@ -89,7 +88,7 @@ export default function PricingPage() {
               <span className="text-muted-foreground">원/월</span>
             </div>
             <ul className="space-y-2 mb-6 text-sm">
-              {["Standard 전체 포함", "60일 가격 예측", "급등락 알림 (SMS/카카오톡)", "월 1회 전화 브리핑", "시장 요인 분석 리포트", "전담 상담 지원"].map((f) => (
+              {["Standard 전체 포함", "60일 가격 예측", "급등락 알림 (SMS/카카오톡)", "시장 요인 분석 리포트"].map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary-400 shrink-0" />
                   {f}

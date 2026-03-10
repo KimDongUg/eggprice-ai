@@ -267,11 +267,6 @@ export default function LandingPage() {
                 desc: "급격한 가격 변동 시 즉시 SMS/카카오톡으로 알림을 보내드립니다. (Pro)",
               },
               {
-                icon: <Phone className="h-6 w-6 text-primary-400" />,
-                title: "월 1회 전화 브리핑",
-                desc: "담당자가 직접 전화로 시장 상황과 전략을 브리핑합니다. (Pro)",
-              },
-              {
                 icon: <Shield className="h-6 w-6 text-primary-400" />,
                 title: "리스크 경고",
                 desc: "급등락 위험 감지 시 사전 경고 메시지를 발송합니다.",
@@ -361,11 +356,6 @@ export default function LandingPage() {
                 icon: <Bell className="h-8 w-8" />,
                 title: "급등락 실시간 알림",
                 desc: "예상치 못한 가격 변동이 감지되면 즉시 SMS/카카오톡으로 알려드립니다.",
-              },
-              {
-                icon: <Phone className="h-8 w-8" />,
-                title: "월 1회 전화 브리핑",
-                desc: "담당자가 직접 전화로 이달의 시장 상황과 구매 전략을 안내합니다. (Pro)",
               },
             ].map((item) => (
               <div
@@ -488,9 +478,7 @@ export default function LandingPage() {
                     "Standard 전체 포함",
                     "60일 가격 예측",
                     "급등락 알림 (SMS/카카오톡)",
-                    "월 1회 전화 브리핑",
                     "시장 요인 분석 리포트",
-                    "전담 상담 지원",
                   ].map((f) => (
                     <li key={f} className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary-400 shrink-0" />
@@ -534,7 +522,7 @@ export default function LandingPage() {
               },
               {
                 q: "리포트는 어떻게 받나요?",
-                a: "매주 월요일 오전, 이메일 또는 PDF로 발송됩니다. Pro 고객은 추가로 SMS/카카오톡 알림과 월 1회 전화 브리핑을 받으실 수 있습니다.",
+                a: "매주 월요일 오전, 이메일 또는 PDF로 발송됩니다. Pro 고객은 추가로 SMS/카카오톡 급등락 알림을 받으실 수 있습니다.",
               },
             ].map((item) => (
               <Card key={item.q}>
