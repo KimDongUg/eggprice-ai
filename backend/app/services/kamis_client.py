@@ -7,20 +7,12 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-KAMIS_BASE_URL = "http://www.kamis.or.kr/service/price/xml.do"
+KAMIS_BASE_URL = "https://www.kamis.or.kr/service/price/xml.do"
 
-# 계란 품목코드
+# 계란 품목코드 (KAMIS API는 카테고리 단위로 반환, item_code로 필터)
 ITEM_CATEGORY_CODE = "500"  # 축산물
-ITEM_CODE = "221"  # 계란
-KIND_CODE = "01"  # 신선란
-
-GRADE_MAP = {
-    "왕란": "09",
-    "특란": "08",
-    "대란": "04",
-    "중란": "05",
-    "소란": "06",
-}
+EGG_ITEM_CODE = "9903"  # 계란 (API 응답 내 item_code)
+EGG_KIND_CODE_30 = "23"  # 특란 30개 (도매 기준)
 
 # KAMIS 지역 코드 매핑
 REGION_CODE_MAP = {
@@ -49,15 +41,13 @@ async def fetch_daily_prices(
         "p_returntype": "json",
         "p_product_cls_code": "02",  # 도매
         "p_item_category_code": ITEM_CATEGORY_CODE,
-        "p_item_code": ITEM_CODE,
-        "p_kind_code": KIND_CODE,
         "p_regday": target_date.strftime("%Y-%m-%d"),
         "p_convert_kg_yn": "N",
         "p_country_code": country_code,
     }
 
     results = []
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         try:
             response = await client.get(KAMIS_BASE_URL, params=params)
             response.raise_for_status()
@@ -69,8 +59,10 @@ async def fetch_daily_prices(
                 return results
 
             for item in items:
-                grade_name = item.get("rank", "").strip()
-                if grade_name not in GRADE_MAP:
+                # 계란(9903) 특란30개(kind_code=23)만 추출
+                if item.get("item_code") != EGG_ITEM_CODE:
+                    continue
+                if item.get("kind_code") != EGG_KIND_CODE_30:
                     continue
 
                 price_str = item.get("dpr1", "0").replace(",", "").strip()
@@ -79,9 +71,9 @@ async def fetch_daily_prices(
 
                 results.append({
                     "date": target_date,
-                    "grade": grade_name,
+                    "grade": "특란",
                     "wholesale_price": float(price_str),
-                    "unit": item.get("unit", "30개"),
+                    "unit": "30개",
                 })
         except httpx.HTTPStatusError as e:
             logger.error(f"KAMIS API HTTP error: {e.response.status_code}")
