@@ -28,7 +28,7 @@ import api from "@/lib/axios";
 export default function LandingPage() {
   const { data: prices } = useCurrentPrices();
   const { data: forecast } = useForecast("특란");
-  const [news, setNews] = useState<{ id: number; title: string; summary: string; category: string; source_name: string | null; published_at: string; seo_slug: string }[]>([]);
+  const [news, setNews] = useState<{ id: number; title: string; summary: string; category: string; source: string | null; source_name: string | null; published_at: string }[]>([]);
 
   useEffect(() => {
     api.get("/news", { params: { limit: 10, category: "가격" } })
@@ -219,7 +219,12 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {news.map((item) => (
-                <Link key={item.id} href={`/news/${item.seo_slug}`}>
+                <a
+                  key={item.id}
+                  href={item.source || "/news"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Card className="h-full hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-primary-400">
                     <CardContent className="p-4">
                       <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-2 line-clamp-2">
@@ -234,7 +239,7 @@ export default function LandingPage() {
                       </div>
                     </CardContent>
                   </Card>
-                </Link>
+                </a>
               ))}
             </div>
           </div>
