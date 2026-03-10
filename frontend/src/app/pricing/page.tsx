@@ -3,73 +3,100 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, X, Phone, Mail } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const FEATURES = [
   { name: "오늘 가격", free: true, standard: true, pro: true },
   { name: "7일 예측", free: true, standard: true, pro: true },
   { name: "뉴스", free: true, standard: true, pro: true },
+  { name: "예측 정확도", free: true, standard: true, pro: true },
   { name: "30일 예측", free: false, standard: true, pro: true },
-  { name: "주간 리포트", free: false, standard: true, pro: true },
-  { name: "가격 알림", free: false, standard: true, pro: true },
+  { name: "방향성 요약 (상승/하락 확률)", free: false, standard: true, pro: true },
+  { name: "변동성 지수", free: false, standard: true, pro: true },
+  { name: "구매 권장 시점 제안", free: false, standard: true, pro: true },
+  { name: "주간 브리핑 리포트", free: false, standard: true, pro: true },
+  { name: "리스크 경고 메시지", free: false, standard: true, pro: true },
   { name: "60일 예측", free: false, standard: false, pro: true },
-  { name: "시장 분석", free: false, standard: false, pro: true },
-  { name: "SMS 알림", free: false, standard: false, pro: true },
+  { name: "급등락 알림 (SMS/카카오톡)", free: false, standard: false, pro: true },
+  { name: "시장 요인 분석 리포트", free: false, standard: false, pro: true },
 ];
 
 export default function PricingPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">구독 서비스</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">구독 서비스 안내</h1>
         <p className="text-muted-foreground">나에게 맞는 플랜을 선택하세요</p>
       </div>
 
       {/* Plan cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {/* Free */}
-        <Card>
-          <CardContent className="p-6 pt-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Free</h3>
-            <p className="text-sm text-muted-foreground mb-4">일반 대중</p>
-            <div className="mb-6">
-              <span className="text-3xl font-bold text-gray-900">무료</span>
-            </div>
-            <ul className="space-y-2 mb-6 text-sm">
-              {["오늘 가격 확인", "7일 가격 예측", "뉴스 열람", "예측 정확도 확인"].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-success-500 shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Button className="w-full" variant="outline">
-              현재 플랜
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Standard */}
+        {/* 창립 멤버 */}
         <Card className="relative border-2 border-secondary-400 shadow-lg">
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary-400 text-white text-xs font-bold px-4 py-1 rounded-full">
-            인기
+            한정 20명
           </div>
           <CardContent className="p-6 pt-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Standard</h3>
-            <p className="text-sm text-muted-foreground mb-4">양계 업계 종사자</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">창립 멤버</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              6개월 고정가 특별 혜택
+            </p>
             <div className="mb-6">
               <span className="text-3xl font-bold text-secondary-600">49,000</span>
               <span className="text-muted-foreground">원/월</span>
             </div>
             <ul className="space-y-2 mb-6 text-sm">
-              {["Free 기능 전체 포함", "30일 가격 예측", "주간 브리핑 리포트", "가격 알림 (이메일)", "구매 권장 시점 제안"].map((f) => (
+              {[
+                "Standard 기능 전체 포함",
+                "30일 가격 예측",
+                "주간 브리핑 리포트",
+                "리스크 경고 메시지",
+                "6개월 가격 고정",
+              ].map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-secondary-500 shrink-0" />
                   {f}
                 </li>
               ))}
             </ul>
-            <Button className="w-full bg-secondary-500 hover:bg-secondary-600 text-white" asChild>
+            <Button
+              className="w-full bg-secondary-500 hover:bg-secondary-600 text-white"
+              asChild
+            >
+              <a href="tel:010-3526-4754">지금 신청하기</a>
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              6개월 후 Standard로 자동 전환
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Standard */}
+        <Card className="border">
+          <CardContent className="p-6 pt-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-1">Standard</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              일반 도매상 · 농가
+            </p>
+            <div className="mb-6">
+              <span className="text-3xl font-bold text-gray-900">79,000</span>
+              <span className="text-muted-foreground">원/월</span>
+            </div>
+            <ul className="space-y-2 mb-6 text-sm">
+              {[
+                "30일 가격 예측",
+                "방향성 요약 (상승/하락 확률)",
+                "변동성 지수",
+                "구매 권장 시점 제안",
+                "주간 브리핑 리포트 (PDF/이메일)",
+                "리스크 경고 메시지",
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success-500 shrink-0" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Button className="w-full" variant="outline" asChild>
               <a href="tel:010-3526-4754">상담 후 가입</a>
             </Button>
           </CardContent>
@@ -82,20 +109,30 @@ export default function PricingPage() {
           </div>
           <CardContent className="p-6 pt-8">
             <h3 className="text-lg font-bold text-gray-900 mb-1">Pro</h3>
-            <p className="text-sm text-muted-foreground mb-4">대형 거래처 · 유통업체</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              대형 거래처 · 유통업체
+            </p>
             <div className="mb-6">
               <span className="text-3xl font-bold text-primary-400">129,000</span>
               <span className="text-muted-foreground">원/월</span>
             </div>
             <ul className="space-y-2 mb-6 text-sm">
-              {["Standard 전체 포함", "60일 가격 예측", "급등락 알림 (SMS/카카오톡)", "시장 요인 분석 리포트"].map((f) => (
+              {[
+                "Standard 전체 포함",
+                "60일 가격 예측",
+                "급등락 알림 (SMS/카카오톡)",
+                "시장 요인 분석 리포트",
+              ].map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary-400 shrink-0" />
                   {f}
                 </li>
               ))}
             </ul>
-            <Button className="w-full bg-primary-400 hover:bg-primary-500 text-white" asChild>
+            <Button
+              className="w-full bg-primary-400 hover:bg-primary-500 text-white"
+              asChild
+            >
               <a href="tel:010-3526-4754">상담 후 가입</a>
             </Button>
           </CardContent>
