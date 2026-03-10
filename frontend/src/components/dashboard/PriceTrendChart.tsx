@@ -154,7 +154,7 @@ export default function PriceTrendChart() {
                   tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
                   tickFormatter={(v: number) => `${v.toLocaleString()}원`}
                   width={62}
-                  domain={[2500, "auto"]}
+                  domain={['dataMin - 200', 'dataMax + 200']}
                 />
                 <Tooltip
                   contentStyle={{

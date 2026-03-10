@@ -89,7 +89,7 @@ export default function LandingPage() {
               )}
 
               <p className="text-sm text-muted-foreground mb-8">
-                양계 농가 &middot; 계란 도매상 &middot; 유통업체 &middot; 식자재 납품업체를 위한 서비스
+                계란을 좋아하는 일반인 &middot; 계란 도매상 &middot; 유통업체 &middot; 식자재 납품업체를 위한 서비스
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button

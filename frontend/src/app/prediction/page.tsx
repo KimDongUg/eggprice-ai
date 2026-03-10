@@ -178,7 +178,11 @@ export default function PredictionPage() {
                       }}
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
+                    <YAxis
+                      domain={['dataMin - 200', 'dataMax + 200']}
+                      tickFormatter={(v) => `${v.toLocaleString()}원`}
+                      tick={{ fontSize: 12 }}
+                    />
                     <Tooltip
                       formatter={(value: number, name: string) => {
                         const regionLabel = REGIONS.find((r) => r.code === name)?.name ?? name;
@@ -216,7 +220,11 @@ export default function PredictionPage() {
                       }}
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
+                    <YAxis
+                      domain={['dataMin - 200', 'dataMax + 200']}
+                      tickFormatter={(v) => `${v.toLocaleString()}원`}
+                      tick={{ fontSize: 12 }}
+                    />
                     <Tooltip
                       formatter={(value: number, name: string) => [`${value?.toLocaleString()}원`, name]}
                       labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}

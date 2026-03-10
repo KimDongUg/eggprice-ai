@@ -204,6 +204,7 @@ export default function PricePage() {
                   tick={{ fontSize: 12 }}
                 />
                 <YAxis
+                  domain={['dataMin - 200', 'dataMax + 200']}
                   tickFormatter={(v) => `${v.toLocaleString()}원`}
                   tick={{ fontSize: 12 }}
                 />
