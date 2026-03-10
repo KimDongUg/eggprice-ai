@@ -270,7 +270,7 @@ export default function DataPage() {
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Database className="h-3.5 w-3.5" />
-        데이터 출처: KAMIS (한국농수산식품유통공사)
+        데이터 출처: KAMIS (한국농수산식품유통공사) 도매 유통가 기준
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="hover:underline text-gray-400"
               >
-                KAMIS 농산물유통정보
+                KAMIS 농산물유통정보 (도매 유통가 기준)
               </a>
             </p>
           </div>
