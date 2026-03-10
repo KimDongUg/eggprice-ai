@@ -14,7 +14,6 @@ import {
   BarChart3,
   CheckCircle2,
   ArrowRight,
-  MessageCircle,
   Users,
   Target,
   Zap,
@@ -541,8 +540,7 @@ export default function LandingPage() {
             </Button>
             <Button
               size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white/10 text-base px-8 py-6"
+              className="bg-white/20 text-white border-2 border-white hover:bg-white hover:text-primary-500 text-base px-8 py-6"
               asChild
             >
               <a href="mailto:kduaro124@naver.com">
@@ -551,10 +549,6 @@ export default function LandingPage() {
               </a>
             </Button>
           </div>
-          <p className="text-sm text-primary-200 mt-6">
-            <MessageCircle className="inline h-4 w-4 mr-1 -mt-0.5" />
-            카카오톡 상담도 가능합니다
-          </p>
         </div>
       </section>
 
