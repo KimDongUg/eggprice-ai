@@ -80,7 +80,7 @@ export default function Header() {
                 className="bg-primary-400 hover:bg-primary-500 text-white"
                 asChild
               >
-                <a href="tel:010-0000-0000">
+                <a href="tel:010-3526-4754">
                   <Phone className="h-3.5 w-3.5 mr-1" />
                   상담 신청
                 </a>
@@ -145,7 +145,7 @@ export default function Header() {
                 className="w-full bg-primary-400 hover:bg-primary-500 text-white"
                 asChild
               >
-                <a href="tel:010-0000-0000">
+                <a href="tel:010-3526-4754">
                   <Phone className="h-3.5 w-3.5 mr-1" />
                   상담 신청
                 </a>
