@@ -4,14 +4,18 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Minus, Lock, ArrowRight } from "lucide-react";
-import { useForecast, useMultiRegionForecasts } from "@/lib/queries";
+import {
+  TrendingUp, TrendingDown, Minus, Lock, ArrowRight,
+  ShieldAlert, Activity, ShoppingCart, AlertTriangle, Info,
+} from "lucide-react";
+import { useForecast, useMultiRegionForecasts, usePredictionAnalysis } from "@/lib/queries";
+import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Area, Legend,
 } from "recharts";
 import { MapPin } from "lucide-react";
 
@@ -33,11 +37,14 @@ const REGIONS = [
 export default function PredictionPage() {
   const [selectedGrade, setSelectedGrade] = useState("특란");
   const [selectedRegion, setSelectedRegion] = useState("seoul");
+  const { isAuthenticated } = useAuthStore();
   const { data: forecast, isLoading } = useForecast(selectedGrade, true, selectedRegion);
   const { data: multiForecasts, isLoading: multiLoading } = useMultiRegionForecasts(selectedGrade);
+  const { data: analysis } = usePredictionAnalysis(selectedGrade, selectedRegion, isAuthenticated);
 
   const predictions7d = forecast?.predictions?.slice(0, 7) ?? [];
   const predictions30d = forecast?.predictions?.slice(0, 30) ?? [];
+  const predictions60d = forecast?.predictions?.slice(0, 60) ?? [];
   const regionName = REGIONS.find((r) => r.code === selectedRegion)?.name ?? "서울";
 
   // Build multi-region comparison data (7-day)
@@ -142,9 +149,97 @@ export default function PredictionPage() {
                     </p>
                   </div>
                 )}
+                {/* Show direction probability for logged-in users */}
+                {isAuthenticated && analysis && (
+                  <>
+                    <div>
+                      <span className="text-xs text-muted-foreground">상승 확률</span>
+                      <p className="font-mono-num font-bold text-danger-500">{analysis.rise_probability}%</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted-foreground">하락 확률</span>
+                      <p className="font-mono-num font-bold text-success-500">{analysis.fall_probability}%</p>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
+
+          {/* Logged-in: Analysis cards (volatility, buy signal, risk) */}
+          {isAuthenticated && analysis && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Volatility */}
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity className="h-4 w-4 text-primary-400" />
+                    <span className="text-sm font-medium text-muted-foreground">변동성 지수</span>
+                  </div>
+                  <div className="text-2xl font-bold font-mono-num">
+                    {analysis.volatility_index}
+                    <Badge className={cn(
+                      "ml-2 text-xs",
+                      analysis.volatility_label === "안정" ? "bg-success-50 text-success-500" :
+                      analysis.volatility_label === "보통" ? "bg-yellow-50 text-yellow-600" :
+                      "bg-danger-50 text-danger-500"
+                    )}>
+                      {analysis.volatility_label}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">최근 30일 가격 변동 계수</p>
+                </CardContent>
+              </Card>
+
+              {/* Buy signal */}
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShoppingCart className="h-4 w-4 text-primary-400" />
+                    <span className="text-sm font-medium text-muted-foreground">구매 권장</span>
+                  </div>
+                  <div className="text-lg font-bold">
+                    <Badge className={cn(
+                      "text-sm",
+                      analysis.buy_signal === "매수 추천" ? "bg-danger-50 text-danger-500" :
+                      analysis.buy_signal === "매수 대기" ? "bg-success-50 text-success-500" :
+                      analysis.buy_signal === "적정 구매" ? "bg-blue-50 text-blue-600" :
+                      "bg-yellow-50 text-yellow-600"
+                    )}>
+                      {analysis.buy_signal}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">{analysis.buy_reason}</p>
+                </CardContent>
+              </Card>
+
+              {/* Risk alerts */}
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldAlert className="h-4 w-4 text-primary-400" />
+                    <span className="text-sm font-medium text-muted-foreground">리스크 경고</span>
+                  </div>
+                  {analysis.risk_alerts.length > 0 ? (
+                    <div className="space-y-2">
+                      {analysis.risk_alerts.map((alert, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs">
+                          {alert.level === "warning" ? (
+                            <AlertTriangle className="h-3.5 w-3.5 text-yellow-500 shrink-0 mt-0.5" />
+                          ) : (
+                            <Info className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
+                          )}
+                          <span>{alert.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-success-500 font-medium">특이사항 없음</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* FREE: 7-day prediction chart — all regions */}
           <Card>
@@ -270,22 +365,154 @@ export default function PredictionPage() {
             </CardContent>
           </Card>
 
-          {/* PRO teaser: 30-day & 60-day */}
-          <Card className="border-dashed border-2">
-            <CardContent className="py-8 text-center">
-              <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-              <h3 className="text-lg font-bold mb-2">30일 / 60일 예측</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Standard 구독 시 30일 예측, Pro 구독 시 60일 예측을 확인할 수 있습니다.
-              </p>
-              <Button className="bg-primary-400 hover:bg-primary-500 text-white" asChild>
-                <Link href="/pricing">
-                  구독 플랜 보기
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Logged-in: 30-day prediction chart */}
+          {isAuthenticated ? (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    30일 예측 ({regionName})
+                    <Badge className="bg-blue-50 text-blue-600 text-xs">Standard</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {predictions30d.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <ComposedChart data={predictions30d}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis
+                            dataKey="date"
+                            tickFormatter={(v) => {
+                              const d = new Date(v);
+                              return `${d.getMonth() + 1}/${d.getDate()}`;
+                            }}
+                            tick={{ fontSize: 11 }}
+                            interval={4}
+                          />
+                          <YAxis
+                            domain={['dataMin - 200', 'dataMax + 200']}
+                            tickFormatter={(v) => `${v.toLocaleString()}원`}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <Tooltip
+                            formatter={(value: number, name: string) => [`${value?.toLocaleString()}원`, name]}
+                            labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
+                          />
+                          <Legend />
+                          <Area
+                            type="monotone"
+                            dataKey="confidence_interval"
+                            fill="#f9731620"
+                            stroke="none"
+                            name="신뢰구간"
+                            /* use first element as lower bound area */
+                          />
+                          <Line type="monotone" dataKey="price" stroke="#f97316" strokeWidth={2} dot={false} name="예측가" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                      <div className="mt-3 overflow-x-auto max-h-[300px] overflow-y-auto">
+                        <table className="w-full text-sm">
+                          <thead className="sticky top-0 bg-white">
+                            <tr className="border-b">
+                              <th className="text-left py-2 px-3 font-medium text-muted-foreground">날짜</th>
+                              <th className="text-right py-2 px-3 font-medium text-muted-foreground">예측가</th>
+                              <th className="text-right py-2 px-3 font-medium text-muted-foreground">신뢰구간</th>
+                              <th className="text-right py-2 px-3 font-medium text-muted-foreground">변동률</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {predictions30d.map((item) => (
+                              <tr key={item.date} className="border-b last:border-0">
+                                <td className="py-1.5 px-3 text-xs">{new Date(item.date).toLocaleDateString("ko-KR")}</td>
+                                <td className="py-1.5 px-3 text-right font-mono-num text-xs">{item.price.toLocaleString()}원</td>
+                                <td className="py-1.5 px-3 text-right text-xs text-muted-foreground">
+                                  {item.confidence_interval[0].toLocaleString()} ~ {item.confidence_interval[1].toLocaleString()}
+                                </td>
+                                <td className={cn(
+                                  "py-1.5 px-3 text-right text-xs font-medium",
+                                  item.change_percent > 0 ? "text-danger-500" : item.change_percent < 0 ? "text-success-500" : "text-muted-foreground"
+                                )}>
+                                  {item.change_percent > 0 ? "+" : ""}{item.change_percent}%
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                      30일 예측 데이터가 없습니다.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* 60-day prediction chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    60일 예측 ({regionName})
+                    <Badge className="bg-primary-50 text-primary-400 text-xs">Pro</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {predictions60d.length > 30 ? (
+                    <ResponsiveContainer width="100%" height={350}>
+                      <ComposedChart data={predictions60d}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="date"
+                          tickFormatter={(v) => {
+                            const d = new Date(v);
+                            return `${d.getMonth() + 1}/${d.getDate()}`;
+                          }}
+                          tick={{ fontSize: 11 }}
+                          interval={9}
+                        />
+                        <YAxis
+                          domain={['dataMin - 300', 'dataMax + 300']}
+                          tickFormatter={(v) => `${v.toLocaleString()}원`}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <Tooltip
+                          formatter={(value: number, name: string) => [`${value?.toLocaleString()}원`, name]}
+                          labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
+                        />
+                        <Legend />
+                        <Line type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={2} dot={false} name="예측가" />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                      60일 예측 데이터가 없습니다.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            /* Non-logged-in: Lock teaser */
+            <Card className="border-dashed border-2">
+              <CardContent className="py-8 text-center">
+                <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                <h3 className="text-lg font-bold mb-2">30일 / 60일 예측 · AI 분석</h3>
+                <p className="text-sm text-muted-foreground mb-1">
+                  로그인하시면 30일·60일 예측, 변동성 지수, 구매 권장 시점을 확인할 수 있습니다.
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  상승/하락 확률 · 리스크 경고 · 구매 타이밍 추천
+                </p>
+                <Button className="bg-primary-400 hover:bg-primary-500 text-white" asChild>
+                  <Link href="/login">
+                    로그인하고 전체 예측 보기
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </>
       ) : (
         <Card>

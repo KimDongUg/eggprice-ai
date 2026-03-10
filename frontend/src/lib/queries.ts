@@ -73,6 +73,33 @@ export function useMultiRegionForecasts(grade: string, enabled = true) {
   });
 }
 
+// ── Prediction Analysis ─────────────────────────────
+
+export interface PredictionAnalysis {
+  grade: string;
+  region: string;
+  volatility_index: number;
+  volatility_label: string;
+  rise_probability: number;
+  fall_probability: number;
+  buy_signal: string;
+  buy_reason: string;
+  risk_alerts: { level: string; message: string }[];
+  price_count: number;
+}
+
+export function usePredictionAnalysis(grade: string, region: string, enabled = true) {
+  return useQuery<PredictionAnalysis>({
+    queryKey: ["predictions", "analysis", grade, region],
+    queryFn: () =>
+      api
+        .get("/predictions/analysis", { params: { grade, region } })
+        .then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
+    enabled,
+  });
+}
+
 export function usePredictions(grade: string) {
   return useQuery<PredictionSummary>({
     queryKey: ["predictions", grade],

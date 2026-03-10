@@ -38,7 +38,7 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
 
     # 예측 데이터가 없으면 즉시 30일 예측 생성 (폴백)
     if not results:
-        logger.info(f"No predictions for {grade}/{region} — generating 30-day fallback...")
+        logger.info(f"No predictions for {grade}/{region} — generating 60-day fallback...")
         latest = (
             db.query(EggPrice)
             .filter(EggPrice.grade == grade, EggPrice.region == region)
@@ -49,7 +49,7 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
         base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
         base_date = latest.date if latest else date.today()
 
-        for days in range(1, 31):
+        for days in range(1, 61):
             predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
             pred = Prediction(
                 base_date=base_date,
@@ -67,7 +67,7 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
 
         try:
             db.commit()
-            logger.info(f"Generated 30 fallback predictions for {grade}/{region}")
+            logger.info(f"Generated 60 fallback predictions for {grade}/{region}")
         except Exception as e:
             db.rollback()
             logger.warning(f"Fallback prediction commit failed: {e}")
@@ -146,7 +146,7 @@ def regenerate_all_fallback_predictions(db: Session) -> int:
             )
             base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
 
-            for days in range(1, 31):
+            for days in range(1, 61):
                 predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
                 pred = Prediction(
                     base_date=unified_base,
