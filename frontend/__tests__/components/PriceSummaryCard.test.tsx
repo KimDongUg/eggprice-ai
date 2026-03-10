@@ -6,7 +6,6 @@ const baseData: PriceWithChange = {
   date: "2026-01-31",
   grade: "대란",
   wholesale_price: 5000,
-  retail_price: 6000,
   unit: "30개",
   daily_change: null,
   daily_change_pct: null,
@@ -18,12 +17,7 @@ describe("PriceSummaryCard", () => {
     expect(screen.getByText("대란")).toBeInTheDocument();
   });
 
-  it("renders retail price formatted", () => {
-    render(<PriceSummaryCard data={baseData} />);
-    expect(screen.getByText("6,000")).toBeInTheDocument();
-  });
-
-  it("renders wholesale price", () => {
+  it("renders wholesale price formatted", () => {
     render(<PriceSummaryCard data={baseData} />);
     expect(screen.getByText("5,000")).toBeInTheDocument();
   });
@@ -59,8 +53,8 @@ describe("PriceSummaryCard", () => {
     expect(screen.queryByText(/▼/)).not.toBeInTheDocument();
   });
 
-  it("does not render price when retail_price is null", () => {
-    const data: PriceWithChange = { ...baseData, retail_price: null };
+  it("does not render price when wholesale_price is null", () => {
+    const data: PriceWithChange = { ...baseData, wholesale_price: null };
     render(<PriceSummaryCard data={data} />);
     expect(screen.queryByText("원")).not.toBeInTheDocument();
   });
