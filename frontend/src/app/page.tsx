@@ -8,7 +8,6 @@ import {
   Shield,
   Clock,
   Phone,
-  Mail,
   FileText,
   Bell,
   BarChart3,
@@ -512,42 +511,6 @@ export default function LandingPage() {
                 </Button>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA: 상담 신청 ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary-400 to-primary-500 text-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            지금 바로 상담 받으세요
-          </h2>
-          <p className="text-primary-100 mb-8 leading-relaxed">
-            감으로 판단하던 구매 시점, 이제 데이터와 경험이 함께합니다.
-            <br />
-            창립 멤버 마감 전에 상담 신청하세요.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-white text-primary-500 hover:bg-gray-100 text-base px-8 py-6"
-              asChild
-            >
-              <a href="tel:010-3526-4754">
-                <Phone className="h-5 w-5 mr-2" />
-                전화 상담 신청
-              </a>
-            </Button>
-            <Button
-              size="lg"
-              className="bg-white/20 text-white border-2 border-white hover:bg-white hover:text-primary-500 text-base px-8 py-6"
-              asChild
-            >
-              <a href="mailto:kduaro124@naver.com">
-                <Mail className="h-5 w-5 mr-2" />
-                이메일 문의
-              </a>
-            </Button>
           </div>
         </div>
       </section>
