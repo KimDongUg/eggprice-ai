@@ -47,7 +47,7 @@ async def fetch_daily_prices(
         "p_cert_key": settings.KAMIS_API_KEY,
         "p_cert_id": settings.KAMIS_API_ID,
         "p_returntype": "json",
-        "p_product_cls_code": "01",  # 소매
+        "p_product_cls_code": "02",  # 도매
         "p_item_category_code": ITEM_CATEGORY_CODE,
         "p_item_code": ITEM_CODE,
         "p_kind_code": KIND_CODE,
@@ -80,38 +80,13 @@ async def fetch_daily_prices(
                 results.append({
                     "date": target_date,
                     "grade": grade_name,
-                    "retail_price": float(price_str),
+                    "wholesale_price": float(price_str),
                     "unit": item.get("unit", "30개"),
                 })
         except httpx.HTTPStatusError as e:
             logger.error(f"KAMIS API HTTP error: {e.response.status_code}")
         except Exception as e:
             logger.error(f"KAMIS API error: {e}")
-
-    # Fetch wholesale prices separately
-    params["p_product_cls_code"] = "02"  # 도매
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        try:
-            response = await client.get(KAMIS_BASE_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
-
-            items = data.get("data", {}).get("item", [])
-            if not items or items == "":
-                return results
-
-            for item in items:
-                grade_name = item.get("rank", "").strip()
-                price_str = item.get("dpr1", "0").replace(",", "").strip()
-                if price_str in ("-", "", "0"):
-                    continue
-
-                for r in results:
-                    if r["grade"] == grade_name:
-                        r["wholesale_price"] = float(price_str)
-                        break
-        except Exception as e:
-            logger.error(f"KAMIS wholesale API error: {e}")
 
     return results
 

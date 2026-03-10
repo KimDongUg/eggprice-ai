@@ -2,7 +2,6 @@ export interface PriceWithChange {
   date: string;
   grade: string;
   wholesale_price: number | null;
-  retail_price: number | null;
   unit: string;
   daily_change: number | null;
   daily_change_pct: number | null;
@@ -13,7 +12,6 @@ export interface PriceHistory {
   date: string;
   grade: string;
   wholesale_price: number | null;
-  retail_price: number | null;
   unit: string;
   created_at: string;
 }

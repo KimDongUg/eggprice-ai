@@ -71,7 +71,7 @@ export default function PriceTrendChart() {
           dateMap.set(row.date, { date: row.date });
         }
         const entry = dateMap.get(row.date)!;
-        entry[grade] = row.retail_price ?? row.wholesale_price ?? 0;
+        entry[grade] = row.wholesale_price ?? 0;
       }
     }
 

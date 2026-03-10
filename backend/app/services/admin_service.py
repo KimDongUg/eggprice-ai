@@ -655,7 +655,7 @@ def upsert_price(db: Session, user_id: int, data) -> EggPrice:
     ).first()
 
     if existing:
-        for field in ("wholesale_price", "retail_price"):
+        for field in ("wholesale_price",):
             new_val = getattr(data, field)
             if new_val is not None:
                 old_val = getattr(existing, field)
@@ -678,7 +678,6 @@ def upsert_price(db: Session, user_id: int, data) -> EggPrice:
             date=data.date,
             grade=data.grade,
             wholesale_price=data.wholesale_price,
-            retail_price=data.retail_price,
         )
         db.add(price)
         db.commit()
@@ -692,7 +691,7 @@ def run_data_quality_checks(db: Session, grade: str, days: int = 30) -> list[Dat
 
     # Missing data check
     rows = (
-        db.query(EggPrice.date, EggPrice.wholesale_price, EggPrice.retail_price)
+        db.query(EggPrice.date, EggPrice.wholesale_price)
         .filter(EggPrice.grade == grade, EggPrice.date >= cutoff)
         .order_by(EggPrice.date)
         .all()

@@ -137,7 +137,6 @@ export interface ManualPriceInput {
   date: string;
   grade: string;
   wholesale_price: number | null;
-  retail_price: number | null;
   reason?: string;
 }
 

@@ -23,7 +23,7 @@ interface Props {
 export default function PredictionChart({ history, predictions }: Props) {
   const histData = history.slice(-90).map((h) => ({
     date: h.date,
-    actual: h.retail_price,
+    actual: h.wholesale_price,
     predicted: null as number | null,
     ci_lower: null as number | null,
     ci_upper: null as number | null,

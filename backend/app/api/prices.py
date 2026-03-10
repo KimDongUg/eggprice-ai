@@ -52,7 +52,6 @@ async def price_history(
         serialized = [
             {
                 "d": str(r.date),
-                "r": int(r.retail_price or 0),
                 "w": int(r.wholesale_price or 0),
             }
             for r in result
@@ -61,7 +60,7 @@ async def price_history(
         serialized = [
             {
                 "id": r.id, "date": str(r.date), "grade": r.grade,
-                "wholesale_price": r.wholesale_price, "retail_price": r.retail_price,
+                "wholesale_price": r.wholesale_price,
                 "unit": r.unit, "created_at": str(r.created_at),
             }
             for r in result

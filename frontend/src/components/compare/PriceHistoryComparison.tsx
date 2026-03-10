@@ -39,8 +39,8 @@ export default function PriceHistoryComparison() {
   for (const q of queries) {
     for (const item of q.data || []) {
       const existing = dateMap.get(item.date) || { date: item.date };
-      if (item.retail_price !== null) {
-        existing[q.grade] = item.retail_price;
+      if (item.wholesale_price !== null) {
+        existing[q.grade] = item.wholesale_price;
       }
       dateMap.set(item.date, existing);
     }
@@ -56,7 +56,7 @@ export default function PriceHistoryComparison() {
           <div>
             <CardTitle>등급별 가격 추이 비교</CardTitle>
             <CardDescription>
-              모든 등급의 소비자가격 변화를 한눈에 비교합니다.
+              모든 등급의 도매가격 변화를 한눈에 비교합니다.
             </CardDescription>
           </div>
           <div className="flex gap-1">
@@ -93,16 +93,7 @@ export default function PriceHistoryComparison() {
                 }}
               />
               <YAxis
-                domain={[2000, 'auto']}
-                ticks={(() => {
-                  const allPrices = chartData.flatMap((d) =>
-                    COMPARE_GRADES.map((g) => d[g.grade]).filter((v): v is number => typeof v === 'number')
-                  );
-                  const max = Math.max(...allPrices, 2000);
-                  const result: number[] = [];
-                  for (let t = 2000; t <= max + 2000; t += 2000) result.push(t);
-                  return result;
-                })()}
+                domain={['dataMin - 200', 'dataMax + 200']}
                 tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
                 tickFormatter={(v: number) => v.toLocaleString()}
                 width={55}

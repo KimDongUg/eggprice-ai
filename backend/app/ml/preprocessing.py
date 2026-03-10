@@ -20,23 +20,22 @@ REGION_NAME_MAP = {
     "daejeon": "대전",
 }
 
-# 15 input features
+# 14 input features (도매 유통가 기준)
 FEATURE_COLUMNS = [
     "price",                # 1. 도매가 (KAMIS 기준)
-    "retail_price_feat",    # 2. 소비자가 (보조 피처)
-    "volume",               # 3. 거래량
-    "corn_price",           # 4. 사료(옥수수) 가격
-    "exchange_rate",        # 5. 환율 (USD/KRW)
-    "avian_flu",            # 6. 조류독감 발생 여부 (0/1, 해당 지역 3x 가중치)
-    "temperature",          # 7. 평균 기온
-    "day_of_week_sin",      # 8. 요일 sin
-    "day_of_week_cos",      # 9. 요일 cos
-    "month_sin",            # 10. 월 sin
-    "month_cos",            # 11. 월 cos
-    "price_ma7",            # 12. 7일 이동평균
-    "price_ma14",           # 13. 14일 이동평균
-    "price_volatility_7",   # 14. 7일 변동성 (std)
-    "price_momentum",       # 15. 가격 모멘텀 (7일 수익률)
+    "volume",               # 2. 거래량
+    "corn_price",           # 3. 사료(옥수수) 가격
+    "exchange_rate",        # 4. 환율 (USD/KRW)
+    "avian_flu",            # 5. 조류독감 발생 여부 (0/1, 해당 지역 3x 가중치)
+    "temperature",          # 6. 평균 기온
+    "day_of_week_sin",      # 7. 요일 sin
+    "day_of_week_cos",      # 8. 요일 cos
+    "month_sin",            # 9. 월 sin
+    "month_cos",            # 10. 월 cos
+    "price_ma7",            # 11. 7일 이동평균
+    "price_ma14",           # 12. 14일 이동평균
+    "price_volatility_7",   # 13. 7일 변동성 (std)
+    "price_momentum",       # 14. 가격 모멘텀 (7일 수익률)
 ]
 
 
@@ -45,7 +44,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
 
     Expected input columns: date, wholesale_price.
     Optional columns (filled with defaults if missing):
-        retail_price, volume, corn_price, exchange_rate,
+        volume, corn_price, exchange_rate,
         avian_flu, temperature.
     """
     df = df.copy()
@@ -57,7 +56,6 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Fill optional columns with forward-fill then default
     optional_defaults = {
-        "retail_price": df["price"],  # fallback to wholesale
         "volume": 0.0,
         "corn_price": 0.0,
         "exchange_rate": 0.0,
@@ -66,22 +64,11 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     }
     for col, default in optional_defaults.items():
         if col not in df.columns:
-            if isinstance(default, pd.Series):
-                df[col] = default
-            else:
-                df[col] = default
+            df[col] = default
         else:
-            df[col] = df[col].ffill().fillna(
-                default if not isinstance(default, pd.Series) else 0.0
-            )
+            df[col] = df[col].ffill().fillna(default)
 
     # Ensure numeric
-    # Rename retail_price → retail_price_feat for feature column
-    if "retail_price" in df.columns:
-        df["retail_price_feat"] = pd.to_numeric(df["retail_price"], errors="coerce").fillna(0.0)
-    else:
-        df["retail_price_feat"] = df["price"]
-
     for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
 
@@ -143,7 +130,6 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
 
     df = pd.DataFrame([{
         "date": p.date,
-        "retail_price": p.retail_price,
         "wholesale_price": p.wholesale_price,
     } for p in prices])
 
@@ -202,7 +188,7 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
         df = df.merge(wx_df, on="date", how="left")
 
     # Forward-fill merged columns before feature engineering
-    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature", "wholesale_price"]:
+    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature"]:
         if col in df.columns:
             df[col] = df[col].ffill().fillna(0.0)
 

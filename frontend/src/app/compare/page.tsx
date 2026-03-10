@@ -23,7 +23,7 @@ export default function ComparePage() {
       <div>
         <h1 className="text-2xl font-bold mb-1">가격 비교</h1>
         <p className="text-muted-foreground text-sm">
-          소비자가 vs 산지가, 등급 간 가격 차이를 비교 분석합니다.
+          등급 간 도매 유통가격 차이를 비교 분석합니다.
         </p>
       </div>
 

@@ -31,7 +31,6 @@ async def fetch_and_store_prices(
             .first()
         )
         if existing:
-            existing.retail_price = p.get("retail_price", existing.retail_price)
             existing.wholesale_price = p.get("wholesale_price", existing.wholesale_price)
             stored.append(existing)
         else:
@@ -39,7 +38,6 @@ async def fetch_and_store_prices(
                 date=p["date"],
                 grade=p["grade"],
                 region=region,
-                retail_price=p.get("retail_price"),
                 wholesale_price=p.get("wholesale_price"),
                 unit=p.get("unit", "30개"),
             )
@@ -93,7 +91,6 @@ def get_current_prices(db: Session, region: str = "seoul") -> list[dict]:
             "date": current.date,
             "grade": current.grade,
             "wholesale_price": current.wholesale_price,
-            "retail_price": current.retail_price,
             "unit": current.unit,
             "daily_change": None,
             "daily_change_pct": None,

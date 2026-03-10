@@ -8,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,20 +22,15 @@ export default function WholesaleRetailChart() {
 
   const chartData = (prices || []).map((p) => ({
     grade: p.grade,
-    소비자가: p.retail_price ?? 0,
-    산지가: p.wholesale_price ?? 0,
-    유통마진:
-      p.retail_price && p.wholesale_price
-        ? p.retail_price - p.wholesale_price
-        : 0,
+    도매가: p.wholesale_price ?? 0,
   }));
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>소비자가 vs 산지가</CardTitle>
+        <CardTitle>등급별 도매가</CardTitle>
         <CardDescription>
-          등급별 소비자가격과 산지가격의 차이를 비교합니다.
+          등급별 도매 유통가격을 비교합니다.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -48,6 +42,7 @@ export default function WholesaleRetailChart() {
               tick={{ fontSize: 12 }}
             />
             <YAxis
+              domain={["dataMin - 200", "dataMax + 200"]}
               tick={{ fontSize: 11, fill: "hsl(215 16% 47%)" }}
               tickFormatter={(v) => `${v.toLocaleString()}원`}
               width={45}
@@ -63,43 +58,14 @@ export default function WholesaleRetailChart() {
                 name,
               ]}
             />
-            <Legend wrapperStyle={{ fontSize: "0.75rem" }} />
             <Bar
-              dataKey="소비자가"
+              dataKey="도매가"
               fill="#FF6B35"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={50}
-            />
-            <Bar
-              dataKey="산지가"
-              fill="#FFC864"
               radius={[4, 4, 0, 0]}
               maxBarSize={50}
             />
           </BarChart>
         </ResponsiveContainer>
-
-        {/* Margin table */}
-        <div className="mt-4 border-t pt-4">
-          <h4 className="text-sm font-medium mb-2 text-muted-foreground">
-            유통 마진
-          </h4>
-          <div className="grid grid-cols-5 gap-2">
-            {chartData.map((d) => (
-              <div key={d.grade} className="text-center">
-                <p className="text-xs text-muted-foreground">{d.grade}</p>
-                <p className="font-mono-num text-sm font-bold text-primary-400">
-                  {d.유통마진.toLocaleString()}원
-                </p>
-                {d.소비자가 > 0 && (
-                  <p className="text-[10px] text-muted-foreground">
-                    ({((d.유통마진 / d.소비자가) * 100).toFixed(1)}%)
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

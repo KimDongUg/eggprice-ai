@@ -18,7 +18,7 @@ export default function GradeComparisonTable() {
 
   // Find the base grade (특란) for comparison
   const baseGrade = prices.find((p) => p.grade === "특란");
-  const basePrice = baseGrade?.retail_price ?? 0;
+  const basePrice = baseGrade?.wholesale_price ?? 0;
 
   return (
     <Card>
@@ -34,10 +34,7 @@ export default function GradeComparisonTable() {
                 등급
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
-                소비자가
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
-                산지가
+                도매가
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
                 전일 대비
@@ -50,8 +47,8 @@ export default function GradeComparisonTable() {
           <tbody className="divide-y divide-border">
             {prices.map((p) => {
               const diffFromBase =
-                basePrice && p.retail_price
-                  ? p.retail_price - basePrice
+                basePrice && p.wholesale_price
+                  ? p.wholesale_price - basePrice
                   : null;
               const isUp = p.daily_change !== null && p.daily_change > 0;
               const isDown = p.daily_change !== null && p.daily_change < 0;
@@ -68,12 +65,6 @@ export default function GradeComparisonTable() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="font-mono-num font-bold text-sm">
-                      {p.retail_price?.toLocaleString() ?? "-"}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-0.5">원</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="font-mono-num text-sm text-muted-foreground">
                       {p.wholesale_price?.toLocaleString() ?? "-"}
                     </span>
                     <span className="text-xs text-muted-foreground ml-0.5">원</span>

@@ -8,7 +8,6 @@ class PriceBase(BaseModel):
     date: date
     grade: str
     wholesale_price: Optional[float] = None
-    retail_price: Optional[float] = None
     unit: str = "30개"
 
 
@@ -29,7 +28,6 @@ class PriceWithChange(PriceBase):
 class PriceHistoryCompact(BaseModel):
     """Lightweight history response — smaller payload."""
     d: str        # date
-    r: int        # retail_price
     w: int        # wholesale_price
 
     model_config = {"from_attributes": True}

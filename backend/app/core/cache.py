@@ -154,7 +154,6 @@ def warm_cache(db):
     import random
 
     GRADES = ["왕란", "특란", "대란", "중란", "소란"]
-    BASE_RETAIL = {"왕란": 7800, "특란": 7200, "대란": 6500, "중란": 5800, "소란": 5200}
     BASE_WHOLESALE = {"왕란": 6500, "특란": 6000, "대란": 5400, "중란": 4800, "소란": 4200}
 
     # ── 데이터가 없으면 90일치 샘플 자동 생성 ──
@@ -171,8 +170,7 @@ def warm_cache(db):
                         date=d,
                         grade=grade,
                         region="seoul",
-                        retail_price=round(BASE_RETAIL[grade] + drift),
-                        wholesale_price=round(BASE_WHOLESALE[grade] + drift * 0.8),
+                        wholesale_price=round(BASE_WHOLESALE[grade] + drift),
                         unit="30개",
                     ))
             db.commit()
@@ -181,7 +179,7 @@ def warm_cache(db):
             # 예측 데이터도 함께 생성
             from app.models.prediction import Prediction
             for grade in GRADES:
-                base_price = BASE_RETAIL[grade] + 89 * 1.5
+                base_price = BASE_WHOLESALE[grade] + 89 * 1.5
                 for days in range(1, 31):
                     predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
                     db.add(Prediction(

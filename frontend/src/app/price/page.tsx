@@ -125,18 +125,11 @@ export default function PricePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <span className="text-sm text-muted-foreground">도매가</span>
                 <p className="text-2xl font-bold font-mono-num">
                   {selectedPrice.wholesale_price?.toLocaleString() ?? "-"}
-                  <span className="text-sm font-normal">원</span>
-                </p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <span className="text-sm text-muted-foreground">소비자가</span>
-                <p className="text-2xl font-bold font-mono-num">
-                  {selectedPrice.retail_price?.toLocaleString() ?? "-"}
                   <span className="text-sm font-normal">원</span>
                 </p>
               </div>
@@ -205,20 +198,11 @@ export default function PricePage() {
                   formatter={(value: number) => [`${value?.toLocaleString()}원`]}
                   labelFormatter={(label) => new Date(label).toLocaleDateString("ko-KR")}
                 />
-                <Legend />
                 <Line
                   type="monotone"
                   dataKey="wholesale_price"
                   name="도매가"
                   stroke="#f97316"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="retail_price"
-                  name="소비자가"
-                  stroke="#3b82f6"
                   strokeWidth={2}
                   dot={false}
                 />

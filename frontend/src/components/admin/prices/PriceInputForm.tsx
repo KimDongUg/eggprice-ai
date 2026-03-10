@@ -13,7 +13,6 @@ export default function PriceInputForm() {
     date: new Date().toISOString().slice(0, 10),
     grade: "대란",
     wholesale_price: "",
-    retail_price: "",
     reason: "",
   });
   const mutation = useUpsertPrice();
@@ -24,7 +23,6 @@ export default function PriceInputForm() {
       date: form.date,
       grade: form.grade,
       wholesale_price: form.wholesale_price ? Number(form.wholesale_price) : null,
-      retail_price: form.retail_price ? Number(form.retail_price) : null,
       reason: form.reason || undefined,
     });
   };
@@ -67,16 +65,6 @@ export default function PriceInputForm() {
             />
           </div>
           <div>
-            <Label htmlFor="retail">소매가(원)</Label>
-            <Input
-              id="retail"
-              type="number"
-              placeholder="소매가"
-              value={form.retail_price}
-              onChange={(e) => setForm({ ...form, retail_price: e.target.value })}
-            />
-          </div>
-          <div className="sm:col-span-2 lg:col-span-1">
             <Label htmlFor="reason">사유</Label>
             <Input
               id="reason"

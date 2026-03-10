@@ -27,7 +27,6 @@ const REGIONS = [
 interface YearlyItem {
   year: number;
   avg_wholesale: number | null;
-  avg_retail: number | null;
   data_count: number;
 }
 
@@ -35,7 +34,6 @@ interface MonthlyItem {
   year: number;
   month: number;
   avg_wholesale: number | null;
-  avg_retail: number | null;
   min_wholesale: number | null;
   max_wholesale: number | null;
   data_count: number;
@@ -147,9 +145,7 @@ export default function DataPage() {
                     <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                     <YAxis tickFormatter={(v) => `${v.toLocaleString()}원`} tick={{ fontSize: 12 }} />
                     <Tooltip formatter={(value: number) => [`${value?.toLocaleString()}원`]} />
-                    <Legend />
                     <Bar dataKey="avg_wholesale" name="도매가 평균" fill="#f97316" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="avg_retail" name="소비자가 평균" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -167,7 +163,6 @@ export default function DataPage() {
                     <tr className="border-b bg-gray-50">
                       <th className="text-left py-3 px-4 font-medium">연도</th>
                       <th className="text-right py-3 px-4 font-medium">도매가 평균</th>
-                      <th className="text-right py-3 px-4 font-medium">소비자가 평균</th>
                       <th className="text-right py-3 px-4 font-medium">데이터 수</th>
                     </tr>
                   </thead>
@@ -180,7 +175,6 @@ export default function DataPage() {
                       >
                         <td className="py-3 px-4 font-medium">{item.year}년</td>
                         <td className="py-3 px-4 text-right font-mono-num">{item.avg_wholesale?.toLocaleString() ?? "-"}원</td>
-                        <td className="py-3 px-4 text-right font-mono-num">{item.avg_retail?.toLocaleString() ?? "-"}원</td>
                         <td className="py-3 px-4 text-right text-muted-foreground">{item.data_count}건</td>
                       </tr>
                     ))}
@@ -231,7 +225,6 @@ export default function DataPage() {
                     <tr className="border-b bg-gray-50">
                       <th className="text-left py-3 px-4 font-medium">기간</th>
                       <th className="text-right py-3 px-4 font-medium">도매가 평균</th>
-                      <th className="text-right py-3 px-4 font-medium">소비자가 평균</th>
                       <th className="text-right py-3 px-4 font-medium">최저</th>
                       <th className="text-right py-3 px-4 font-medium">최고</th>
                       <th className="text-right py-3 px-4 font-medium">데이터 수</th>
@@ -242,7 +235,6 @@ export default function DataPage() {
                       <tr key={`${item.year}-${item.month}`} className="border-b last:border-0 hover:bg-gray-50">
                         <td className="py-3 px-4 font-medium">{item.year}년 {item.month}월</td>
                         <td className="py-3 px-4 text-right font-mono-num">{item.avg_wholesale?.toLocaleString() ?? "-"}원</td>
-                        <td className="py-3 px-4 text-right font-mono-num">{item.avg_retail?.toLocaleString() ?? "-"}원</td>
                         <td className="py-3 px-4 text-right font-mono-num text-muted-foreground">{item.min_wholesale?.toLocaleString() ?? "-"}</td>
                         <td className="py-3 px-4 text-right font-mono-num text-muted-foreground">{item.max_wholesale?.toLocaleString() ?? "-"}</td>
                         <td className="py-3 px-4 text-right text-muted-foreground">{item.data_count}건</td>

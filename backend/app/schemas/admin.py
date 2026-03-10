@@ -127,7 +127,6 @@ class ManualPriceInput(BaseModel):
     date: date
     grade: str
     wholesale_price: Optional[float] = None
-    retail_price: Optional[float] = None
     reason: Optional[str] = None
 
 

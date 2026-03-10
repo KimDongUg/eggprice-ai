@@ -54,11 +54,11 @@ async def send_report(
             sign = "+" if p["daily_change"] > 0 else ""
             color = "#e74c3c" if p["daily_change"] > 0 else "#27ae60" if p["daily_change"] < 0 else "#888"
             change_text = f'<span style="color:{color}">{sign}{p["daily_change"]:,.0f}원 ({sign}{p["daily_change_pct"]:.1f}%)</span>'
-        retail = f'{p["retail_price"]:,.0f}원' if p.get("retail_price") else "—"
+        wholesale = f'{p["wholesale_price"]:,.0f}원' if p.get("wholesale_price") else "—"
         price_rows += f"""
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid #eee">{p["grade"]}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right">{retail}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right">{wholesale}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right">{change_text or '—'}</td>
         </tr>"""
 
@@ -88,7 +88,7 @@ async def send_report(
       <thead>
         <tr style="background:#f9fafb">
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e5e7eb">등급</th>
-          <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb">소매가 (30개)</th>
+          <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb">도매가 (30개)</th>
           <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb">전일 대비</th>
         </tr>
       </thead>

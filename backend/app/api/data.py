@@ -21,7 +21,6 @@ def yearly_data(
         db.query(
             extract("year", EggPrice.date).label("year"),
             func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
-            func.avg(EggPrice.retail_price).label("avg_retail"),
             func.count(EggPrice.id).label("count"),
         )
         .filter(
@@ -41,7 +40,6 @@ def yearly_data(
             {
                 "year": int(r.year),
                 "avg_wholesale": round(float(r.avg_wholesale)) if r.avg_wholesale else None,
-                "avg_retail": round(float(r.avg_retail)) if r.avg_retail else None,
                 "data_count": r.count,
             }
             for r in rows
@@ -61,7 +59,6 @@ def monthly_data(
         extract("year", EggPrice.date).label("year"),
         extract("month", EggPrice.date).label("month"),
         func.avg(EggPrice.wholesale_price).label("avg_wholesale"),
-        func.avg(EggPrice.retail_price).label("avg_retail"),
         func.min(EggPrice.wholesale_price).label("min_wholesale"),
         func.max(EggPrice.wholesale_price).label("max_wholesale"),
         func.count(EggPrice.id).label("count"),
@@ -88,7 +85,6 @@ def monthly_data(
                 "year": int(r.year),
                 "month": int(r.month),
                 "avg_wholesale": round(float(r.avg_wholesale)) if r.avg_wholesale else None,
-                "avg_retail": round(float(r.avg_retail)) if r.avg_retail else None,
                 "min_wholesale": r.min_wholesale,
                 "max_wholesale": r.max_wholesale,
                 "data_count": r.count,
