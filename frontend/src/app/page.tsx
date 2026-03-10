@@ -68,7 +68,7 @@ export default function LandingPage() {
                 KAMIS 데이터 + AI 분석으로{" "}
                 <strong className="text-gray-900">정확한 가격 예측</strong>을 제공합니다.
                 <br />
-                15년 업계 실무 경험 기반의 실전 판단 가이드.
+                양계업+유통업 경험 기반의 실전 판단 가이드.
               </p>
 
               {/* 오늘 특란 가격 표시 */}
@@ -308,7 +308,7 @@ export default function LandingPage() {
               </p>
               <div className="space-y-4">
                 {[
-                  "15년 업계 실무 경험 기반 분석",
+                  "양계업+유통업 경험 기반 분석",
                   "도매 유통 구조를 이해하는 해석",
                   "AI는 보조 도구, 핵심은 실전 판단",
                   "단순 수치가 아닌 '행동' 중심 제공",
@@ -323,7 +323,7 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { value: "15년+", label: "업계 실무 경험" },
+                { value: "양계+유통", label: "업계 실무 경험" },
                 { value: "매주", label: "브리핑 리포트 발송" },
                 { value: "30~60일", label: "가격 방향성 예측" },
                 { value: "실시간", label: "급등락 알림 (Pro)" },
