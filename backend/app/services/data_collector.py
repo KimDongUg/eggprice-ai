@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.models.market_data import (
     AvianFluStatus,
+    EggImportData,
     ExchangeRate,
     FeedPrice,
     TradingVolume,
@@ -21,6 +22,7 @@ from app.services.feed_client import fetch_feed_prices
 from app.services.exchange_client import fetch_exchange_rate
 from app.services.avian_flu_client import fetch_avian_flu_status
 from app.services.weather_client import fetch_weather_data
+from app.services.import_client import fetch_egg_import_data
 from app.services.price_service import fetch_and_store_all_regions
 
 logger = logging.getLogger(__name__)
@@ -107,6 +109,22 @@ async def collect_all_daily_data(db: Session, target_date: date | None = None):
         results["sources"]["weather"] = f"error: {e}"
         logger.error(f"  weather failed: {e}")
 
+    # 7. Egg import data (KATI) — monthly
+    try:
+        imp = await fetch_egg_import_data(target_date)
+        if imp:
+            _upsert_import_data(db, imp)
+            results["sources"]["egg_import"] = {
+                "volume_kg": imp["import_volume_kg"],
+                "price_usd": imp["import_price_usd"],
+            }
+            logger.info(f"  egg_import: {imp['import_volume_kg']} kg")
+        else:
+            results["sources"]["egg_import"] = "no data"
+    except Exception as e:
+        results["sources"]["egg_import"] = f"error: {e}"
+        logger.error(f"  egg_import failed: {e}")
+
     db.commit()
     logger.info(f"Data collection complete for {target_date}: {results['sources']}")
     return results
@@ -174,4 +192,19 @@ def _upsert_weather(db: Session, data: dict):
             max_temperature=data.get("max_temperature"),
             min_temperature=data.get("min_temperature"),
             humidity=data.get("humidity"),
+        ))
+
+
+def _upsert_import_data(db: Session, data: dict):
+    existing = db.query(EggImportData).filter(EggImportData.date == data["date"]).first()
+    if existing:
+        existing.import_volume_kg = data.get("import_volume_kg")
+        existing.import_price_usd = data.get("import_price_usd")
+        existing.origin_country = data.get("origin_country")
+    else:
+        db.add(EggImportData(
+            date=data["date"],
+            import_volume_kg=data.get("import_volume_kg"),
+            import_price_usd=data.get("import_price_usd"),
+            origin_country=data.get("origin_country"),
         ))

@@ -63,6 +63,19 @@ class WeatherData(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class EggImportData(Base):
+    """Monthly egg import volume and price data (관세청/KATI)."""
+    __tablename__ = "egg_import_data"
+    __table_args__ = (UniqueConstraint("date", name="uq_import_date"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    import_volume_kg: Mapped[float] = mapped_column(Float, nullable=True)  # 수입량 (kg)
+    import_price_usd: Mapped[float] = mapped_column(Float, nullable=True)  # 수입 단가 (USD/kg)
+    origin_country: Mapped[str] = mapped_column(String(50), nullable=True)  # 수입국
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class ModelPerformance(Base):
     """Tracks model performance metrics over time for A/B testing."""
     __tablename__ = "model_performance"

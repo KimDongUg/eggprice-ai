@@ -316,6 +316,7 @@ export default function AccuracyPage() {
                     { icon: "🐔", label: "조류인플루엔자 현황", desc: "검역본부 발생 데이터 — 공급 충격 감지" },
                     { icon: "🌡️", label: "기상 데이터", desc: "기상청 평균 기온 — 산란율·수요 변동" },
                     { icon: "📦", label: "거래량 (다봄)", desc: "일일 거래 물량 — 수요/공급 균형 파악" },
+                    { icon: "🚢", label: "계란 수입 데이터 (KATI)", desc: "월별 수입량·수입단가 — 해외 공급 변동 반영" },
                   ].map((item) => (
                     <div key={item.label} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50">
                       <span className="text-lg shrink-0">{item.icon}</span>

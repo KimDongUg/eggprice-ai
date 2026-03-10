@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # KMA (weather)
     KMA_API_KEY: str = ""
 
+    # KATI (egg import data)
+    KATI_API_KEY: str = ""
+
     # Database (PostgreSQL + TimescaleDB)
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/eggprice"
 

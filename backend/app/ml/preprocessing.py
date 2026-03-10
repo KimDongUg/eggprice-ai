@@ -1,7 +1,8 @@
 """Feature engineering and data preprocessing for the LSTM model.
 
-15 features, 30-day lookback window.
+16 features, 30-day lookback window.
 Regional avian flu weighting: 3x when outbreak is in the prediction region.
+Egg import data (volume/price) included as prediction factor.
 """
 
 import numpy as np
@@ -20,7 +21,7 @@ REGION_NAME_MAP = {
     "daejeon": "대전",
 }
 
-# 14 input features (도매 유통가 기준)
+# 16 input features (도매 유통가 기준)
 FEATURE_COLUMNS = [
     "price",                # 1. 도매가 (KAMIS 기준)
     "volume",               # 2. 거래량
@@ -36,11 +37,13 @@ FEATURE_COLUMNS = [
     "price_ma14",           # 12. 14일 이동평균
     "price_volatility_7",   # 13. 7일 변동성 (std)
     "price_momentum",       # 14. 가격 모멘텀 (7일 수익률)
+    "import_volume",        # 15. 계란 수입량 (kg)
+    "import_price",         # 16. 계란 수입 단가 (USD/kg)
 ]
 
 
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Build all 15 features from a merged DataFrame.
+    """Build all 16 features from a merged DataFrame.
 
     Expected input columns: date, wholesale_price.
     Optional columns (filled with defaults if missing):
@@ -61,6 +64,8 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
         "exchange_rate": 0.0,
         "avian_flu": 0.0,
         "temperature": 0.0,
+        "import_volume": 0.0,
+        "import_price": 0.0,
     }
     for col, default in optional_defaults.items():
         if col not in df.columns:
@@ -69,7 +74,8 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].ffill().fillna(default)
 
     # Ensure numeric
-    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature"]:
+    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature",
+                 "import_volume", "import_price"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
 
     # Cyclical day-of-week encoding
@@ -110,6 +116,7 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
         ExchangeRate,
         AvianFluStatus,
         WeatherData,
+        EggImportData,
     )
 
     # Load egg prices for the specific region
@@ -187,8 +194,19 @@ def build_features_from_db(db_session, grade: str, region: str = "seoul") -> pd.
         wx_df = pd.DataFrame([{"date": w.date, "temperature": w.avg_temperature} for w in weather])
         df = df.merge(wx_df, on="date", how="left")
 
+    # Egg import data (수입량/수입단가) — monthly, forward-filled to daily
+    imports = db_session.query(EggImportData).filter(EggImportData.date >= min_date).all()
+    if imports:
+        imp_df = pd.DataFrame([{
+            "date": i.date,
+            "import_volume": i.import_volume_kg or 0.0,
+            "import_price": i.import_price_usd or 0.0,
+        } for i in imports])
+        df = df.merge(imp_df, on="date", how="left")
+
     # Forward-fill merged columns before feature engineering
-    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature"]:
+    for col in ["volume", "corn_price", "exchange_rate", "avian_flu", "temperature",
+                 "import_volume", "import_price"]:
         if col in df.columns:
             df[col] = df[col].ffill().fillna(0.0)
 
