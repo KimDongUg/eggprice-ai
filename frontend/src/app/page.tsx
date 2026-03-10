@@ -415,6 +415,11 @@ export default function LandingPage() {
                 title: "급등락 실시간 알림",
                 desc: "예상치 못한 가격 변동이 감지되면 즉시 SMS/카카오톡으로 알려드립니다.",
               },
+              {
+                icon: <Shield className="h-8 w-8" />,
+                title: "리스크 경고 메시지",
+                desc: "AI가 가격 급변 위험을 감지하면 사전에 경고하여 손실을 줄여드립니다.",
+              },
             ].map((item) => (
               <div
                 key={item.title}
