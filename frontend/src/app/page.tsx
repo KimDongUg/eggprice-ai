@@ -453,7 +453,7 @@ export default function LandingPage() {
                 </ul>
                 <Button className="w-full" variant="outline" asChild>
                   <a href="tel:010-3526-4754">
-                    상담 후 가입
+                    지금 신청하기
                   </a>
                 </Button>
               </CardContent>
@@ -491,7 +491,7 @@ export default function LandingPage() {
                   asChild
                 >
                   <a href="tel:010-3526-4754">
-                    상담 후 가입
+                    지금 신청하기
                   </a>
                 </Button>
               </CardContent>

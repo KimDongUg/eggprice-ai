@@ -97,7 +97,7 @@ export default function PricingPage() {
               ))}
             </ul>
             <Button className="w-full" variant="outline" asChild>
-              <a href="tel:010-3526-4754">상담 후 가입</a>
+              <a href="tel:010-3526-4754">지금 신청하기</a>
             </Button>
           </CardContent>
         </Card>
@@ -133,7 +133,7 @@ export default function PricingPage() {
               className="w-full bg-primary-400 hover:bg-primary-500 text-white"
               asChild
             >
-              <a href="tel:010-3526-4754">상담 후 가입</a>
+              <a href="tel:010-3526-4754">지금 신청하기</a>
             </Button>
           </CardContent>
         </Card>
