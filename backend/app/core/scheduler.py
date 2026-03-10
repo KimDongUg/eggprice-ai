@@ -99,6 +99,20 @@ def daily_news_crawl_job():
         db.close()
 
 
+def monthly_article_cleanup_job():
+    """Delete news/analysis articles older than 1 year."""
+    from app.services.news_crawler import cleanup_old_articles
+    logger.info("Scheduler: Running monthly article cleanup")
+    db = SessionLocal()
+    try:
+        result = cleanup_old_articles(db)
+        logger.info(f"Scheduler: Article cleanup result: {result}")
+    except Exception as e:
+        logger.error(f"Scheduler: Article cleanup failed: {e}")
+    finally:
+        db.close()
+
+
 def monthly_retrain_check_job():
     if _celery_available():
         from app.tasks.training_tasks import check_retrain_task
@@ -145,6 +159,12 @@ def start_scheduler():
         monthly_retrain_check_job,
         CronTrigger(day=1, hour=18, minute=0),
         id="monthly_retrain_check",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        monthly_article_cleanup_job,
+        CronTrigger(day=1, hour=3, minute=0),
+        id="monthly_article_cleanup",
         replace_existing=True,
     )
     scheduler.start()

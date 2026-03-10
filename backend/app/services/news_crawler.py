@@ -211,6 +211,19 @@ async def crawl_analysis(db: Session) -> int:
     return count
 
 
+def cleanup_old_articles(db: Session, max_age_days: int = 365) -> dict:
+    """Delete news and analysis articles older than max_age_days (default 1 year)."""
+    from datetime import timedelta
+    cutoff = datetime.utcnow() - timedelta(days=max_age_days)
+
+    news_deleted = db.query(NewsArticle).filter(NewsArticle.published_at < cutoff).delete()
+    analysis_deleted = db.query(AnalysisArticle).filter(AnalysisArticle.published_at < cutoff).delete()
+    db.commit()
+
+    logger.info(f"Article cleanup: deleted {news_deleted} news, {analysis_deleted} analysis (older than {max_age_days} days)")
+    return {"news_deleted": news_deleted, "analysis_deleted": analysis_deleted}
+
+
 async def crawl_all(db: Session) -> dict:
     """Run all crawlers. Returns counts."""
     news_count = await crawl_news(db)
