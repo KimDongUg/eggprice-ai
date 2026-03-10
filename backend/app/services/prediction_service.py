@@ -127,10 +127,12 @@ def regenerate_all_fallback_predictions(db: Session) -> int:
 
     Uses a unified base_date (today) so all regions align on the same dates.
     """
-    # Delete all existing predictions
-    db.execute(delete(Prediction))
+    # Delete only fallback/forward predictions, keep backtest data
+    db.execute(
+        delete(Prediction).where(Prediction.model_version != "backtest_v1")
+    )
     db.commit()
-    logger.info("Deleted all existing predictions")
+    logger.info("Deleted existing fallback predictions (kept backtest data)")
 
     unified_base = date.today()
     count = 0
