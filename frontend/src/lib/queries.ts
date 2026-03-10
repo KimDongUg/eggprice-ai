@@ -50,8 +50,7 @@ export function useForecast(grade: string, enabled = true, region = "seoul") {
 }
 
 const ALL_REGIONS = [
-  "seoul","busan","daegu","incheon","gwangju","daejeon",
-  "gyeonggi","gangwon","chungcheong","jeolla","gyeongsang","jeju",
+  "seoul","busan","daegu","gwangju","daejeon",
 ] as const;
 
 export function useMultiRegionForecasts(grade: string, enabled = true) {

@@ -27,15 +27,8 @@ REGION_CODE_MAP = {
     "seoul": "1101",
     "busan": "2100",
     "daegu": "2200",
-    "incheon": "2300",
     "gwangju": "2401",
     "daejeon": "2501",
-    "gyeonggi": "3111",
-    "gangwon": "3211",
-    "chungcheong": "3411",  # 충남 대표
-    "jeolla": "3611",       # 전남 대표
-    "gyeongsang": "3711",   # 경북 대표
-    "jeju": "3911",
 }
 
 

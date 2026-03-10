@@ -22,13 +22,6 @@ const REGIONS = [
   { code: "daegu", name: "대구" },
   { code: "gwangju", name: "광주" },
   { code: "daejeon", name: "대전" },
-  { code: "incheon", name: "인천" },
-  { code: "gyeonggi", name: "경기" },
-  { code: "chungcheong", name: "충청" },
-  { code: "jeolla", name: "전라" },
-  { code: "gyeongsang", name: "경상" },
-  { code: "gangwon", name: "강원" },
-  { code: "jeju", name: "제주" },
 ];
 
 interface YearlyItem {

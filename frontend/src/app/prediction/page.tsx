@@ -16,9 +16,8 @@ import {
 import { MapPin } from "lucide-react";
 
 const REGION_COLORS: Record<string, string> = {
-  seoul: "#f97316", busan: "#3b82f6", daegu: "#10b981", incheon: "#8b5cf6",
-  gwangju: "#ec4899", daejeon: "#06b6d4", gyeonggi: "#f59e0b", gangwon: "#6366f1",
-  chungcheong: "#14b8a6", jeolla: "#e11d48", gyeongsang: "#84cc16", jeju: "#a855f7",
+  seoul: "#f97316", busan: "#3b82f6", daegu: "#10b981",
+  gwangju: "#ec4899", daejeon: "#06b6d4",
 };
 
 const GRADE_OPTIONS = ["특란", "대란", "중란", "소란"];
@@ -29,13 +28,6 @@ const REGIONS = [
   { code: "daegu", name: "대구" },
   { code: "gwangju", name: "광주" },
   { code: "daejeon", name: "대전" },
-  { code: "incheon", name: "인천" },
-  { code: "gyeonggi", name: "경기" },
-  { code: "chungcheong", name: "충청" },
-  { code: "jeolla", name: "전라" },
-  { code: "gyeongsang", name: "경상" },
-  { code: "gangwon", name: "강원" },
-  { code: "jeju", name: "제주" },
 ];
 
 export default function PredictionPage() {

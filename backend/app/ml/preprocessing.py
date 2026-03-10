@@ -16,15 +16,8 @@ REGION_NAME_MAP = {
     "seoul": "서울",
     "busan": "부산",
     "daegu": "대구",
-    "incheon": "인천",
     "gwangju": "광주",
     "daejeon": "대전",
-    "gyeonggi": "경기",
-    "gangwon": "강원",
-    "chungcheong": "충",  # 충남/충북 매칭
-    "jeolla": "전",       # 전남/전북 매칭
-    "gyeongsang": "경",   # 경남/경북 매칭
-    "jeju": "제주",
 }
 
 # 15 input features
