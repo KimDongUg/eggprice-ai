@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LogIn, LogOut, User, Menu, X, Phone } from "lucide-react";
+import { LogIn, LogOut, User, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
@@ -75,16 +75,6 @@ export default function Header() {
             ))}
 
             <div className="ml-3 pl-3 border-l flex items-center gap-2">
-              <Button
-                size="sm"
-                className="bg-primary-400 hover:bg-primary-500 text-white"
-                asChild
-              >
-                <a href="tel:010-3526-4754">
-                  <Phone className="h-3.5 w-3.5 mr-1" />
-                  상담 신청
-                </a>
-              </Button>
               {isAuthenticated ? (
                 <>
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -140,16 +130,6 @@ export default function Header() {
               </Link>
             ))}
             <div className="pt-2 border-t mt-2 space-y-2">
-              <Button
-                size="sm"
-                className="w-full bg-primary-400 hover:bg-primary-500 text-white"
-                asChild
-              >
-                <a href="tel:010-3526-4754">
-                  <Phone className="h-3.5 w-3.5 mr-1" />
-                  상담 신청
-                </a>
-              </Button>
               {isAuthenticated ? (
                 <Button
                   variant="outline"
