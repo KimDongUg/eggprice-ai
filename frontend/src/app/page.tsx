@@ -388,11 +388,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              명확한 요금, 확실한 가치
+              구독 서비스 안내
             </h2>
-            <p className="text-muted-foreground">
-              B2B 서비스는 가격이 투명해야 신뢰가 생깁니다.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
