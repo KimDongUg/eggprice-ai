@@ -72,6 +72,20 @@ export default function PredictionPage() {
         </p>
       </div>
 
+      {/* SEO text description */}
+      <Card className="bg-gray-50/50">
+        <CardContent className="p-5 text-sm text-muted-foreground leading-relaxed space-y-2">
+          <p>
+            슬기알 AI 가격 예측은 KAMIS 도매 유통가, 사료 가격, 원/달러 환율, 조류인플루엔자 발생 현황,
+            기상 데이터, 계란 수입량 등 16개 시장 변수를 LSTM(장단기 기억 신경망) 딥러닝 모델에 입력하여 산출합니다.
+          </p>
+          <p>
+            예측 결과에는 신뢰구간이 함께 제공되어 예측의 불확실성을 정량적으로 확인할 수 있습니다.
+            AI 예측은 통계적 추정치이며, 실제 가격은 돌발 변수에 의해 달라질 수 있습니다.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Region selector */}
       <div className="flex items-center gap-2 flex-wrap">
         <MapPin className="h-4 w-4 text-primary-400 shrink-0" />

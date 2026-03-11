@@ -81,6 +81,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/guide" className="hover:text-white transition-colors">
+                  지식백과
+                </Link>
+              </li>
+              <li>
                 <Link href="/community" className="hover:text-white transition-colors">
                   커뮤니티
                 </Link>
@@ -125,6 +130,14 @@ export default function Footer() {
             <span className="text-gray-700">|</span>
             <Link href="/refund" className="hover:text-white transition-colors">
               환불정책
+            </Link>
+            <span className="text-gray-700">|</span>
+            <Link href="/about" className="hover:text-white transition-colors">
+              회사소개
+            </Link>
+            <span className="text-gray-700">|</span>
+            <Link href="/contact" className="hover:text-white transition-colors">
+              문의
             </Link>
           </div>
           <span>&copy; 2026 슬기알(계란가격예측 AI). All rights reserved.</span>

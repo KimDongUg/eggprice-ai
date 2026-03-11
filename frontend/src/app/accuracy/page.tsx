@@ -97,6 +97,19 @@ export default function AccuracyPage() {
         </p>
       </div>
 
+      {/* SEO text description */}
+      <div className="bg-gray-50/50 border rounded-xl p-5 text-sm text-muted-foreground leading-relaxed space-y-2">
+        <p>
+          슬기알은 AI 예측의 신뢰도를 높이기 위해 예측 정확도를 투명하게 공개합니다.
+          MAPE(평균 절대 백분율 오차), RMSE(평균 제곱근 오차), MAE(평균 절대 오차), 방향 정확도(상승/하락 적중률) 등
+          다양한 지표로 모델 성능을 평가하고 있습니다.
+        </p>
+        <p>
+          예측 vs 실제 가격 비교 그래프와 가격 변동 요인 분석을 통해
+          AI가 어느 정도 정확한지, 가격 급변 구간에서 어떤 시장 요인이 작용했는지 확인할 수 있습니다.
+        </p>
+      </div>
+
       {/* Region selector */}
       <div className="flex items-center gap-2 flex-wrap">
         <MapPin className="h-4 w-4 text-primary-400 shrink-0" />

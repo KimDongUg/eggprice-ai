@@ -18,6 +18,7 @@ const navItems = [
   { href: "/analysis", label: "시장 분석", authRequired: false, authOnly: false },
   { href: "/data", label: "가격 데이터", authRequired: false, authOnly: false },
   { href: "/compare", label: "가격 비교", authRequired: false, authOnly: false },
+  { href: "/guide", label: "지식백과", authRequired: false, authOnly: false },
   { href: "/community", label: "커뮤니티", authRequired: false, authOnly: false },
   { href: "/mypage", label: "마이페이지", authRequired: true, authOnly: true },
 ];

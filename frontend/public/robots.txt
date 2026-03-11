@@ -9,4 +9,6 @@ Disallow: /register
 Disallow: /mypage
 Disallow: /api
 
-Sitemap: https://eggprice.ai/sitemap.xml
+Disallow: /admin
+
+Sitemap: https://eggprice.kr/sitemap.xml

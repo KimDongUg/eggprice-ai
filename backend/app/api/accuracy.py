@@ -563,13 +563,17 @@ def _find_factors(
             })
 
     # --- 6. News-based factor detection ---
-    # Deduplicate: skip news factors whose name already appeared from DB data
-    existing_names = {f["name"] for f in factors}
+    # Merge: if a news factor matches an existing DB factor, attach its articles
+    existing_by_name = {f["name"]: f for f in factors}
     news_factors = _find_news_factors(db, period_start, period_end)
     for nf in news_factors:
-        if nf["name"] not in existing_names:
+        if nf["name"] in existing_by_name:
+            # Merge articles from news into existing DB-based factor
+            if "articles" in nf and nf["articles"]:
+                existing_by_name[nf["name"]]["articles"] = nf["articles"]
+        else:
             factors.append(nf)
-            existing_names.add(nf["name"])
+            existing_by_name[nf["name"]] = nf
 
     return factors
 

@@ -74,6 +74,19 @@ export default function DataPage() {
         </p>
       </div>
 
+      {/* SEO text description */}
+      <div className="bg-gray-50/50 border rounded-xl p-5 text-sm text-muted-foreground leading-relaxed space-y-2">
+        <p>
+          KAMIS(한국농수산식품유통공사)에서 공시하는 계란 도매 유통가격의 연도별·월별 히스토리 데이터입니다.
+          전국 5대 도시(서울, 부산, 대구, 광주, 대전)의 등급별 가격 변동 추이를 확인할 수 있습니다.
+        </p>
+        <p>
+          과거 가격 데이터를 분석하면 계절적 패턴(설날·추석 전 상승, 명절 후 하락),
+          장기 추세(사료가·환율 연동), 돌발 변수(조류인플루엔자) 영향 등을 파악할 수 있습니다.
+          이 데이터는 슬기알 AI 예측 모델의 학습에도 활용됩니다.
+        </p>
+      </div>
+
       {/* 지역 선택 */}
       <div className="flex items-center gap-2 flex-wrap">
         <MapPin className="h-4 w-4 text-primary-400 shrink-0" />
