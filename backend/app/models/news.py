@@ -1,7 +1,6 @@
 """News and analysis article models."""
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, deferred
