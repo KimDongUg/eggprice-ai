@@ -44,7 +44,7 @@ def list_news(
                 "category": a.category,
                 "source": a.source,
                 "source_name": a.source_name,
-                "commentary": a.commentary,
+                "commentary": getattr(a, "commentary", None),
                 "published_at": a.published_at.isoformat() if a.published_at else None,
                 "seo_slug": a.seo_slug,
             }
@@ -99,7 +99,7 @@ def get_news_article(slug: str, db: Session = Depends(get_db)):
         "title": article.title,
         "summary": article.summary,
         "content": article.content,
-        "commentary": article.commentary,
+        "commentary": getattr(article, "commentary", None),
         "category": article.category,
         "source": article.source,
         "source_name": article.source_name,
