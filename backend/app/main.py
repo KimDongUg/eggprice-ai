@@ -82,6 +82,18 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass  # non-fatal
 
+    # Seed community posts if empty
+    try:
+        from app.models.community import CommunityPost
+        db = SessionLocal()
+        post_count = db.query(CommunityPost).count()
+        if post_count == 0:
+            from seed_community import seed
+            seed()
+        db.close()
+    except Exception:
+        pass  # non-fatal
+
     yield
     shutdown_scheduler()
 
