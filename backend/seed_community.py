@@ -320,9 +320,10 @@ def seed():
     db = SessionLocal()
     try:
         existing = db.query(CommunityPost).count()
-        if existing >= 20:
+        if existing >= 10:
             print(f"이미 {existing}개 게시글이 있습니다. 시드 생략.")
             return
+        print(f"현재 {existing}개 게시글 — 시드 데이터 추가합니다.")
 
         now = datetime.utcnow()
         for author, title, content, days_ago, views in POSTS:

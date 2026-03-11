@@ -87,7 +87,7 @@ async def lifespan(app: FastAPI):
         from app.models.community import CommunityPost
         db = SessionLocal()
         post_count = db.query(CommunityPost).count()
-        if post_count == 0:
+        if post_count < 5:
             from seed_community import seed
             seed()
         db.close()
