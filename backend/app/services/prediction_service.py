@@ -1,7 +1,7 @@
 import logging
 from datetime import date, timedelta
 
-from sqlalchemy import delete, desc, func
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -36,7 +36,7 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
         .all()
     )
 
-    # 예측 데이터가 없으면 즉시 30일 예측 생성 (폴백)
+    # 예측 데이터가 없으면 즉시 60일 예측 생성 (폴백)
     if not results:
         logger.info(f"No predictions for {grade}/{region} — generating 60-day fallback...")
         latest = (
@@ -50,10 +50,26 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
         base_date = latest.date if latest else date.today()
 
         for days in range(1, 61):
+            target = base_date + timedelta(days=days)
+            # Skip if prediction already exists for this date
+            existing = (
+                db.query(Prediction)
+                .filter(
+                    Prediction.grade == grade,
+                    Prediction.region == region,
+                    Prediction.target_date == target,
+                    Prediction.horizon_days == days,
+                )
+                .first()
+            )
+            if existing:
+                results.append(existing)
+                continue
+
             predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
             pred = Prediction(
                 base_date=base_date,
-                target_date=base_date + timedelta(days=days),
+                target_date=target,
                 grade=grade,
                 region=region,
                 predicted_price=round(predicted, 2),
@@ -67,7 +83,7 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
 
         try:
             db.commit()
-            logger.info(f"Generated 60 fallback predictions for {grade}/{region}")
+            logger.info(f"Generated fallback predictions for {grade}/{region}")
         except Exception as e:
             db.rollback()
             logger.warning(f"Fallback prediction commit failed: {e}")
@@ -89,6 +105,21 @@ def run_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
 
     stored = []
     for r in results:
+        # Skip if prediction already exists for this target_date + horizon
+        existing = (
+            db.query(Prediction)
+            .filter(
+                Prediction.grade == r["grade"],
+                Prediction.region == r.get("region", region),
+                Prediction.target_date == r["target_date"],
+                Prediction.horizon_days == r["horizon_days"],
+            )
+            .first()
+        )
+        if existing:
+            stored.append(existing)
+            continue
+
         pred = Prediction(
             base_date=r["base_date"],
             target_date=r["target_date"],
@@ -123,22 +154,16 @@ def run_all_predictions(db: Session) -> list[Prediction]:
 
 
 def regenerate_all_fallback_predictions(db: Session) -> int:
-    """Delete all existing predictions and regenerate fallback for all grades × regions.
+    """Generate fallback predictions for future dates that don't already have predictions.
 
-    Uses a unified base_date (today) so all regions align on the same dates.
+    IMPORTANT: Existing predictions are NEVER deleted or overwritten.
+    This ensures prediction accuracy scores remain stable and trustworthy.
+    Only generates predictions for dates not yet covered.
     """
-    # Delete only fallback/forward predictions, keep backtest data
-    db.execute(
-        delete(Prediction).where(Prediction.model_version != "backtest_v1")
-    )
-    db.commit()
-    logger.info("Deleted existing fallback predictions (kept backtest data)")
-
     unified_base = date.today()
     count = 0
 
     for grade in ALL_GRADES:
-        # Get the best base_price per region
         for region in ALL_REGIONS:
             latest = (
                 db.query(EggPrice)
@@ -149,10 +174,26 @@ def regenerate_all_fallback_predictions(db: Session) -> int:
             base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
 
             for days in range(1, 61):
+                target = unified_base + timedelta(days=days)
+
+                # Skip if a prediction already exists for this target_date
+                exists = (
+                    db.query(Prediction.id)
+                    .filter(
+                        Prediction.grade == grade,
+                        Prediction.region == region,
+                        Prediction.target_date == target,
+                        Prediction.horizon_days == days,
+                    )
+                    .first()
+                )
+                if exists:
+                    continue
+
                 predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
                 pred = Prediction(
                     base_date=unified_base,
-                    target_date=unified_base + timedelta(days=days),
+                    target_date=target,
                     grade=grade,
                     region=region,
                     predicted_price=round(predicted, 2),
@@ -165,5 +206,5 @@ def regenerate_all_fallback_predictions(db: Session) -> int:
                 count += 1
 
     db.commit()
-    logger.info(f"Regenerated {count} fallback predictions with base_date={unified_base}")
+    logger.info(f"Generated {count} new fallback predictions (existing preserved)")
     return count
