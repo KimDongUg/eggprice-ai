@@ -26,7 +26,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
 } from "recharts";
 import { useTodaySummary, usePriceHistory, useCurrentPrices } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -57,6 +56,82 @@ const FAQ_ITEMS = [
     a: "계란은 신선식품이라 재고를 오래 보관하기 어렵고, 매일 수급 상황이 달라집니다. 산란계 마릿수, 산란율, 사료 가격, 환율, 계절 수요, 조류인플루엔자 발생 여부 등 다양한 변수가 복합적으로 작용하여 매일 가격이 변동합니다.",
   },
 ];
+
+function PriceChart({
+  chart7d,
+  chart30d,
+  selectedGrade,
+  regionLabel,
+}: {
+  chart7d: { date: string; price: number | null }[];
+  chart30d: { date: string; price: number | null }[];
+  selectedGrade: string;
+  regionLabel: string;
+}) {
+  const [chartPeriod, setChartPeriod] = useState<"7" | "30">("30");
+  const chartData = chartPeriod === "7" ? chart7d : chart30d;
+
+  if (chartData.length === 0) return null;
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold flex items-center gap-2">
+            {selectedGrade} 가격 추이
+            <Badge variant="outline" className="text-[10px] font-normal">
+              {regionLabel}
+            </Badge>
+          </h2>
+          <div className="flex gap-1">
+            {(["7", "30"] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => setChartPeriod(p)}
+                className={cn(
+                  "px-3 py-1 rounded-lg text-xs font-medium transition-colors",
+                  chartPeriod === p
+                    ? "bg-primary-400 text-white"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                )}
+              >
+                {p}일
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis
+                domain={["auto", "auto"]}
+                tick={{ fontSize: 11 }}
+                tickFormatter={(v: number) => `${v.toLocaleString()}원`}
+              />
+              <Tooltip
+                labelFormatter={(label: string) => `${label}`}
+                formatter={(v: number) => [`${v.toLocaleString()}원`, "도매가"]}
+              />
+              <Line
+                type="monotone"
+                dataKey="price"
+                stroke="#f97316"
+                strokeWidth={2}
+                dot={chartPeriod === "7" ? { r: 3 } : false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1">
+          <Database className="h-3 w-3" />
+          데이터 출처: KAMIS (한국농수산식품유통공사) 도매 유통가 기준 | 매일 업데이트
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function EggPriceTodayPage() {
   const [region, setRegion] = useState("seoul");
@@ -267,93 +342,13 @@ export default function EggPriceTodayPage() {
           </Card>
         )}
 
-        {/* ── 섹션 C: 가격 차트 ── */}
-        <div className="space-y-6">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary-400" />
-            최근 계란 가격 추이
-          </h2>
-
-          {/* 7일 차트 */}
-          {chart7d.length > 0 && (
-            <Card>
-              <CardContent className="p-5">
-                <h3 className="text-sm font-semibold mb-3">최근 7일 추이</h3>
-                <div className="h-52">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chart7d}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis
-                        domain={["auto", "auto"]}
-                        tick={{ fontSize: 11 }}
-                        tickFormatter={(v: number) => v.toLocaleString()}
-                      />
-                      <Tooltip
-                        formatter={(v: number) => [`${v.toLocaleString()}원`, "도매가"]}
-                      />
-                      {stats?.avg_7d && (
-                        <ReferenceLine
-                          y={stats.avg_7d}
-                          stroke="#94a3b8"
-                          strokeDasharray="4 4"
-                          label={{ value: "7일 평균", fontSize: 10, fill: "#94a3b8" }}
-                        />
-                      )}
-                      <Line
-                        type="monotone"
-                        dataKey="price"
-                        stroke="#f97316"
-                        strokeWidth={2}
-                        dot={{ r: 3 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 30일 차트 */}
-          {chart30d.length > 0 && (
-            <Card>
-              <CardContent className="p-5">
-                <h3 className="text-sm font-semibold mb-3">최근 30일 추이</h3>
-                <div className="h-52">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chart30d}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis
-                        domain={["auto", "auto"]}
-                        tick={{ fontSize: 11 }}
-                        tickFormatter={(v: number) => v.toLocaleString()}
-                      />
-                      <Tooltip
-                        formatter={(v: number) => [`${v.toLocaleString()}원`, "도매가"]}
-                      />
-                      {stats?.avg_30d && (
-                        <ReferenceLine
-                          y={stats.avg_30d}
-                          stroke="#94a3b8"
-                          strokeDasharray="4 4"
-                          label={{ value: "30일 평균", fontSize: 10, fill: "#94a3b8" }}
-                        />
-                      )}
-                      <Line
-                        type="monotone"
-                        dataKey="price"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        {/* ── 섹션 C: 가격 차트 (통합) ── */}
+        <PriceChart
+          chart7d={chart7d}
+          chart30d={chart30d}
+          selectedGrade={selectedGrade}
+          regionLabel={summary?.region_label ?? "서울"}
+        />
 
         {/* ── 섹션 D: 가격 해설 본문 ── */}
         {commentary?.body && (
