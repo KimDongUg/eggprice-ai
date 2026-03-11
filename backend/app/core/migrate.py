@@ -47,6 +47,17 @@ _ALTER_COLUMN_TYPE = [
 
 
 _MISSING_TABLES_SQL = {
+    "community_comments": """
+        CREATE TABLE IF NOT EXISTS community_comments (
+            id SERIAL PRIMARY KEY,
+            post_id INTEGER NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+            content TEXT NOT NULL,
+            author_name VARCHAR(50) NOT NULL,
+            password VARCHAR(200) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        CREATE INDEX IF NOT EXISTS ix_community_comments_post_id ON community_comments(post_id);
+    """,
     "alerts": """
         CREATE TABLE IF NOT EXISTS alerts (
             id SERIAL PRIMARY KEY,

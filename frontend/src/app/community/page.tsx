@@ -13,6 +13,7 @@ interface PostListItem {
   title: string;
   author_name: string;
   views: number;
+  comment_count: number;
   created_at: string;
 }
 
@@ -97,6 +98,11 @@ export default function CommunityPage() {
                           className="hover:text-primary-400 transition-colors font-medium"
                         >
                           {post.title}
+                          {post.comment_count > 0 && (
+                            <span className="ml-1.5 text-xs text-primary-400 font-normal">
+                              [{post.comment_count}]
+                            </span>
+                          )}
                         </Link>
                       </td>
                       <td className="py-3 px-4 text-center text-muted-foreground">
