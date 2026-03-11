@@ -60,16 +60,18 @@ const FAQ_ITEMS = [
 function PriceChart({
   chart7d,
   chart30d,
+  chart60d,
   selectedGrade,
   regionLabel,
 }: {
   chart7d: { date: string; price: number | null }[];
   chart30d: { date: string; price: number | null }[];
+  chart60d: { date: string; price: number | null }[];
   selectedGrade: string;
   regionLabel: string;
 }) {
-  const [chartPeriod, setChartPeriod] = useState<"7" | "30">("30");
-  const chartData = chartPeriod === "7" ? chart7d : chart30d;
+  const [chartPeriod, setChartPeriod] = useState<"7" | "30" | "60">("30");
+  const chartData = chartPeriod === "7" ? chart7d : chartPeriod === "30" ? chart30d : chart60d;
 
   if (chartData.length === 0) return null;
 
@@ -84,7 +86,7 @@ function PriceChart({
             </Badge>
           </h2>
           <div className="flex gap-1">
-            {(["7", "30"] as const).map((p) => (
+            {(["7", "30", "60"] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => setChartPeriod(p)}
@@ -119,7 +121,7 @@ function PriceChart({
                 dataKey="price"
                 stroke="#f97316"
                 strokeWidth={2}
-                dot={chartPeriod === "7" ? { r: 3 } : false}
+                dot={chartPeriod === "7" ? { r: 3 } : chartPeriod === "30" ? { r: 1.5 } : false}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -143,6 +145,7 @@ export default function EggPriceTodayPage() {
   const { data: summary, isLoading } = useTodaySummary(selectedGrade, region);
   const { data: history7d } = usePriceHistory(selectedGrade, 7, true, region);
   const { data: history30d } = usePriceHistory(selectedGrade, 30, true, region);
+  const { data: history60d } = usePriceHistory(selectedGrade, 60, true, region);
 
   const price = summary?.price;
   const change = summary?.change;
@@ -161,6 +164,13 @@ export default function EggPriceTodayPage() {
     }));
 
   const chart30d = (history30d ?? [])
+    .filter((d) => d.wholesale_price)
+    .map((d) => ({
+      date: d.date.slice(5),
+      price: d.wholesale_price,
+    }));
+
+  const chart60d = (history60d ?? [])
     .filter((d) => d.wholesale_price)
     .map((d) => ({
       date: d.date.slice(5),
@@ -346,6 +356,7 @@ export default function EggPriceTodayPage() {
         <PriceChart
           chart7d={chart7d}
           chart30d={chart30d}
+          chart60d={chart60d}
           selectedGrade={selectedGrade}
           regionLabel={summary?.region_label ?? "서울"}
         />
