@@ -28,7 +28,8 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { useTodaySummary, usePriceHistory } from "@/lib/queries";
+import { useTodaySummary, usePriceHistory, useCurrentPrices } from "@/lib/queries";
+import { cn } from "@/lib/utils";
 
 const REGION_OPTIONS = [
   { value: "seoul", label: "서울" },
@@ -61,9 +62,12 @@ export default function EggPriceTodayPage() {
   const [region, setRegion] = useState("seoul");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const { data: summary, isLoading } = useTodaySummary("특란", region);
-  const { data: history7d } = usePriceHistory("특란", 7, true, region);
-  const { data: history30d } = usePriceHistory("특란", 30, true, region);
+  const [selectedGrade, setSelectedGrade] = useState("특란");
+
+  const { data: allPrices, isLoading: pricesLoading } = useCurrentPrices(region);
+  const { data: summary, isLoading } = useTodaySummary(selectedGrade, region);
+  const { data: history7d } = usePriceHistory(selectedGrade, 7, true, region);
+  const { data: history30d } = usePriceHistory(selectedGrade, 30, true, region);
 
   const price = summary?.price;
   const change = summary?.change;
@@ -130,6 +134,53 @@ export default function EggPriceTodayPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* ── 등급별 가격 카드 ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {pricesLoading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-4 space-y-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-8 w-24" />
+                    <Skeleton className="h-3 w-20" />
+                  </CardContent>
+                </Card>
+              ))
+            : allPrices?.map((p) => (
+                <Card
+                  key={p.grade}
+                  className={cn(
+                    "cursor-pointer transition-all hover:shadow-md",
+                    selectedGrade === p.grade && "ring-2 ring-primary-400 shadow-md"
+                  )}
+                  onClick={() => setSelectedGrade(p.grade)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium">{p.grade}</span>
+                      <span className="text-xs text-muted-foreground">30개</span>
+                    </div>
+                    <div className="text-xl font-bold">
+                      {p.wholesale_price?.toLocaleString() ?? "-"}
+                      <span className="text-sm font-normal text-muted-foreground">원</span>
+                    </div>
+                    {p.daily_change != null && (
+                      <div className={cn(
+                        "flex items-center gap-1 text-sm font-medium mt-1",
+                        p.daily_change > 0 ? "text-red-500" : p.daily_change < 0 ? "text-blue-500" : "text-muted-foreground"
+                      )}>
+                        {p.daily_change > 0 ? <TrendingUp className="h-3.5 w-3.5" /> : p.daily_change < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+                        {p.daily_change > 0 ? "+" : ""}{p.daily_change?.toLocaleString()}원
+                        {p.daily_change_pct != null && (
+                          <span className="text-xs">({p.daily_change_pct > 0 ? "+" : ""}{p.daily_change_pct?.toFixed(1)}%)</span>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
         </div>
 
         {isLoading ? (
