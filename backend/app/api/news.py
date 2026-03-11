@@ -3,13 +3,29 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import desc, func
-from sqlalchemy.orm import Session
+from sqlalchemy import desc, func, text
+from sqlalchemy.orm import Session, undefer
 
 from app.core.database import get_db
 from app.models.news import NewsArticle
 
 router = APIRouter(prefix="/news", tags=["news"])
+
+_commentary_exists: bool | None = None
+
+
+def _has_commentary_column(db: Session) -> bool:
+    """Check once whether the commentary column exists in news_articles."""
+    global _commentary_exists
+    if _commentary_exists is not None:
+        return _commentary_exists
+    try:
+        db.execute(text("SELECT commentary FROM news_articles LIMIT 0"))
+        _commentary_exists = True
+    except Exception:
+        db.rollback()
+        _commentary_exists = False
+    return _commentary_exists
 
 
 @router.get("/")
@@ -20,7 +36,12 @@ def list_news(
     db: Session = Depends(get_db),
 ):
     """Public news listing from DB."""
+    # Check if commentary column exists in DB
+    has_commentary = _has_commentary_column(db)
+
     q = db.query(NewsArticle)
+    if has_commentary:
+        q = q.options(undefer(NewsArticle.commentary))
     count_q = db.query(func.count(NewsArticle.id))
 
     if category:
@@ -44,7 +65,7 @@ def list_news(
                 "category": a.category,
                 "source": a.source,
                 "source_name": a.source_name,
-                "commentary": getattr(a, "commentary", None),
+                "commentary": getattr(a, "commentary", None) if has_commentary else None,
                 "published_at": a.published_at.isoformat() if a.published_at else None,
                 "seo_slug": a.seo_slug,
             }
@@ -91,7 +112,11 @@ def backfill_commentary(db: Session = Depends(get_db)):
 @router.get("/{slug}")
 def get_news_article(slug: str, db: Session = Depends(get_db)):
     """Get single news article by slug."""
-    article = db.query(NewsArticle).filter(NewsArticle.seo_slug == slug).first()
+    has_commentary = _has_commentary_column(db)
+    q = db.query(NewsArticle).filter(NewsArticle.seo_slug == slug)
+    if has_commentary:
+        q = q.options(undefer(NewsArticle.commentary))
+    article = q.first()
     if not article:
         raise HTTPException(status_code=404, detail="기사를 찾을 수 없습니다.")
     return {
@@ -99,7 +124,7 @@ def get_news_article(slug: str, db: Session = Depends(get_db)):
         "title": article.title,
         "summary": article.summary,
         "content": article.content,
-        "commentary": getattr(article, "commentary", None),
+        "commentary": getattr(article, "commentary", None) if has_commentary else None,
         "category": article.category,
         "source": article.source,
         "source_name": article.source_name,

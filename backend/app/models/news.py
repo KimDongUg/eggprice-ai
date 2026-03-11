@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import DateTime, Index, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, deferred
 
 from app.core.database import Base
 
@@ -25,7 +25,7 @@ class NewsArticle(Base):
     source: Mapped[str] = mapped_column(String(2000), nullable=True)  # 출처 URL
     source_name: Mapped[str] = mapped_column(String(100), nullable=True)  # 출처 이름
     seo_slug: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
-    commentary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # 편집자 해설
+    commentary = deferred(mapped_column("commentary", Text, nullable=True))  # 편집자 해설
     published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
