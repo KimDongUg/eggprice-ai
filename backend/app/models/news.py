@@ -24,6 +24,7 @@ class NewsArticle(Base):
     source: Mapped[str] = mapped_column(String(2000), nullable=True)  # 출처 URL
     source_name: Mapped[str] = mapped_column(String(100), nullable=True)  # 출처 이름
     seo_slug: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
+    commentary: Mapped[str] = mapped_column(Text, nullable=True)  # 편집자 해설
     published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

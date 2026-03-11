@@ -28,6 +28,8 @@ _EXPECTED_COLUMNS = [
     # regional support columns
     ("egg_prices", "region", "VARCHAR(20)", "'seoul'"),
     ("predictions", "region", "VARCHAR(20)", "'seoul'"),
+    # news commentary
+    ("news_articles", "commentary", "TEXT", None),
 ]
 
 # Columns that must be nullable for social login to work

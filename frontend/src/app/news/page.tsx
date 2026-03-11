@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Newspaper, Clock, ExternalLink, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Newspaper, Clock, ExternalLink, RefreshCw, ChevronLeft, ChevronRight, MessageSquareText } from "lucide-react";
 import api from "@/lib/axios";
 
 const CATEGORIES = [
@@ -24,6 +24,7 @@ interface NewsItem {
   category: string;
   source: string | null;
   source_name: string | null;
+  commentary: string | null;
   published_at: string;
   seo_slug: string;
 }
@@ -133,6 +134,16 @@ export default function NewsPage() {
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {item.summary}
                       </p>
+                      {item.commentary && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <div className="flex items-start gap-2">
+                            <MessageSquareText className="h-3.5 w-3.5 text-primary-400 shrink-0 mt-0.5" />
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              {item.commentary}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-6" />
                   </div>

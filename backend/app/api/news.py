@@ -44,6 +44,7 @@ def list_news(
                 "category": a.category,
                 "source": a.source,
                 "source_name": a.source_name,
+                "commentary": a.commentary,
                 "published_at": a.published_at.isoformat() if a.published_at else None,
                 "seo_slug": a.seo_slug,
             }
@@ -67,6 +68,26 @@ async def trigger_crawl(db: Session = Depends(get_db)):
         return {"status": "error", "detail": str(e), "traceback": traceback.format_exc()}
 
 
+@router.post("/backfill-commentary")
+def backfill_commentary(db: Session = Depends(get_db)):
+    """기존 기사 중 해설이 없는 것에 일괄 해설 생성."""
+    from app.services.news_commentary import generate_commentary
+
+    articles = db.query(NewsArticle).filter(
+        (NewsArticle.commentary.is_(None)) | (NewsArticle.commentary == "")
+    ).all()
+
+    count = 0
+    for a in articles:
+        a.commentary = generate_commentary(a.title, a.summary or a.title, a.category)
+        count += 1
+
+    if count > 0:
+        db.commit()
+
+    return {"status": "ok", "updated": count}
+
+
 @router.get("/{slug}")
 def get_news_article(slug: str, db: Session = Depends(get_db)):
     """Get single news article by slug."""
@@ -78,6 +99,7 @@ def get_news_article(slug: str, db: Session = Depends(get_db)):
         "title": article.title,
         "summary": article.summary,
         "content": article.content,
+        "commentary": article.commentary,
         "category": article.category,
         "source": article.source,
         "source_name": article.source_name,

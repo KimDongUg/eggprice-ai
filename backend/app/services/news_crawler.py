@@ -12,6 +12,7 @@ import httpx
 from sqlalchemy.orm import Session
 
 from app.models.news import AnalysisArticle, NewsArticle
+from app.services.news_commentary import generate_commentary
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +142,9 @@ async def crawl_news(db: Session) -> int:
                 if existing:
                     continue
 
+                commentary = generate_commentary(
+                    title, description or title, q["category"]
+                )
                 article = NewsArticle(
                     title=title,
                     summary=description or title,
@@ -149,6 +153,7 @@ async def crawl_news(db: Session) -> int:
                     source=link,
                     source_name=source_name,
                     seo_slug=slug,
+                    commentary=commentary,
                     published_at=pub_date,
                 )
                 db.add(article)
