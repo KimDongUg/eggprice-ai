@@ -21,6 +21,14 @@ const REGIONS = [
   { code: "daejeon", name: "대전" },
 ];
 
+interface FactorEvent {
+  period_start: string;
+  period_end: string;
+  event_type: string;
+  price_change_pct: number;
+  factors: { name: string; description: string; detail: string }[];
+}
+
 interface AccuracySummary {
   grade: string;
   region: string;
@@ -51,6 +59,7 @@ export default function AccuracyPage() {
   const [summary, setSummary] = useState<AccuracySummary | null>(null);
   const [history, setHistory] = useState<AccuracyHistoryItem[]>([]);
   const [metrics, setMetrics] = useState<ModelMetrics | null>(null);
+  const [factors, setFactors] = useState<FactorEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,11 +68,13 @@ export default function AccuracyPage() {
       api.get("/accuracy/summary", { params: { grade, region } }).then((r) => r.data),
       api.get("/accuracy/history", { params: { grade, region, days: 90 } }).then((r) => r.data),
       api.get("/accuracy/metrics", { params: { grade } }).then((r) => r.data),
+      api.get("/accuracy/factors", { params: { grade, region, days: 90 } }).then((r) => r.data).catch(() => ({ events: [] })),
     ])
-      .then(([s, h, m]) => {
+      .then(([s, h, m, f]) => {
         setSummary(s);
         setHistory(h.items);
         setMetrics(m);
+        setFactors(f.events || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -212,6 +223,65 @@ export default function AccuracyPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Factor analysis */}
+          {factors.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-orange-500" />
+                  가격 변동 요인 분석 — {regionName}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  최근 90일간 급등/급락/지속 상승·하락 구간과 영향 요인을 분석합니다.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {factors.map((ev, idx) => {
+                  const isUp = ev.event_type === "급등" || ev.event_type === "지속상승";
+                  const typeColor = isUp ? "text-danger-500" : "text-blue-600";
+                  const typeBg = isUp ? "bg-danger-50" : "bg-blue-50";
+                  const typeIcon = isUp ? "📈" : "📉";
+                  return (
+                    <div key={idx} className={cn("rounded-xl border p-4", typeBg)}>
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="text-lg">{typeIcon}</span>
+                        <Badge className={cn("text-xs font-bold", isUp ? "bg-danger-100 text-danger-600" : "bg-blue-100 text-blue-700")}>
+                          {ev.event_type}
+                        </Badge>
+                        <span className={cn("text-lg font-bold font-mono-num", typeColor)}>
+                          {ev.price_change_pct > 0 ? "+" : ""}{ev.price_change_pct}%
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(ev.period_start).toLocaleDateString("ko-KR")} ~ {new Date(ev.period_end).toLocaleDateString("ko-KR")}
+                        </span>
+                      </div>
+                      {ev.factors.length > 0 ? (
+                        <div className="space-y-2">
+                          {ev.factors.map((f, fi) => (
+                            <div key={fi} className="flex items-start gap-3 bg-white/80 rounded-lg p-3">
+                              <span className="text-sm shrink-0">
+                                {f.name === "조류인플루엔자" ? "🐔" : f.name === "사료가격" ? "🌾" : f.name === "환율" ? "💱" : f.name === "기상이변" ? "🌡️" : "📊"}
+                              </span>
+                              <div>
+                                <span className="text-sm font-semibold text-gray-900">{f.name}</span>
+                                <span className="text-sm text-muted-foreground ml-1">— {f.description}</span>
+                                <p className="text-xs text-muted-foreground mt-0.5">{f.detail}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground bg-white/80 rounded-lg p-3">
+                          해당 기간 주요 시장 요인 변화가 감지되지 않았습니다. 수급 요인 또는 시장 심리에 의한 변동일 수 있습니다.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Error history table */}
           {history.length > 0 && (
