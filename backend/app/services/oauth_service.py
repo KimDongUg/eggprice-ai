@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.user import User
 
+ADMIN_EMAILS = {"kduaro124@naver.com"}
+
 
 # ── Kakao ────────────────────────────────────────────
 
@@ -137,6 +139,9 @@ def find_or_create_social_user(
             user.profile_image = profile_image
         if name and user.name != name:
             user.name = name
+        # Ensure admin role for admin emails
+        if user.email and user.email.lower() in ADMIN_EMAILS and user.role != "admin":
+            user.role = "admin"
         db.commit()
         db.refresh(user)
         return user
@@ -154,12 +159,15 @@ def find_or_create_social_user(
             db.refresh(existing)
             return existing
 
+    role = "admin" if email and email.lower() in ADMIN_EMAILS else "user"
+
     user = User(
         email=email,
         name=name,
         provider=provider,
         provider_id=provider_id,
         profile_image=profile_image,
+        role=role,
     )
     db.add(user)
     db.commit()

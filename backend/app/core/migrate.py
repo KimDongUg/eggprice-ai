@@ -47,6 +47,17 @@ _ALTER_COLUMN_TYPE = [
 
 
 _MISSING_TABLES_SQL = {
+    "page_views": """
+        CREATE TABLE IF NOT EXISTS page_views (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            path VARCHAR(500) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        CREATE INDEX IF NOT EXISTS ix_page_views_user_id ON page_views(user_id);
+        CREATE INDEX IF NOT EXISTS ix_page_views_path ON page_views(path);
+        CREATE INDEX IF NOT EXISTS ix_page_views_created_at ON page_views(created_at);
+    """,
     "community_comments": """
         CREATE TABLE IF NOT EXISTS community_comments (
             id SERIAL PRIMARY KEY,
