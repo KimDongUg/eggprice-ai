@@ -247,8 +247,8 @@ def _detect_events(
                         })
             trend_start = max(trend_start + 1, trend_end)
 
-    # Sort by start date
-    events.sort(key=lambda e: e["period_start"])
+    # Sort by start date descending (most recent first)
+    events.sort(key=lambda e: e["period_start"], reverse=True)
     return events
 
 
