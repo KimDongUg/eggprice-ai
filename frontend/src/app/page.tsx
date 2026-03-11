@@ -476,11 +476,9 @@ export default function LandingPage() {
                 </ul>
                 <Button
                   className="w-full bg-secondary-500 hover:bg-secondary-600 text-white"
-                  asChild
+                  onClick={() => alert("적절한 시간이 지난 후 진행할 예정입니다.")}
                 >
-                  <a href="tel:010-3526-4754">
-                    지금 신청하기
-                  </a>
+                  지금 신청하기
                 </Button>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   6개월 후 Standard로 자동 전환
@@ -514,10 +512,12 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="tel:010-3526-4754">
-                    지금 신청하기
-                  </a>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => alert("적절한 시간이 지난 후 진행할 예정입니다.")}
+                >
+                  지금 신청하기
                 </Button>
               </CardContent>
             </Card>
@@ -551,11 +551,9 @@ export default function LandingPage() {
                 </ul>
                 <Button
                   className="w-full bg-primary-400 hover:bg-primary-500 text-white"
-                  asChild
+                  onClick={() => alert("적절한 시간이 지난 후 진행할 예정입니다.")}
                 >
-                  <a href="tel:010-3526-4754">
-                    지금 신청하기
-                  </a>
+                  지금 신청하기
                 </Button>
               </CardContent>
             </Card>
