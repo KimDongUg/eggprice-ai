@@ -77,9 +77,9 @@ function PriceChart({
     <Card>
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold flex items-center gap-2">
+          <h2 className="text-lg font-bold flex items-center gap-2">
             {selectedGrade} 가격 추이
-            <Badge variant="outline" className="text-[10px] font-normal">
+            <Badge variant="outline" className="text-xs font-normal">
               {regionLabel}
             </Badge>
           </h2>
@@ -124,8 +124,8 @@ function PriceChart({
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1">
-          <Database className="h-3 w-3" />
+        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
+          <Database className="h-3.5 w-3.5" />
           데이터 출처: KAMIS (한국농수산식품유통공사) 도매 유통가 기준 | 매일 업데이트
         </p>
       </CardContent>
@@ -295,25 +295,25 @@ export default function EggPriceTodayPage() {
               {stats && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
                   <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">7일 평균</p>
-                    <p className="text-sm font-bold">{stats.avg_7d?.toLocaleString() ?? "-"}원</p>
+                    <p className="text-xs text-muted-foreground">7일 평균</p>
+                    <p className="text-base font-bold">{stats.avg_7d?.toLocaleString() ?? "-"}원</p>
                   </div>
                   <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">30일 평균</p>
-                    <p className="text-sm font-bold">{stats.avg_30d?.toLocaleString() ?? "-"}원</p>
+                    <p className="text-xs text-muted-foreground">30일 평균</p>
+                    <p className="text-base font-bold">{stats.avg_30d?.toLocaleString() ?? "-"}원</p>
                   </div>
                   <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">30일 최저</p>
-                    <p className="text-sm font-bold">{stats.min_30d?.toLocaleString() ?? "-"}원</p>
+                    <p className="text-xs text-muted-foreground">30일 최저</p>
+                    <p className="text-base font-bold">{stats.min_30d?.toLocaleString() ?? "-"}원</p>
                   </div>
                   <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">30일 최고</p>
-                    <p className="text-sm font-bold">{stats.max_30d?.toLocaleString() ?? "-"}원</p>
+                    <p className="text-xs text-muted-foreground">30일 최고</p>
+                    <p className="text-base font-bold">{stats.max_30d?.toLocaleString() ?? "-"}원</p>
                   </div>
                 </div>
               )}
 
-              <p className="text-[10px] text-muted-foreground mt-3">
+              <p className="text-xs text-muted-foreground mt-3">
                 <Database className="h-3 w-3 inline mr-1" />
                 출처: KAMIS(한국농수산식품유통공사)
               </p>
@@ -331,11 +331,11 @@ export default function EggPriceTodayPage() {
         {commentary?.summary && (
           <Card className="bg-amber-50/50 border-amber-100">
             <CardContent className="p-5">
-              <h2 className="text-sm font-bold mb-2 flex items-center gap-2">
+              <h2 className="text-base font-bold mb-2 flex items-center gap-2">
                 <Bot className="h-4 w-4 text-primary-400" />
                 오늘 한줄 해설
               </h2>
-              <p className="text-sm text-gray-700 leading-relaxed">
+              <p className="text-sm text-gray-800 leading-relaxed">
                 {commentary.summary}
               </p>
             </CardContent>
@@ -355,7 +355,7 @@ export default function EggPriceTodayPage() {
           <Card>
             <CardContent className="p-6">
               <h2 className="text-lg font-bold mb-4">오늘 계란 가격 해설</h2>
-              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="prose prose-sm max-w-none text-gray-800 leading-relaxed whitespace-pre-line">
                 {commentary.body}
               </div>
             </CardContent>
@@ -429,16 +429,16 @@ export default function EggPriceTodayPage() {
               </Link>
             </div>
             <div className="flex flex-wrap justify-center gap-3 mt-4">
-              <Link href="/news" className="text-xs text-primary-400 hover:underline">
+              <Link href="/news" className="text-sm text-primary-400 hover:underline">
                 계란 뉴스
               </Link>
-              <Link href="/guide" className="text-xs text-primary-400 hover:underline">
+              <Link href="/guide" className="text-sm text-primary-400 hover:underline">
                 지식백과
               </Link>
-              <Link href="/data" className="text-xs text-primary-400 hover:underline">
+              <Link href="/data" className="text-sm text-primary-400 hover:underline">
                 가격 데이터
               </Link>
-              <Link href="/data-sources" className="text-xs text-primary-400 hover:underline">
+              <Link href="/data-sources" className="text-sm text-primary-400 hover:underline">
                 데이터 출처
               </Link>
             </div>
@@ -446,7 +446,7 @@ export default function EggPriceTodayPage() {
         </Card>
 
         {/* 면책 */}
-        <div className="text-xs text-muted-foreground border-t pt-4 space-y-1">
+        <div className="text-sm text-muted-foreground border-t pt-4 space-y-1">
           <p>데이터 출처: KAMIS(한국농수산식품유통공사), 매일 업데이트</p>
           <p>
             슬기알 AI 예측은 통계적 추정치이며, 실제 가격은 달라질 수 있습니다.
