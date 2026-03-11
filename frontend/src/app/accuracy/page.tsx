@@ -21,12 +21,17 @@ const REGIONS = [
   { code: "daejeon", name: "대전" },
 ];
 
+interface FactorArticle {
+  title: string;
+  url: string | null;
+}
+
 interface FactorEvent {
   period_start: string;
   period_end: string;
   event_type: string;
   price_change_pct: number;
-  factors: { name: string; description: string; detail: string }[];
+  factors: { name: string; description: string; detail: string; articles?: FactorArticle[] }[];
 }
 
 interface AccuracySummary {
@@ -261,12 +266,28 @@ export default function AccuracyPage() {
                           {ev.factors.map((f, fi) => (
                             <div key={fi} className="flex items-start gap-3 bg-white/80 rounded-lg p-3">
                               <span className="text-sm shrink-0">
-                                {f.name === "조류인플루엔자" ? "🐔" : f.name === "사료가격" ? "🌾" : f.name === "환율" ? "💱" : f.name === "기상이변" ? "🌡️" : f.name === "명절 수요" ? "🎁" : f.name === "계절 수요" ? "📅" : f.name === "계절 요인" ? "☀️" : f.name === "수입 영향" ? "🚢" : f.name === "공급 충격" ? "⚠️" : "📊"}
+                                {f.name === "조류인플루엔자" ? "🐔" : f.name.includes("사료") ? "🌾" : f.name === "환율" ? "💱" : f.name === "기상이변" ? "🌡️" : f.name.includes("명절") ? "🎁" : f.name === "계절 수요" ? "📅" : f.name === "계절 요인" ? "☀️" : f.name.includes("수입") ? "🚢" : f.name === "공급 충격" ? "⚠️" : f.name.includes("가격") ? "📈" : "📊"}
                               </span>
-                              <div>
+                              <div className="flex-1 min-w-0">
                                 <span className="text-sm font-semibold text-gray-900">{f.name}</span>
                                 <span className="text-sm text-muted-foreground ml-1">— {f.description}</span>
-                                <p className="text-xs text-muted-foreground mt-0.5">{f.detail}</p>
+                                {f.articles && f.articles.length > 0 ? (
+                                  <div className="mt-1 space-y-1">
+                                    {f.articles.map((article, ai) => (
+                                      <a
+                                        key={ai}
+                                        href={article.url || "#"}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block text-xs text-primary-400 hover:underline truncate"
+                                      >
+                                        📰 {article.title}
+                                      </a>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground mt-0.5">{f.detail}</p>
+                                )}
                               </div>
                             </div>
                           ))}

@@ -415,13 +415,18 @@ def _find_news_factors(
             if any(kw in (a.title or "") or kw in (a.summary or "") for kw in kf["keywords"])
         ]
         if matching:
-            titles = [a.title for a in matching[:2]]
-            detail = " | ".join(t[:40] for t in titles if t)
+            articles_info = [
+                {"title": a.title[:50], "url": a.source}
+                for a in matching[:3]
+                if a.title
+            ]
+            detail = " | ".join(a["title"] for a in articles_info)
             factors.append({
                 "name": kf["name"],
                 "description": kf["description"],
                 "detail": f"관련 기사 {len(matching)}건 — {detail}",
                 "direction": kf["direction"],
+                "articles": articles_info,
             })
 
     return factors
@@ -613,7 +618,12 @@ def accuracy_factors(
         is_up_event = ev["event_type"] in ("급등", "지속상승")
         event_dir = "up" if is_up_event else "down"
         matched = [
-            {"name": f["name"], "description": f["description"], "detail": f["detail"]}
+            {
+                "name": f["name"],
+                "description": f["description"],
+                "detail": f["detail"],
+                **({"articles": f["articles"]} if "articles" in f else {}),
+            }
             for f in all_factors
             if f.get("direction") == event_dir
         ]
