@@ -94,6 +94,18 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass  # non-fatal
 
+    # Seed analysis articles if empty
+    try:
+        from app.models.news import AnalysisArticle
+        db = SessionLocal()
+        analysis_count = db.query(AnalysisArticle).count()
+        if analysis_count < 5:
+            from seed_analysis import seed as seed_analysis
+            seed_analysis()
+        db.close()
+    except Exception:
+        pass  # non-fatal
+
     yield
     shutdown_scheduler()
 
