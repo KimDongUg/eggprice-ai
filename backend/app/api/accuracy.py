@@ -283,13 +283,30 @@ def _find_holiday_factor(
     }
 
     for holiday_name, hol_start, hol_end in lunar_holidays.get(year, []):
-        # Check overlap
         if period_start <= hol_end and period_end >= hol_start:
-            factors.append({
-                "name": "명절 수요",
-                "description": f"{holiday_name} 연휴 수요 증가",
-                "detail": f"{holiday_name} 기간({hol_start.strftime('%m/%d')}~{hol_end.strftime('%m/%d')}) 선물·가정 소비 급증으로 가격 상승 압력",
-            })
+            # Before holiday = demand surge (up), after holiday = demand drop (down)
+            mid_point = hol_start + (hol_end - hol_start) / 2
+            if period_end <= mid_point:
+                factors.append({
+                    "name": "명절 수요",
+                    "description": f"{holiday_name} 연휴 수요 증가",
+                    "detail": f"{holiday_name} 기간({hol_start.strftime('%m/%d')}~{hol_end.strftime('%m/%d')}) 선물·가정 소비 급증으로 가격 상승 압력",
+                    "direction": "up",
+                })
+            elif period_start >= mid_point:
+                factors.append({
+                    "name": "명절 후 수요 감소",
+                    "description": f"{holiday_name} 연휴 후 수요 감소",
+                    "detail": f"{holiday_name} 이후 소비 정상화로 가격 하락 압력",
+                    "direction": "down",
+                })
+            else:
+                factors.append({
+                    "name": "명절 수요",
+                    "description": f"{holiday_name} 연휴 수요 변동",
+                    "detail": f"{holiday_name} 기간({hol_start.strftime('%m/%d')}~{hol_end.strftime('%m/%d')}) 수요 변동 구간",
+                    "direction": "up",
+                })
 
     # ── Fixed annual holidays ──
     fixed_holidays = [
@@ -302,6 +319,7 @@ def _find_holiday_factor(
                 "name": "계절 수요",
                 "description": f"{holiday_name} 수요 증가",
                 "detail": f"{holiday_name} 시즌 소비 증가에 따른 가격 영향",
+                "direction": "up",
             })
 
     # ── Summer (7-8월) — 산란율 저하, 복날 수요 ──
@@ -312,6 +330,7 @@ def _find_holiday_factor(
             "name": "계절 요인",
             "description": "여름철 산란율 저하 및 복날 수요",
             "detail": "고온으로 인한 산란율 감소 + 복날(삼계탕) 수요 증가",
+            "direction": "up",
         })
 
     return factors
@@ -344,21 +363,49 @@ def _find_news_factors(
             "keywords": ["조류인플루엔자", "조류독감", "AI 발생", "AI 확산", "고병원성"],
             "name": "조류인플루엔자",
             "description": "뉴스에서 AI 발생/확산 보도 확인",
+            "direction": "up",  # supply shock → price up
         },
         {
-            "keywords": ["수입", "수입란", "수입 계란", "긴급 수입", "미국산"],
-            "name": "수입 영향",
-            "description": "계란 수입 관련 뉴스 보도",
+            "keywords": ["수입 확대", "수입란 공급", "긴급 수입", "수입 물량"],
+            "name": "수입 공급 확대",
+            "description": "계란 수입 확대로 공급 증가",
+            "direction": "down",  # more supply → price down
         },
         {
-            "keywords": ["사료", "옥수수", "대두박", "사료비"],
-            "name": "사료가격",
-            "description": "사료 가격 변동 관련 뉴스 보도",
+            "keywords": ["수입란 부족", "수입 감소", "수입 중단"],
+            "name": "수입 감소",
+            "description": "계란 수입 감소/중단 보도",
+            "direction": "up",
+        },
+        {
+            "keywords": ["사료 인상", "사료비 상승", "옥수수 가격 상승", "사료 가격 인상"],
+            "name": "사료가격 상승",
+            "description": "사료 가격 상승 관련 뉴스 보도",
+            "direction": "up",
+        },
+        {
+            "keywords": ["사료 하락", "사료비 안정", "옥수수 가격 하락"],
+            "name": "사료가격 안정",
+            "description": "사료 가격 안정/하락 관련 뉴스 보도",
+            "direction": "down",
         },
         {
             "keywords": ["산란계", "살처분", "폐사", "감산"],
             "name": "공급 충격",
             "description": "산란계 감소/살처분 관련 뉴스 보도",
+            "direction": "up",  # less supply → price up
+        },
+        {
+            "keywords": ["가격 안정", "가격 하락", "하락세", "약세"],
+            "name": "가격 안정세",
+            "description": "가격 하락/안정 관련 뉴스 보도",
+            "direction": "down",
+        },
+        {
+            "keywords": ["가격 상승", "고공행진", "상승세", "강세"],
+            "name": "가격 상승세",
+            "description": "가격 상승 관련 뉴스 보도",
+            "direction": "up",
         },
     ]
 
@@ -374,6 +421,7 @@ def _find_news_factors(
                 "name": kf["name"],
                 "description": kf["description"],
                 "detail": f"관련 기사 {len(matching)}건 — {detail}",
+                "direction": kf["direction"],
             })
 
     return factors
@@ -407,8 +455,9 @@ def _find_factors(
         region_str = ", ".join(sorted(regions)) if regions else "전국"
         factors.append({
             "name": "조류인플루엔자",
-            "description": "기간 중 AI 발생 확인",
+            "description": "기간 중 AI 발생 확인 — 공급 감소로 가격 상승 압력",
             "detail": f"{region_str} 지역 총 {total_cases}건 발생",
+            "direction": "up",
         })
 
     # --- 3. Feed Price ---
@@ -437,11 +486,13 @@ def _find_factors(
         if feed_type in end_by_type and start_by_type[feed_type]:
             change = (end_by_type[feed_type] - start_by_type[feed_type]) / start_by_type[feed_type] * 100
             if abs(change) >= 2.0:
-                direction = "상승" if change > 0 else "하락"
+                dir_label = "상승" if change > 0 else "하락"
+                # Feed price up → egg price up (production cost increase)
                 factors.append({
                     "name": "사료가격",
                     "description": f"{feed_type} 가격 변동",
-                    "detail": f"{feed_type} 가격 {abs(change):.1f}% {direction}",
+                    "detail": f"{feed_type} 가격 {abs(change):.1f}% {dir_label}",
+                    "direction": "up" if change > 0 else "down",
                 })
 
     # --- 4. Exchange Rate ---
@@ -460,11 +511,13 @@ def _find_factors(
     if fx_start and fx_end and fx_start.usd_krw:
         fx_change = (fx_end.usd_krw - fx_start.usd_krw) / fx_start.usd_krw * 100
         if abs(fx_change) >= 1.5:
-            direction = "상승" if fx_change > 0 else "하락"
+            dir_label = "상승" if fx_change > 0 else "하락"
+            # Exchange rate up → import cost up → egg price up
             factors.append({
                 "name": "환율",
                 "description": "원/달러 환율 변동",
-                "detail": f"환율 {abs(fx_change):.1f}% {direction} ({fx_start.usd_krw:.0f}→{fx_end.usd_krw:.0f}원)",
+                "detail": f"환율 {abs(fx_change):.1f}% {dir_label} ({fx_start.usd_krw:.0f}→{fx_end.usd_krw:.0f}원)",
+                "direction": "up" if fx_change > 0 else "down",
             })
 
     # --- 5. Weather extremes ---
@@ -484,14 +537,16 @@ def _find_factors(
         if max_t is not None and max_t >= 35:
             factors.append({
                 "name": "기상이변",
-                "description": "폭염 발생",
+                "description": "폭염 발생 — 산란율 저하",
                 "detail": f"기간 중 최고기온 {max_t:.1f}°C 기록",
+                "direction": "up",
             })
         elif min_t is not None and min_t <= -15:
             factors.append({
                 "name": "기상이변",
-                "description": "한파 발생",
+                "description": "한파 발생 — 난방비 증가, 산란율 저하",
                 "detail": f"기간 중 최저기온 {min_t:.1f}°C 기록",
+                "direction": "up",
             })
         elif avg is not None and (avg >= 30 or avg <= -5):
             label = "고온" if avg >= 30 else "저온"
@@ -499,6 +554,7 @@ def _find_factors(
                 "name": "기상이변",
                 "description": f"이상 {label} 지속",
                 "detail": f"기간 평균기온 {avg:.1f}°C",
+                "direction": "up",
             })
 
     # --- 6. News-based factor detection ---
@@ -548,16 +604,26 @@ def accuracy_factors(
     # Detect events
     events = _detect_events(prices)
 
-    # For each event, find contributing factors
+    # For each event, find contributing factors matching the price direction
     result_events = []
     for ev in events:
-        factors = _find_factors(db, ev["period_start"], ev["period_end"])
+        all_factors = _find_factors(db, ev["period_start"], ev["period_end"])
+
+        # Filter: only show factors whose direction matches the event
+        is_up_event = ev["event_type"] in ("급등", "지속상승")
+        event_dir = "up" if is_up_event else "down"
+        matched = [
+            {"name": f["name"], "description": f["description"], "detail": f["detail"]}
+            for f in all_factors
+            if f.get("direction") == event_dir
+        ]
+
         result_events.append({
             "period_start": ev["period_start"].isoformat(),
             "period_end": ev["period_end"].isoformat(),
             "event_type": ev["event_type"],
             "price_change_pct": ev["price_change_pct"],
-            "factors": factors,
+            "factors": matched,
         })
 
     return {
