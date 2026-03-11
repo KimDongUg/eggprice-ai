@@ -106,6 +106,13 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass  # non-fatal
 
+    # Seed admin comments on community posts
+    try:
+        from seed_admin_comments import seed as seed_admin_comments
+        seed_admin_comments()
+    except Exception:
+        pass  # non-fatal
+
     yield
     shutdown_scheduler()
 
