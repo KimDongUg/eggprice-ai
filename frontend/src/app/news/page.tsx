@@ -208,12 +208,6 @@ export default function NewsPage() {
         </div>
       )}
 
-      {/* AdSense placeholder */}
-      <div className="bg-gray-100 border border-dashed border-gray-300 rounded-lg p-4 text-center">
-        <span className="text-xs text-muted-foreground">
-          광고 영역 (Google AdSense)
-        </span>
-      </div>
     </div>
   );
 }
