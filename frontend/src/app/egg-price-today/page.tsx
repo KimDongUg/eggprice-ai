@@ -106,7 +106,7 @@ export default function EggPriceTodayPage() {
         }}
       />
 
-      <div className="space-y-8 max-w-4xl mx-auto">
+      <div className="space-y-8">
         {/* ── 섹션 A: Hero 요약 카드 ── */}
         <div>
           <h1 className="text-2xl font-bold mb-1">오늘 계란 가격</h1>
