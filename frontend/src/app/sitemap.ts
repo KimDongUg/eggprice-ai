@@ -1,7 +1,15 @@
 import { MetadataRoute } from "next";
+import articles from "@/data/guide-articles";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://eggprice.kr";
+
+  const guideArticleEntries: MetadataRoute.Sitemap = articles.map((a) => ({
+    url: `${baseUrl}/guide/${a.slug}`,
+    lastModified: new Date(a.publishedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
 
   return [
     {
@@ -118,5 +126,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
+    ...guideArticleEntries,
   ];
 }
