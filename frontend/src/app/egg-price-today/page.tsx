@@ -294,21 +294,21 @@ export default function EggPriceTodayPage() {
               {/* 통계 요약 */}
               {stats && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-xs text-muted-foreground">7일 평균</p>
-                    <p className="text-base font-bold">{stats.avg_7d?.toLocaleString() ?? "-"}원</p>
+                  <div className="text-center p-4 bg-white rounded-lg">
+                    <p className="text-sm text-muted-foreground">7일 평균</p>
+                    <p className="text-2xl font-bold">{stats.avg_7d?.toLocaleString() ?? "-"}원</p>
                   </div>
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-xs text-muted-foreground">30일 평균</p>
-                    <p className="text-base font-bold">{stats.avg_30d?.toLocaleString() ?? "-"}원</p>
+                  <div className="text-center p-4 bg-white rounded-lg">
+                    <p className="text-sm text-muted-foreground">30일 평균</p>
+                    <p className="text-2xl font-bold">{stats.avg_30d?.toLocaleString() ?? "-"}원</p>
                   </div>
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-xs text-muted-foreground">30일 최저</p>
-                    <p className="text-base font-bold">{stats.min_30d?.toLocaleString() ?? "-"}원</p>
+                  <div className="text-center p-4 bg-white rounded-lg">
+                    <p className="text-sm text-muted-foreground">30일 최저</p>
+                    <p className="text-2xl font-bold">{stats.min_30d?.toLocaleString() ?? "-"}원</p>
                   </div>
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <p className="text-xs text-muted-foreground">30일 최고</p>
-                    <p className="text-base font-bold">{stats.max_30d?.toLocaleString() ?? "-"}원</p>
+                  <div className="text-center p-4 bg-white rounded-lg">
+                    <p className="text-sm text-muted-foreground">30일 최고</p>
+                    <p className="text-2xl font-bold">{stats.max_30d?.toLocaleString() ?? "-"}원</p>
                   </div>
                 </div>
               )}
