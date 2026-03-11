@@ -122,9 +122,9 @@ export default function LandingPage() {
                   className="text-base px-8 py-6 border-gray-300"
                   asChild
                 >
-                  <Link href="/price">
+                  <Link href="/egg-price-today">
                     <TrendingUp className="h-5 w-5 mr-2" />
-                    오늘 시세 보기
+                    오늘 계란가격 보기
                   </Link>
                 </Button>
               </div>

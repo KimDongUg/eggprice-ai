@@ -46,7 +46,7 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-white mb-4">서비스</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/price" className="hover:text-white transition-colors">
+                <Link href="/egg-price-today" className="hover:text-white transition-colors">
                   오늘 계란 가격
                 </Link>
               </li>

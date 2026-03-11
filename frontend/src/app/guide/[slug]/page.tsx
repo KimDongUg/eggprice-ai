@@ -143,7 +143,7 @@ export default function GuideArticlePage({
                 예측 정확도
               </Link>
               <Link
-                href="/price"
+                href="/egg-price-today"
                 className="text-xs px-3 py-1.5 bg-white border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 오늘 가격
