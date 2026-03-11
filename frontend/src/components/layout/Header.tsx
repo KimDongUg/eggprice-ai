@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "홈", authRequired: false, authOnly: false },
-  { href: "/price", label: "오늘 가격", authRequired: false, authOnly: false },
+  { href: "/egg-price-today", label: "오늘 가격", authRequired: false, authOnly: false },
   { href: "/prediction", label: "AI 예측", authRequired: false, authOnly: false },
   { href: "/accuracy", label: "예측 정확도", authRequired: false, authOnly: false },
   { href: "/news", label: "뉴스", authRequired: false, authOnly: false },

@@ -35,6 +35,15 @@ export function usePriceHistory(grade: string, days = 180, enabled = true, regio
   });
 }
 
+export function useTodaySummary(grade = "특란", region = "seoul") {
+  return useQuery({
+    queryKey: ["prices", "today-summary", grade, region],
+    queryFn: () =>
+      api.get("/prices/today-summary", { params: { grade, region } }).then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
 // ── Predictions ─────────────────────────────────────
 
 export function useForecast(grade: string, enabled = true, region = "seoul") {
