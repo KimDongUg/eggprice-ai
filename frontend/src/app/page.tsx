@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -65,15 +64,6 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="flex items-center gap-3 mb-6">
-                <Image
-                  src="/logo.png"
-                  alt="슬기알 로고"
-                  width={64}
-                  height={64}
-                />
-                <span className="text-2xl font-bold text-gray-900">슬기알</span>
-              </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
                 AI 기반
                 <br />
