@@ -252,18 +252,147 @@ def _detect_events(
     return events
 
 
+def _find_holiday_factor(
+    period_start: date,
+    period_end: date,
+) -> list[dict]:
+    """Check if the period overlaps with Korean holidays that affect egg demand.
+
+    Korean lunar holidays shift each year. This uses approximate windows
+    (±10 days around the typical date) and the Korean `korean_lunar_calendar`
+    is not available, so we hard-code known holidays by year plus fixed ones.
+    """
+    factors: list[dict] = []
+    year = period_start.year
+
+    # ── Known lunar holidays (설날, 추석) — approximate Gregorian dates ──
+    # These are the actual 1st day of the lunar month; demand surge starts ~7 days before.
+    lunar_holidays: dict[int, list[tuple[str, date, date]]] = {
+        2025: [
+            ("설날", date(2025, 1, 22), date(2025, 1, 31)),
+            ("추석", date(2025, 9, 28), date(2025, 10, 8)),
+        ],
+        2026: [
+            ("설날", date(2026, 2, 7), date(2026, 2, 20)),
+            ("추석", date(2026, 9, 18), date(2026, 9, 28)),
+        ],
+        2027: [
+            ("설날", date(2027, 1, 26), date(2027, 2, 8)),
+            ("추석", date(2027, 10, 7), date(2027, 10, 17)),
+        ],
+    }
+
+    for holiday_name, hol_start, hol_end in lunar_holidays.get(year, []):
+        # Check overlap
+        if period_start <= hol_end and period_end >= hol_start:
+            factors.append({
+                "name": "명절 수요",
+                "description": f"{holiday_name} 연휴 수요 증가",
+                "detail": f"{holiday_name} 기간({hol_start.strftime('%m/%d')}~{hol_end.strftime('%m/%d')}) 선물·가정 소비 급증으로 가격 상승 압력",
+            })
+
+    # ── Fixed annual holidays ──
+    fixed_holidays = [
+        ("어버이날/스승의날", date(year, 5, 5), date(year, 5, 18)),
+        ("크리스마스/연말", date(year, 12, 20), date(year, 12, 31)),
+    ]
+    for holiday_name, hol_start, hol_end in fixed_holidays:
+        if period_start <= hol_end and period_end >= hol_start:
+            factors.append({
+                "name": "계절 수요",
+                "description": f"{holiday_name} 수요 증가",
+                "detail": f"{holiday_name} 시즌 소비 증가에 따른 가격 영향",
+            })
+
+    # ── Summer (7-8월) — 산란율 저하, 복날 수요 ──
+    summer_start = date(year, 7, 1)
+    summer_end = date(year, 8, 31)
+    if period_start <= summer_end and period_end >= summer_start:
+        factors.append({
+            "name": "계절 요인",
+            "description": "여름철 산란율 저하 및 복날 수요",
+            "detail": "고온으로 인한 산란율 감소 + 복날(삼계탕) 수요 증가",
+        })
+
+    return factors
+
+
+def _find_news_factors(
+    db: Session,
+    period_start: date,
+    period_end: date,
+) -> list[dict]:
+    """Search news articles for keywords that indicate price factors."""
+    from app.models.news import NewsArticle
+
+    factors: list[dict] = []
+    lookup_start = period_start - timedelta(days=5)
+    lookup_end = period_end + timedelta(days=2)
+
+    articles = (
+        db.query(NewsArticle)
+        .filter(NewsArticle.published_at.between(lookup_start, lookup_end))
+        .all()
+    )
+
+    if not articles:
+        return factors
+
+    # Keyword patterns → factor mapping
+    keyword_factors = [
+        {
+            "keywords": ["조류인플루엔자", "조류독감", "AI 발생", "AI 확산", "고병원성"],
+            "name": "조류인플루엔자",
+            "description": "뉴스에서 AI 발생/확산 보도 확인",
+        },
+        {
+            "keywords": ["수입", "수입란", "수입 계란", "긴급 수입", "미국산"],
+            "name": "수입 영향",
+            "description": "계란 수입 관련 뉴스 보도",
+        },
+        {
+            "keywords": ["사료", "옥수수", "대두박", "사료비"],
+            "name": "사료가격",
+            "description": "사료 가격 변동 관련 뉴스 보도",
+        },
+        {
+            "keywords": ["산란계", "살처분", "폐사", "감산"],
+            "name": "공급 충격",
+            "description": "산란계 감소/살처분 관련 뉴스 보도",
+        },
+    ]
+
+    for kf in keyword_factors:
+        matching = [
+            a for a in articles
+            if any(kw in (a.title or "") or kw in (a.summary or "") for kw in kf["keywords"])
+        ]
+        if matching:
+            titles = [a.title for a in matching[:2]]
+            detail = " | ".join(t[:40] for t in titles if t)
+            factors.append({
+                "name": kf["name"],
+                "description": kf["description"],
+                "detail": f"관련 기사 {len(matching)}건 — {detail}",
+            })
+
+    return factors
+
+
 def _find_factors(
     db: Session,
     period_start: date,
     period_end: date,
 ) -> list[dict]:
-    """Query market data tables and return contributing factors for the period."""
+    """Query market data tables, holidays, and news to find contributing factors."""
     factors: list[dict] = []
-    # Extend the lookup window slightly to capture leading indicators
     lookup_start = period_start - timedelta(days=3)
     lookup_end = period_end + timedelta(days=1)
 
-    # --- Avian Flu ---
+    # --- 1. Holiday / Seasonal factors ---
+    factors.extend(_find_holiday_factor(period_start, period_end))
+
+    # --- 2. Avian Flu (DB) ---
     flu_rows = (
         db.query(AvianFluStatus)
         .filter(
@@ -282,7 +411,7 @@ def _find_factors(
             "detail": f"{region_str} 지역 총 {total_cases}건 발생",
         })
 
-    # --- Feed Price ---
+    # --- 3. Feed Price ---
     feed_start_rows = (
         db.query(FeedPrice)
         .filter(FeedPrice.date <= period_start, FeedPrice.date >= lookup_start - timedelta(days=7))
@@ -295,7 +424,6 @@ def _find_factors(
         .order_by(desc(FeedPrice.date))
         .all()
     )
-    # Group by feed_type and compute change
     start_by_type: dict[str, float] = {}
     for r in feed_start_rows:
         if r.feed_type not in start_by_type:
@@ -316,7 +444,7 @@ def _find_factors(
                     "detail": f"{feed_type} 가격 {abs(change):.1f}% {direction}",
                 })
 
-    # --- Exchange Rate ---
+    # --- 4. Exchange Rate ---
     fx_start = (
         db.query(ExchangeRate)
         .filter(ExchangeRate.date <= period_start, ExchangeRate.date >= lookup_start - timedelta(days=7))
@@ -339,7 +467,7 @@ def _find_factors(
                 "detail": f"환율 {abs(fx_change):.1f}% {direction} ({fx_start.usd_krw:.0f}→{fx_end.usd_krw:.0f}원)",
             })
 
-    # --- Weather extremes ---
+    # --- 5. Weather extremes ---
     weather_rows = (
         db.query(
             func.avg(WeatherData.avg_temperature).label("avg_temp"),
@@ -372,6 +500,15 @@ def _find_factors(
                 "description": f"이상 {label} 지속",
                 "detail": f"기간 평균기온 {avg:.1f}°C",
             })
+
+    # --- 6. News-based factor detection ---
+    # Deduplicate: skip news factors whose name already appeared from DB data
+    existing_names = {f["name"] for f in factors}
+    news_factors = _find_news_factors(db, period_start, period_end)
+    for nf in news_factors:
+        if nf["name"] not in existing_names:
+            factors.append(nf)
+            existing_names.add(nf["name"])
 
     return factors
 

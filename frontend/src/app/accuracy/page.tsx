@@ -261,7 +261,7 @@ export default function AccuracyPage() {
                           {ev.factors.map((f, fi) => (
                             <div key={fi} className="flex items-start gap-3 bg-white/80 rounded-lg p-3">
                               <span className="text-sm shrink-0">
-                                {f.name === "조류인플루엔자" ? "🐔" : f.name === "사료가격" ? "🌾" : f.name === "환율" ? "💱" : f.name === "기상이변" ? "🌡️" : "📊"}
+                                {f.name === "조류인플루엔자" ? "🐔" : f.name === "사료가격" ? "🌾" : f.name === "환율" ? "💱" : f.name === "기상이변" ? "🌡️" : f.name === "명절 수요" ? "🎁" : f.name === "계절 수요" ? "📅" : f.name === "계절 요인" ? "☀️" : f.name === "수입 영향" ? "🚢" : f.name === "공급 충격" ? "⚠️" : "📊"}
                               </span>
                               <div>
                                 <span className="text-sm font-semibold text-gray-900">{f.name}</span>
