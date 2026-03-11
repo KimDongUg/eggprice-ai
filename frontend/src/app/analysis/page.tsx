@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart3, Clock, ExternalLink, RefreshCw } from "lucide-react";
+import { BarChart3, Clock, ExternalLink, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
 
 const CATEGORIES = [
@@ -14,6 +15,8 @@ const CATEGORIES = [
   { label: "사료분석", value: "사료분석" },
   { label: "환율분석", value: "환율분석" },
 ];
+
+const PER_PAGE = 10;
 
 interface AnalysisItem {
   id: number;
@@ -28,6 +31,7 @@ interface AnalysisItem {
 
 export default function AnalysisPage() {
   const [category, setCategory] = useState("");
+  const [page, setPage] = useState(1);
   const [articles, setArticles] = useState<AnalysisItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -35,14 +39,21 @@ export default function AnalysisPage() {
   useEffect(() => {
     setLoading(true);
     api
-      .get("/analysis", { params: category ? { category } : {} })
+      .get("/analysis", { params: { ...(category ? { category } : {}), page, limit: PER_PAGE } })
       .then((r) => {
         setArticles(r.data.items);
         setTotal(r.data.total);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [category]);
+  }, [category, page]);
+
+  const handleCategory = (value: string) => {
+    setCategory(value);
+    setPage(1);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
     <div className="space-y-6">
@@ -61,7 +72,7 @@ export default function AnalysisPage() {
         {CATEGORIES.map((cat) => (
           <button
             key={cat.value}
-            onClick={() => setCategory(cat.value)}
+            onClick={() => handleCategory(cat.value)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               category === cat.value
                 ? "bg-primary-400 text-white"
@@ -138,6 +149,50 @@ export default function AnalysisPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+            .reduce<(number | "...")[]>((acc, p, i, arr) => {
+              if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+              acc.push(p);
+              return acc;
+            }, [])
+            .map((p, i) =>
+              p === "..." ? (
+                <span key={`dot-${i}`} className="px-1 text-muted-foreground text-sm">...</span>
+              ) : (
+                <Button
+                  key={p}
+                  variant={page === p ? "default" : "outline"}
+                  size="sm"
+                  className={page === p ? "bg-primary-400 text-white" : ""}
+                  onClick={() => setPage(p as number)}
+                >
+                  {p}
+                </Button>
+              )
+            )}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       )}
 
       {/* AdSense placeholder */}
