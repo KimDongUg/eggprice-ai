@@ -28,16 +28,21 @@ export default function AdminNewsPage() {
   const [articles, setArticles] = useState<NewsItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
   const fetchNews = useCallback(() => {
     setLoading(true);
+    setError(null);
     api.get("/admin/news", { params: { page, per_page: 30 } })
       .then((r) => {
         setArticles(r.data.items);
         setTotal(r.data.total);
       })
-      .catch(() => {})
+      .catch((err) => {
+        const msg = err.response?.data?.detail || err.message || "뉴스 목록을 불러오지 못했습니다.";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }, [page]);
 
@@ -60,6 +65,12 @@ export default function AdminNewsPage() {
         </h1>
         <Badge variant="secondary">{total}개 기사</Badge>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-0">

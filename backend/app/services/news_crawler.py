@@ -36,7 +36,12 @@ ANALYSIS_QUERIES = [
 
 GOOGLE_NEWS_RSS = "https://news.google.com/rss/search"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Accept": "application/rss+xml, application/xml, text/xml, */*",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Cache-Control": "no-cache",
 }
 
 

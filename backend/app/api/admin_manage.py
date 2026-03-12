@@ -209,6 +209,16 @@ def admin_list_news(
     admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db),
 ):
+    from sqlalchemy import text as sa_text
+
+    # Check if commentary column exists (deferred column may not be in DB yet)
+    has_commentary_col = True
+    try:
+        db.execute(sa_text("SELECT commentary FROM news_articles LIMIT 0"))
+    except Exception:
+        db.rollback()
+        has_commentary_col = False
+
     total = db.query(NewsArticle).count()
     articles = (
         db.query(NewsArticle)
@@ -217,6 +227,15 @@ def admin_list_news(
         .limit(per_page)
         .all()
     )
+
+    def _has_commentary(a: NewsArticle) -> bool:
+        if not has_commentary_col:
+            return False
+        try:
+            return bool(a.commentary)
+        except Exception:
+            return False
+
     return NewsListResponse(
         items=[
             NewsItem(
@@ -225,7 +244,7 @@ def admin_list_news(
                 category=a.category,
                 source_name=a.source_name,
                 published_at=a.published_at.isoformat() if a.published_at else "",
-                has_commentary=bool(getattr(a, "commentary", None)),
+                has_commentary=_has_commentary(a),
             )
             for a in articles
         ],

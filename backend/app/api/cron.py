@@ -152,3 +152,27 @@ def trigger_accuracy_evaluation(db: Session = Depends(get_db)):
 
     logger.info(f"Cron: Accuracy evaluation complete — {results}")
     return {"status": "ok", "results": results}
+
+
+@router.post("/crawl-news", dependencies=[Depends(_verify_cron_secret)])
+def trigger_news_crawl(db: Session = Depends(get_db)):
+    """Crawl news and analysis articles from Google News RSS.
+
+    Called by Render Cron at 9AM KST. Also cleans up articles older than 1 year.
+    """
+    from app.services.news_crawler import crawl_all, cleanup_old_articles
+
+    logger.info("Cron: Starting news crawl")
+    try:
+        loop = asyncio.new_event_loop()
+        try:
+            result = loop.run_until_complete(crawl_all(db))
+        finally:
+            loop.close()
+
+        cleanup = cleanup_old_articles(db)
+        logger.info(f"Cron: News crawl complete — {result}, cleanup — {cleanup}")
+        return {"status": "ok", "crawled": result, "cleanup": cleanup}
+    except Exception as e:
+        logger.error(f"Cron: News crawl failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

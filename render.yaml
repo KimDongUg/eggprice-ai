@@ -99,6 +99,28 @@ services:
       -H "x-cron-secret: ${CRON_SECRET}"
       --max-time 300
 
+  # Cron: Daily news crawl at 9AM KST (00:00 UTC)
+  - type: cron
+    name: eggprice-daily-news
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 0 * * *"
+    region: singapore
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: eggprice-api-docker
+          type: web
+          envVarKey: CRON_SECRET
+      - key: API_URL
+        value: https://eggprice-api-docker.onrender.com
+    startCommand: >-
+      curl -sf -X POST
+      "${API_URL}/api/v1/cron/crawl-news"
+      -H "x-cron-secret: ${CRON_SECRET}"
+      --max-time 300
+
 databases:
   - name: eggprice-db
     plan: free
