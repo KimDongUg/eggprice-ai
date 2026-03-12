@@ -14,7 +14,7 @@ from app.core.migrate import run_migrations
 from app.core.rate_limit import limiter
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.api import prices, predictions, alerts, market_data, auth, email_report, oauth, admin
-from app.api import accuracy, news, analysis, data, community, page_views, admin_manage
+from app.api import accuracy, news, analysis, data, community, page_views, admin_manage, cron
 
 # Import all models so Base.metadata knows about them
 from app.models import price, prediction, alert, user  # noqa: F401
@@ -168,6 +168,7 @@ app.include_router(data.router, prefix="/api/v1")
 app.include_router(community.router, prefix="/api/v1")
 app.include_router(page_views.router, prefix="/api/v1")
 app.include_router(admin_manage.router, prefix="/api/v1")
+app.include_router(cron.router, prefix="/api/v1")
 
 
 @app.get("/")

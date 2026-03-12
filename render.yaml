@@ -24,12 +24,58 @@ services:
         value: "memory://"
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
       - key: FRONTEND_URL
         value: https://frontend-my-news.vercel.app
       - key: SENTRY_DSN
         value: ""
       - key: SENTRY_ENVIRONMENT
         value: production
+
+  # Cron: Daily data collection at 6AM KST (21:00 UTC previous day)
+  - type: cron
+    name: eggprice-daily-collect
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 21 * * *"
+    region: singapore
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: eggprice-ai-backend
+          type: web
+          envVarKey: CRON_SECRET
+      - key: API_URL
+        value: https://eggprice-ai-backend.onrender.com
+    buildCommand: echo "ready"
+    startCommand: >-
+      curl -s -f -X POST
+      "${API_URL}/api/v1/cron/collect-data"
+      -H "x-cron-secret: ${CRON_SECRET}"
+
+  # Cron: Daily predictions at 7AM KST (22:00 UTC previous day)
+  - type: cron
+    name: eggprice-daily-predict
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 22 * * *"
+    region: singapore
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: eggprice-ai-backend
+          type: web
+          envVarKey: CRON_SECRET
+      - key: API_URL
+        value: https://eggprice-ai-backend.onrender.com
+    buildCommand: echo "ready"
+    startCommand: >-
+      curl -s -f -X POST
+      "${API_URL}/api/v1/cron/run-predictions"
+      -H "x-cron-secret: ${CRON_SECRET}"
 
 databases:
   - name: eggprice-db

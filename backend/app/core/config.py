@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     CACHE_TTL_SECONDS: int = 300  # 5 minutes
 
+    # Cron job secret (for Render cron or external triggers)
+    CRON_SECRET: str = ""
+
     # Celery
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
