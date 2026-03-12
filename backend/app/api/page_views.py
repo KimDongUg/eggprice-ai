@@ -1,8 +1,8 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func, cast, Date, Integer, extract
+from sqlalchemy import func, cast, Date, extract
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
