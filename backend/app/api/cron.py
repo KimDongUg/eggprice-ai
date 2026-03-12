@@ -95,7 +95,7 @@ def trigger_backfill(
     try:
         while current <= end:
             try:
-                result = loop.run_until_complete(collect_all_daily_data(db, current))
+                loop.run_until_complete(collect_all_daily_data(db, current))
                 results[str(current)] = "ok"
                 logger.info(f"  Backfill {current}: ok")
             except Exception as e:
