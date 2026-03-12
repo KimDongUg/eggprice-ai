@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, LineChart, TrendingUp, Cpu, Database, AlertTriangle, Users, MessageSquare, Newspaper, FileText, Eye, Activity } from "lucide-react";
+import { BarChart3, LineChart, TrendingUp, Cpu, Database, AlertTriangle, Users, MessageSquare, Newspaper, FileText, Eye, Activity, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuSections = [
@@ -26,6 +26,12 @@ const menuSections = [
       { href: "/admin/community", label: "커뮤니티 관리", icon: MessageSquare },
       { href: "/admin/news", label: "뉴스 관리", icon: Newspaper },
       { href: "/admin/articles", label: "분석글 관리", icon: FileText },
+    ],
+  },
+  {
+    title: "시스템",
+    items: [
+      { href: "/admin/architecture", label: "시스템 아키텍처", icon: Network },
     ],
   },
 ];
