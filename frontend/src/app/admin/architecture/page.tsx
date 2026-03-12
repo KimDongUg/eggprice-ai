@@ -50,32 +50,32 @@ export default function ArchitecturePage() {
             background: rgba(245,158,11,0.15);
             border: 1px solid rgba(245,158,11,0.3);
             color: var(--accent);
-            font-size: 11px;
+            font-size: 16px;
             font-family: 'JetBrains Mono', monospace;
             letter-spacing: 0.15em;
-            padding: 4px 14px;
+            padding: 6px 20px;
             border-radius: 20px;
-            margin-bottom: 14px;
+            margin-bottom: 18px;
             text-transform: uppercase;
           }
           .arch-title {
-            font-size: 32px;
+            font-size: 48px;
             font-weight: 900;
             letter-spacing: -0.03em;
             background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
           }
-          .arch-subtitle { color: var(--muted); font-size: 13px; font-weight: 300; }
+          .arch-subtitle { color: var(--muted); font-size: 20px; font-weight: 300; }
           .arch-content { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
           .arch-row { display: flex; gap: 16px; align-items: stretch; }
           .arch-node {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 20px 22px;
+            padding: 28px 30px;
             flex: 1;
             position: relative;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -101,28 +101,28 @@ export default function ArchitecturePage() {
           .n-purple::before { background: linear-gradient(90deg, var(--accent4), #a78bfa); }
           .n-purple { border-color: rgba(139,92,246,0.25); }
           .n-purple:hover { border-color: rgba(139,92,246,0.5); }
-          .arch-node-icon { font-size: 22px; margin-bottom: 10px; display: block; }
-          .arch-node-title { font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 3px; }
-          .arch-node-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.05em; }
-          .arch-features { list-style: none; display: flex; flex-direction: column; gap: 5px; padding: 0; margin: 0; }
-          .arch-features li { font-size: 11.5px; color: #94a3b8; display: flex; align-items: flex-start; gap: 7px; line-height: 1.5; }
-          .arch-features li::before { content: '—'; color: var(--muted); flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 2px; }
-          .arch-api-label { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; }
+          .arch-node-icon { font-size: 36px; margin-bottom: 12px; display: block; }
+          .arch-node-title { font-size: 22px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+          .arch-node-sub { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--muted); margin-bottom: 16px; letter-spacing: 0.05em; }
+          .arch-features { list-style: none; display: flex; flex-direction: column; gap: 8px; padding: 0; margin: 0; }
+          .arch-features li { font-size: 18px; color: #94a3b8; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+          .arch-features li::before { content: '—'; color: var(--muted); flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 16px; margin-top: 2px; }
+          .arch-api-label { display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; }
           .arch-api-tag {
             background: rgba(59,130,246,0.12);
             border: 1px solid rgba(59,130,246,0.25);
             color: #60a5fa;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            padding: 3px 10px;
-            border-radius: 4px;
+            font-size: 16px;
+            padding: 6px 16px;
+            border-radius: 6px;
             letter-spacing: 0.08em;
           }
           .arch-backend {
             background: var(--surface2);
             border: 1px solid rgba(59,130,246,0.3);
             border-radius: 12px;
-            padding: 22px 28px;
+            padding: 32px 36px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -136,10 +136,10 @@ export default function ArchitecturePage() {
             background: linear-gradient(90deg, var(--accent2), #818cf8, var(--accent2));
             border-radius: 12px 12px 0 0;
           }
-          .arch-backend-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 2px; }
-          .arch-backend-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 18px; }
-          .arch-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-          .arch-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 6px; }
+          .arch-backend-title { font-size: 24px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+          .arch-backend-sub { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--muted); margin-bottom: 22px; }
+          .arch-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+          .arch-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #94a3b8; font-size: 18px; padding: 8px 16px; border-radius: 8px; }
           .arch-branch-connector {
             position: relative;
             height: 44px;
@@ -180,7 +180,7 @@ export default function ArchitecturePage() {
             background: var(--surface2);
             border: 1px solid rgba(245,158,11,0.3);
             border-radius: 12px;
-            padding: 22px 28px;
+            padding: 32px 36px;
             position: relative;
             overflow: hidden;
           }
@@ -192,21 +192,21 @@ export default function ArchitecturePage() {
             background: linear-gradient(90deg, var(--accent), #f97316, #ef4444, var(--accent));
             border-radius: 12px 12px 0 0;
           }
-          .arch-db-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+          .arch-db-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
           .arch-db-item {
             background: rgba(255,255,255,0.04);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 10px 12px;
-            font-size: 11px;
+            padding: 16px 18px;
+            font-size: 20px;
             color: #94a3b8;
             text-align: center;
             line-height: 1.5;
           }
-          .arch-db-item-icon { font-size: 16px; display: block; margin-bottom: 4px; }
-          .arch-legend { display: flex; gap: 20px; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
-          .arch-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
-          .arch-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+          .arch-db-item-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+          .arch-legend { display: flex; gap: 28px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
+          .arch-legend-item { display: flex; align-items: center; gap: 8px; font-size: 18px; color: var(--muted); }
+          .arch-legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
           @media (max-width: 768px) {
             .arch-row, .arch-branch-row { flex-direction: column; display: flex; }
             .arch-db-grid { grid-template-columns: repeat(2, 1fr); }
@@ -256,7 +256,7 @@ export default function ArchitecturePage() {
             {/* ROW 2: Backend */}
             <div className="arch-row">
               <div className="arch-backend">
-                <span style={{ fontSize: 26, display: "block", marginBottom: 10 }}>⚙️</span>
+                <span style={{ fontSize: 42, display: "block", marginBottom: 14 }}>⚙️</span>
                 <div className="arch-backend-title">Render 백엔드 API 서버</div>
                 <div className="arch-backend-sub">eggprice-api-docker</div>
                 <div className="arch-pills">
@@ -319,11 +319,11 @@ export default function ArchitecturePage() {
             {/* ROW 4: DB */}
             <div className="arch-row">
               <div className="arch-db-node">
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                  <span style={{ fontSize: 24 }}>🗄️</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+                  <span style={{ fontSize: 38 }}>🗄️</span>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Render PostgreSQL DB</div>
-                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "var(--muted)" }}>Primary Data Store</div>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: "#f1f5f9" }}>Render PostgreSQL DB</div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16, color: "var(--muted)" }}>Primary Data Store</div>
                   </div>
                 </div>
                 <div className="arch-db-grid">
