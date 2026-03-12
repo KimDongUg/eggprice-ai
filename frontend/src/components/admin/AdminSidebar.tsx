@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, LineChart, TrendingUp, Cpu, Database, AlertTriangle, Users, MessageSquare, Newspaper, FileText, Eye } from "lucide-react";
+import { BarChart3, LineChart, TrendingUp, Cpu, Database, AlertTriangle, Users, MessageSquare, Newspaper, FileText, Eye, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuSections = [
@@ -21,6 +21,7 @@ const menuSections = [
     title: "서비스 관리",
     items: [
       { href: "/admin/users", label: "사용자 관리", icon: Users },
+      { href: "/admin/visitor-stats", label: "접속자 통계", icon: Activity },
       { href: "/admin/page-views", label: "페이지뷰 통계", icon: Eye },
       { href: "/admin/community", label: "커뮤니티 관리", icon: MessageSquare },
       { href: "/admin/news", label: "뉴스 관리", icon: Newspaper },

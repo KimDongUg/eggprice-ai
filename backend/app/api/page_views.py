@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends
+from datetime import date, datetime, timedelta
+
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func
+from sqlalchemy import func, cast, Date, Integer, extract
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -113,4 +115,145 @@ def get_page_view_stats(
         total_users=len(user_totals),
         total_views=total_views,
         users=result_users,
+    )
+
+
+# ── Admin: visitor statistics (charts) ───────────────
+
+
+class DailyStat(BaseModel):
+    date: str
+    unique_visitors: int
+    page_views: int
+
+
+class HourlyStat(BaseModel):
+    hour: int
+    page_views: int
+
+
+class PopularPage(BaseModel):
+    path: str
+    views: int
+    unique_visitors: int
+
+
+class VisitorStatsResponse(BaseModel):
+    # Summary
+    today_visitors: int
+    today_views: int
+    yesterday_visitors: int
+    yesterday_views: int
+    total_visitors: int
+    total_views: int
+    # Charts
+    daily: list[DailyStat]
+    hourly: list[HourlyStat]
+    popular_pages: list[PopularPage]
+
+
+@router.get("/visitor-stats", response_model=VisitorStatsResponse)
+def get_visitor_stats(
+    days: int = Query(30, ge=1, le=365),
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+):
+    """Admin-only: comprehensive visitor statistics with daily/hourly trends."""
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+    since = today_start - timedelta(days=days)
+
+    # ── Today / Yesterday summary ──
+    today_visitors = (
+        db.query(func.count(func.distinct(PageView.user_id)))
+        .filter(PageView.created_at >= today_start)
+        .scalar()
+    ) or 0
+    today_views = (
+        db.query(func.count(PageView.id))
+        .filter(PageView.created_at >= today_start)
+        .scalar()
+    ) or 0
+    yesterday_visitors = (
+        db.query(func.count(func.distinct(PageView.user_id)))
+        .filter(PageView.created_at >= yesterday_start, PageView.created_at < today_start)
+        .scalar()
+    ) or 0
+    yesterday_views = (
+        db.query(func.count(PageView.id))
+        .filter(PageView.created_at >= yesterday_start, PageView.created_at < today_start)
+        .scalar()
+    ) or 0
+
+    # ── Total ──
+    total_visitors = (
+        db.query(func.count(func.distinct(PageView.user_id))).scalar()
+    ) or 0
+    total_views = db.query(func.count(PageView.id)).scalar() or 0
+
+    # ── Daily trend ──
+    daily_rows = (
+        db.query(
+            cast(PageView.created_at, Date).label("day"),
+            func.count(func.distinct(PageView.user_id)).label("uv"),
+            func.count(PageView.id).label("pv"),
+        )
+        .filter(PageView.created_at >= since)
+        .group_by(cast(PageView.created_at, Date))
+        .order_by(cast(PageView.created_at, Date))
+        .all()
+    )
+
+    # Fill missing days with zeros
+    daily_map = {str(r.day): {"uv": r.uv, "pv": r.pv} for r in daily_rows}
+    daily: list[DailyStat] = []
+    for i in range(days + 1):
+        d = (since + timedelta(days=i)).date()
+        ds = str(d)
+        entry = daily_map.get(ds, {"uv": 0, "pv": 0})
+        daily.append(DailyStat(date=ds, unique_visitors=entry["uv"], page_views=entry["pv"]))
+
+    # ── Hourly distribution (last N days) ──
+    hourly_rows = (
+        db.query(
+            extract("hour", PageView.created_at).label("hr"),
+            func.count(PageView.id).label("pv"),
+        )
+        .filter(PageView.created_at >= since)
+        .group_by(extract("hour", PageView.created_at))
+        .order_by(extract("hour", PageView.created_at))
+        .all()
+    )
+    hourly_map = {int(r.hr): r.pv for r in hourly_rows}
+    hourly = [HourlyStat(hour=h, page_views=hourly_map.get(h, 0)) for h in range(24)]
+
+    # ── Popular pages ──
+    popular_rows = (
+        db.query(
+            PageView.path,
+            func.count(PageView.id).label("views"),
+            func.count(func.distinct(PageView.user_id)).label("uv"),
+        )
+        .filter(PageView.created_at >= since)
+        .group_by(PageView.path)
+        .order_by(func.count(PageView.id).desc())
+        .limit(20)
+        .all()
+    )
+    popular_pages = [
+        PopularPage(path=r.path, views=r.views, unique_visitors=r.uv)
+        for r in popular_rows
+    ]
+
+    return VisitorStatsResponse(
+        today_visitors=today_visitors,
+        today_views=today_views,
+        yesterday_visitors=yesterday_visitors,
+        yesterday_views=yesterday_views,
+        total_visitors=total_visitors,
+        total_views=total_views,
+        daily=daily,
+        hourly=hourly,
+        popular_pages=popular_pages,
     )
