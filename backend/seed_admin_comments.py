@@ -3,7 +3,7 @@
 기존 게시글 중 관리자가 작성하지 않은 글에 답글을 달아줍니다.
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from hashlib import sha256
 
 from app.core.database import SessionLocal
