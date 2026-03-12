@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: eggprice-ai-backend
+    name: eggprice-api-docker
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     region: singapore
-    plan: free
+    plan: starter
     healthCheckPath: /api/v1/health
     envVars:
       - key: DATABASE_URL
@@ -44,16 +44,16 @@ services:
     envVars:
       - key: CRON_SECRET
         fromService:
-          name: eggprice-ai-backend
+          name: eggprice-api-docker
           type: web
           envVarKey: CRON_SECRET
       - key: API_URL
-        value: https://eggprice-ai-backend.onrender.com
-    buildCommand: echo "ready"
+        value: https://eggprice-api-docker.onrender.com
     startCommand: >-
-      curl -s -f -X POST
+      curl -sf -X POST
       "${API_URL}/api/v1/cron/collect-data"
       -H "x-cron-secret: ${CRON_SECRET}"
+      --max-time 300
 
   # Cron: Daily predictions at 7AM KST (22:00 UTC previous day)
   - type: cron
@@ -66,16 +66,16 @@ services:
     envVars:
       - key: CRON_SECRET
         fromService:
-          name: eggprice-ai-backend
+          name: eggprice-api-docker
           type: web
           envVarKey: CRON_SECRET
       - key: API_URL
-        value: https://eggprice-ai-backend.onrender.com
-    buildCommand: echo "ready"
+        value: https://eggprice-api-docker.onrender.com
     startCommand: >-
-      curl -s -f -X POST
+      curl -sf -X POST
       "${API_URL}/api/v1/cron/run-predictions"
       -H "x-cron-secret: ${CRON_SECRET}"
+      --max-time 300
 
 databases:
   - name: eggprice-db
