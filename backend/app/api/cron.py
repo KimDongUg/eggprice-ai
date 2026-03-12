@@ -106,3 +106,49 @@ def trigger_backfill(
         loop.close()
 
     return {"status": "ok", "results": results}
+
+
+@router.post("/evaluate-accuracy", dependencies=[Depends(_verify_cron_secret)])
+def trigger_accuracy_evaluation(db: Session = Depends(get_db)):
+    """Evaluate prediction accuracy against actual prices.
+
+    Runs daily after data collection to update MAPE/MAE metrics.
+    Also triggers retraining if MAPE exceeds threshold.
+    """
+    from app.services.model_evaluation import (
+        evaluate_model_on_recent_data,
+        store_performance,
+    )
+    from app.core.config import settings as app_settings
+    from app.ml.train import ALL_GRADES
+
+    logger.info("Cron: Starting accuracy evaluation")
+    results = {}
+
+    for grade in ALL_GRADES:
+        try:
+            metrics = evaluate_model_on_recent_data(
+                db, grade, app_settings.MODEL_VERSION, eval_days=30,
+            )
+            if metrics:
+                store_performance(
+                    db, app_settings.MODEL_VERSION, grade, metrics, is_production=True,
+                )
+                results[grade] = {
+                    "mape": round(metrics["mape"], 2),
+                    "mae": round(metrics["mae"], 0),
+                }
+                logger.info(f"  {grade}: MAPE={metrics['mape']:.2f}%")
+
+                # Auto-retrain if MAPE too high
+                if metrics["mape"] > app_settings.MAPE_RETRAIN_THRESHOLD:
+                    logger.info(f"  {grade}: MAPE exceeds threshold, will retrain")
+                    results[grade]["retrain_triggered"] = True
+            else:
+                results[grade] = "insufficient data"
+        except Exception as e:
+            results[grade] = f"error: {e}"
+            logger.error(f"  {grade} evaluation failed: {e}")
+
+    logger.info(f"Cron: Accuracy evaluation complete — {results}")
+    return {"status": "ok", "results": results}

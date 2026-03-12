@@ -77,6 +77,28 @@ services:
       -H "x-cron-secret: ${CRON_SECRET}"
       --max-time 300
 
+  # Cron: Daily accuracy evaluation at 8AM KST (23:00 UTC previous day)
+  - type: cron
+    name: eggprice-daily-evaluate
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 23 * * *"
+    region: singapore
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: eggprice-api-docker
+          type: web
+          envVarKey: CRON_SECRET
+      - key: API_URL
+        value: https://eggprice-api-docker.onrender.com
+    startCommand: >-
+      curl -sf -X POST
+      "${API_URL}/api/v1/cron/evaluate-accuracy"
+      -H "x-cron-secret: ${CRON_SECRET}"
+      --max-time 300
+
 databases:
   - name: eggprice-db
     plan: free
