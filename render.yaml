@@ -38,7 +38,7 @@ services:
     name: eggprice-daily-collect
     runtime: image
     image:
-      url: curlimages/curl:latest
+      url: alpine:latest
     schedule: "0 21 * * *"
     region: singapore
     envVars:
@@ -50,17 +50,18 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
+      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/collect-data"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300
+      --max-time 300'
 
   # Cron: Daily predictions at 7AM KST (22:00 UTC previous day)
   - type: cron
     name: eggprice-daily-predict
     runtime: image
     image:
-      url: curlimages/curl:latest
+      url: alpine:latest
     schedule: "0 22 * * *"
     region: singapore
     envVars:
@@ -72,17 +73,18 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
+      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/run-predictions"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300
+      --max-time 300'
 
   # Cron: Daily accuracy evaluation at 8AM KST (23:00 UTC previous day)
   - type: cron
     name: eggprice-daily-evaluate
     runtime: image
     image:
-      url: curlimages/curl:latest
+      url: alpine:latest
     schedule: "0 23 * * *"
     region: singapore
     envVars:
@@ -94,17 +96,18 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
+      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/evaluate-accuracy"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300
+      --max-time 300'
 
   # Cron: Daily news crawl at 9AM KST (00:00 UTC)
   - type: cron
     name: eggprice-daily-news
     runtime: image
     image:
-      url: curlimages/curl:latest
+      url: alpine:latest
     schedule: "0 0 * * *"
     region: singapore
     envVars:
@@ -116,10 +119,11 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
+      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/crawl-news"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300
+      --max-time 300'
 
 databases:
   - name: eggprice-db
