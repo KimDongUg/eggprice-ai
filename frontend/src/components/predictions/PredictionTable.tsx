@@ -32,8 +32,16 @@ export default function PredictionTable({ predictions, basePrice }: Props) {
       <CardHeader>
         <CardTitle>예측 상세</CardTitle>
         <CardDescription>
-          기준일: {predictions[0]?.base_date} | 모델:{" "}
-          {predictions[0]?.model_version}
+          기준일:{" "}
+          {predictions[0]?.base_date
+            ? new Date(predictions[0].base_date + "T00:00:00").toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "short",
+              })
+            : predictions[0]?.base_date}{" "}
+          | 모델: {predictions[0]?.model_version}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -70,7 +78,11 @@ export default function PredictionTable({ predictions, basePrice }: Props) {
                       `${pred.horizon_days}일 후`}
                   </td>
                   <td className="px-5 py-4 text-sm text-muted-foreground">
-                    {pred.target_date}
+                    {new Date(pred.target_date + "T00:00:00").toLocaleDateString("ko-KR", {
+                      month: "short",
+                      day: "numeric",
+                      weekday: "short",
+                    })}
                   </td>
                   <td className="px-5 py-4 text-sm text-right">
                     <span className="font-semibold">

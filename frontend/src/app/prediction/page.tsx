@@ -125,6 +125,18 @@ export default function PredictionPage() {
           {/* Trend summary */}
           <Card className="bg-gradient-to-r from-card to-accent/20">
             <CardContent className="py-4">
+              {predictions7d.length > 0 && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  예측 기준일{" "}
+                  <span className="font-semibold text-foreground">
+                    {new Date(predictions7d[0].date + "T00:00:00").toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
+                  </span>
+                  {" ~ "}
+                  <span className="font-semibold text-foreground">
+                    {new Date(predictions7d[predictions7d.length - 1].date + "T00:00:00").toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" })}
+                  </span>
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-6">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">추세:</span>
@@ -344,7 +356,16 @@ export default function PredictionPage() {
           {/* FREE: Prediction table */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">예측 상세 (7일)</CardTitle>
+              <CardTitle className="text-lg">
+                예측 상세 (7일)
+                {predictions7d.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    {new Date(predictions7d[0].date + "T00:00:00").toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                    {" ~ "}
+                    {new Date(predictions7d[predictions7d.length - 1].date + "T00:00:00").toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                  </span>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">

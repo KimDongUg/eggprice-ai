@@ -58,7 +58,17 @@ export default function PredictionChart({ history, predictions }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>가격 예측 차트</CardTitle>
+        <CardTitle className="flex items-center gap-2 flex-wrap">
+          가격 예측 차트
+          {predictions.length > 0 && (
+            <span className="text-sm font-normal text-muted-foreground">
+              {new Date(predictions[0].target_date + "T00:00:00").toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}
+              {" ~ "}
+              {new Date(predictions[predictions.length - 1].target_date + "T00:00:00").toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}
+              {" 예측"}
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>

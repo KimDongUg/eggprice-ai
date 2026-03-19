@@ -275,7 +275,15 @@ export default function EggPriceTodayPage() {
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {summary?.date} 기준 · {summary?.region_label} · 특란 30구 도매가
+                {summary?.date
+                  ? new Date(summary.date + "T00:00:00").toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      weekday: "short",
+                    })
+                  : ""}{" "}
+                기준 · {summary?.region_label} · {selectedGrade} 30구 도매가
               </div>
               <div className="flex items-end gap-3 mt-2">
                 <span className="text-4xl font-extrabold text-gray-900">
