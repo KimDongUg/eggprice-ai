@@ -38,7 +38,7 @@ services:
     name: eggprice-daily-collect
     runtime: image
     image:
-      url: alpine:3.19
+      url: alpine:latest
     schedule: "0 21 * * *"
     region: singapore
     envVars:
@@ -51,7 +51,6 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c '
-      set -e;
       echo "=== eggprice-daily-collect start ===";
       if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
         echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
@@ -64,18 +63,17 @@ services:
       { echo "ERROR: health check failed"; exit 1; };
       echo "Waiting 5s for server warmup..."; sleep 5;
       echo "Calling collect-data...";
-      RESPONSE=$(curl -s -X POST
+      HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST
       "${API_URL}/api/v1/cron/collect-data"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 3 --retry-delay 30 --retry-connrefused
-      -w "\nHTTP_STATUS:%{http_code}");
-      HTTP_CODE=$(echo "$RESPONSE" | tail -1 | sed "s/HTTP_STATUS://");
-      BODY=$(echo "$RESPONSE" | sed "\$d");
-      echo "Response: $BODY";
+      --retry 3 --retry-delay 30 --retry-connrefused) || {
+        echo "ERROR: curl failed (exit $?)"; exit 1;
+      };
       echo "HTTP Status: $HTTP_CODE";
-      if [ "$HTTP_CODE" -ge 400 ] 2>/dev/null || [ -z "$HTTP_CODE" ]; then
+      cat /tmp/resp.json 2>/dev/null; echo "";
+      if [ "$HTTP_CODE" -ge 400 ] 2>/dev/null; then
         echo "ERROR: collect-data failed with HTTP $HTTP_CODE"; exit 1;
       fi;
       echo "=== eggprice-daily-collect done ==="'
@@ -85,7 +83,7 @@ services:
     name: eggprice-daily-predict
     runtime: image
     image:
-      url: alpine:3.19
+      url: alpine:latest
     schedule: "0 22 * * *"
     region: singapore
     envVars:
@@ -98,7 +96,6 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c '
-      set -e;
       echo "=== eggprice-daily-predict start ===";
       if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
         echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
@@ -111,13 +108,19 @@ services:
       { echo "ERROR: health check failed"; exit 1; };
       echo "Waiting 5s for server warmup..."; sleep 5;
       echo "Calling run-predictions...";
-      curl -sf -X POST
+      HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST
       "${API_URL}/api/v1/cron/run-predictions"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 3 --retry-delay 30 --retry-connrefused;
-      echo "";
+      --retry 3 --retry-delay 30 --retry-connrefused) || {
+        echo "ERROR: curl failed (exit $?)"; exit 1;
+      };
+      echo "HTTP Status: $HTTP_CODE";
+      cat /tmp/resp.json 2>/dev/null; echo "";
+      if [ "$HTTP_CODE" -ge 400 ] 2>/dev/null; then
+        echo "ERROR: run-predictions failed with HTTP $HTTP_CODE"; exit 1;
+      fi;
       echo "=== eggprice-daily-predict done ==="'
 
   # Cron: Daily accuracy evaluation at 8AM KST (23:00 UTC previous day)
@@ -125,7 +128,7 @@ services:
     name: eggprice-daily-evaluate
     runtime: image
     image:
-      url: alpine:3.19
+      url: alpine:latest
     schedule: "0 23 * * *"
     region: singapore
     envVars:
@@ -138,7 +141,6 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c '
-      set -e;
       echo "=== eggprice-daily-evaluate start ===";
       if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
         echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
@@ -151,13 +153,19 @@ services:
       { echo "ERROR: health check failed"; exit 1; };
       echo "Waiting 5s for server warmup..."; sleep 5;
       echo "Calling evaluate-accuracy...";
-      curl -sf -X POST
+      HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST
       "${API_URL}/api/v1/cron/evaluate-accuracy"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 3 --retry-delay 30 --retry-connrefused;
-      echo "";
+      --retry 3 --retry-delay 30 --retry-connrefused) || {
+        echo "ERROR: curl failed (exit $?)"; exit 1;
+      };
+      echo "HTTP Status: $HTTP_CODE";
+      cat /tmp/resp.json 2>/dev/null; echo "";
+      if [ "$HTTP_CODE" -ge 400 ] 2>/dev/null; then
+        echo "ERROR: evaluate-accuracy failed with HTTP $HTTP_CODE"; exit 1;
+      fi;
       echo "=== eggprice-daily-evaluate done ==="'
 
   # Cron: Daily news crawl at 9AM KST (00:00 UTC)
@@ -165,7 +173,7 @@ services:
     name: eggprice-daily-news
     runtime: image
     image:
-      url: alpine:3.19
+      url: alpine:latest
     schedule: "0 0 * * *"
     region: singapore
     envVars:
@@ -178,7 +186,6 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c '
-      set -e;
       echo "=== eggprice-daily-news start ===";
       if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
         echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
@@ -191,13 +198,19 @@ services:
       { echo "ERROR: health check failed"; exit 1; };
       echo "Waiting 5s for server warmup..."; sleep 5;
       echo "Calling crawl-news...";
-      curl -sf -X POST
+      HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST
       "${API_URL}/api/v1/cron/crawl-news"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 3 --retry-delay 30 --retry-connrefused;
-      echo "";
+      --retry 3 --retry-delay 30 --retry-connrefused) || {
+        echo "ERROR: curl failed (exit $?)"; exit 1;
+      };
+      echo "HTTP Status: $HTTP_CODE";
+      cat /tmp/resp.json 2>/dev/null; echo "";
+      if [ "$HTTP_CODE" -ge 400 ] 2>/dev/null; then
+        echo "ERROR: crawl-news failed with HTTP $HTTP_CODE"; exit 1;
+      fi;
       echo "=== eggprice-daily-news done ==="'
 
 databases:
