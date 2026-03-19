@@ -198,8 +198,19 @@ export default function EggPriceTodayPage() {
       <div className="space-y-8">
         {/* ── 섹션 A: Hero 요약 카드 ── */}
         <div>
-          <h1 className="text-2xl font-bold mb-1">오늘 계란 가격</h1>
-          <p className="text-muted-foreground text-sm">
+          <div className="flex items-baseline justify-between flex-wrap gap-2">
+            <h1 className="text-2xl font-bold">오늘 계란 가격</h1>
+            {summary?.date && (
+              <span className="text-sm text-muted-foreground">
+                {new Date(summary.date + "T00:00:00").toLocaleDateString("ko-KR", {
+                  month: "long",
+                  day: "numeric",
+                })}{" "}
+                현재
+              </span>
+            )}
+          </div>
+          <p className="text-muted-foreground text-sm mt-1">
             KAMIS 공식 도매 유통가 기준, 매일 업데이트
           </p>
 
