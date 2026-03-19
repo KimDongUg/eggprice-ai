@@ -51,10 +51,14 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
+      curl -s --retry 3 --retry-delay 10 --retry-connrefused
+      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/collect-data"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300'
+      -H "Content-Type: application/json"
+      --max-time 300
+      --retry 2 --retry-delay 30 --retry-connrefused'
 
   # Cron: Daily predictions at 7AM KST (22:00 UTC previous day)
   - type: cron
@@ -74,10 +78,14 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
+      curl -s --retry 3 --retry-delay 10 --retry-connrefused
+      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/run-predictions"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300'
+      -H "Content-Type: application/json"
+      --max-time 300
+      --retry 2 --retry-delay 30 --retry-connrefused'
 
   # Cron: Daily accuracy evaluation at 8AM KST (23:00 UTC previous day)
   - type: cron
@@ -97,10 +105,14 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
+      curl -s --retry 3 --retry-delay 10 --retry-connrefused
+      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/evaluate-accuracy"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300'
+      -H "Content-Type: application/json"
+      --max-time 300
+      --retry 2 --retry-delay 30 --retry-connrefused'
 
   # Cron: Daily news crawl at 9AM KST (00:00 UTC)
   - type: cron
@@ -120,10 +132,14 @@ services:
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
       sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
+      curl -s --retry 3 --retry-delay 10 --retry-connrefused
+      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
       curl -sf -X POST
       "${API_URL}/api/v1/cron/crawl-news"
       -H "x-cron-secret: ${CRON_SECRET}"
-      --max-time 300'
+      -H "Content-Type: application/json"
+      --max-time 300
+      --retry 2 --retry-delay 30 --retry-connrefused'
 
 databases:
   - name: eggprice-db
