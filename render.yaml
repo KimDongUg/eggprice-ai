@@ -38,7 +38,7 @@ services:
     name: eggprice-daily-collect
     runtime: image
     image:
-      url: alpine:latest
+      url: alpine:3.19
     schedule: "0 21 * * *"
     region: singapore
     envVars:
@@ -50,22 +50,42 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
-      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
-      curl -s --retry 3 --retry-delay 10 --retry-connrefused
-      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
-      curl -sf -X POST
+      sh -c '
+      set -e;
+      echo "=== eggprice-daily-collect start ===";
+      if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
+        echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
+      fi;
+      apk add --no-cache curl || { echo "ERROR: failed to install curl"; exit 1; };
+      echo "Waking up API server...";
+      curl -s --retry 5 --retry-delay 10 --retry-connrefused
+      -o /dev/null -w "health_check: HTTP %{http_code} in %{time_total}s\n"
+      "${API_URL}/api/v1/health" --max-time 180 ||
+      { echo "ERROR: health check failed"; exit 1; };
+      echo "Waiting 5s for server warmup..."; sleep 5;
+      echo "Calling collect-data...";
+      RESPONSE=$(curl -s -X POST
       "${API_URL}/api/v1/cron/collect-data"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 2 --retry-delay 30 --retry-connrefused'
+      --retry 3 --retry-delay 30 --retry-connrefused
+      -w "\nHTTP_STATUS:%{http_code}");
+      HTTP_CODE=$(echo "$RESPONSE" | tail -1 | sed "s/HTTP_STATUS://");
+      BODY=$(echo "$RESPONSE" | sed "\$d");
+      echo "Response: $BODY";
+      echo "HTTP Status: $HTTP_CODE";
+      if [ "$HTTP_CODE" -ge 400 ] 2>/dev/null || [ -z "$HTTP_CODE" ]; then
+        echo "ERROR: collect-data failed with HTTP $HTTP_CODE"; exit 1;
+      fi;
+      echo "=== eggprice-daily-collect done ==="'
 
   # Cron: Daily predictions at 7AM KST (22:00 UTC previous day)
   - type: cron
     name: eggprice-daily-predict
     runtime: image
     image:
-      url: alpine:latest
+      url: alpine:3.19
     schedule: "0 22 * * *"
     region: singapore
     envVars:
@@ -77,22 +97,35 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
-      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
-      curl -s --retry 3 --retry-delay 10 --retry-connrefused
-      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
+      sh -c '
+      set -e;
+      echo "=== eggprice-daily-predict start ===";
+      if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
+        echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
+      fi;
+      apk add --no-cache curl || { echo "ERROR: failed to install curl"; exit 1; };
+      echo "Waking up API server...";
+      curl -s --retry 5 --retry-delay 10 --retry-connrefused
+      -o /dev/null -w "health_check: HTTP %{http_code} in %{time_total}s\n"
+      "${API_URL}/api/v1/health" --max-time 180 ||
+      { echo "ERROR: health check failed"; exit 1; };
+      echo "Waiting 5s for server warmup..."; sleep 5;
+      echo "Calling run-predictions...";
       curl -sf -X POST
       "${API_URL}/api/v1/cron/run-predictions"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 2 --retry-delay 30 --retry-connrefused'
+      --retry 3 --retry-delay 30 --retry-connrefused;
+      echo "";
+      echo "=== eggprice-daily-predict done ==="'
 
   # Cron: Daily accuracy evaluation at 8AM KST (23:00 UTC previous day)
   - type: cron
     name: eggprice-daily-evaluate
     runtime: image
     image:
-      url: alpine:latest
+      url: alpine:3.19
     schedule: "0 23 * * *"
     region: singapore
     envVars:
@@ -104,22 +137,35 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
-      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
-      curl -s --retry 3 --retry-delay 10 --retry-connrefused
-      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
+      sh -c '
+      set -e;
+      echo "=== eggprice-daily-evaluate start ===";
+      if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
+        echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
+      fi;
+      apk add --no-cache curl || { echo "ERROR: failed to install curl"; exit 1; };
+      echo "Waking up API server...";
+      curl -s --retry 5 --retry-delay 10 --retry-connrefused
+      -o /dev/null -w "health_check: HTTP %{http_code} in %{time_total}s\n"
+      "${API_URL}/api/v1/health" --max-time 180 ||
+      { echo "ERROR: health check failed"; exit 1; };
+      echo "Waiting 5s for server warmup..."; sleep 5;
+      echo "Calling evaluate-accuracy...";
       curl -sf -X POST
       "${API_URL}/api/v1/cron/evaluate-accuracy"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 2 --retry-delay 30 --retry-connrefused'
+      --retry 3 --retry-delay 30 --retry-connrefused;
+      echo "";
+      echo "=== eggprice-daily-evaluate done ==="'
 
   # Cron: Daily news crawl at 9AM KST (00:00 UTC)
   - type: cron
     name: eggprice-daily-news
     runtime: image
     image:
-      url: alpine:latest
+      url: alpine:3.19
     schedule: "0 0 * * *"
     region: singapore
     envVars:
@@ -131,15 +177,28 @@ services:
       - key: API_URL
         value: https://eggprice-api-docker.onrender.com
     startCommand: >-
-      sh -c 'apk add --no-cache curl > /dev/null 2>&1 &&
-      curl -s --retry 3 --retry-delay 10 --retry-connrefused
-      -o /dev/null "${API_URL}/api/v1/health" --max-time 120 &&
+      sh -c '
+      set -e;
+      echo "=== eggprice-daily-news start ===";
+      if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
+        echo "ERROR: API_URL or CRON_SECRET is empty"; exit 1;
+      fi;
+      apk add --no-cache curl || { echo "ERROR: failed to install curl"; exit 1; };
+      echo "Waking up API server...";
+      curl -s --retry 5 --retry-delay 10 --retry-connrefused
+      -o /dev/null -w "health_check: HTTP %{http_code} in %{time_total}s\n"
+      "${API_URL}/api/v1/health" --max-time 180 ||
+      { echo "ERROR: health check failed"; exit 1; };
+      echo "Waiting 5s for server warmup..."; sleep 5;
+      echo "Calling crawl-news...";
       curl -sf -X POST
       "${API_URL}/api/v1/cron/crawl-news"
       -H "x-cron-secret: ${CRON_SECRET}"
       -H "Content-Type: application/json"
       --max-time 300
-      --retry 2 --retry-delay 30 --retry-connrefused'
+      --retry 3 --retry-delay 30 --retry-connrefused;
+      echo "";
+      echo "=== eggprice-daily-news done ==="'
 
 databases:
   - name: eggprice-db
