@@ -32,6 +32,10 @@ services:
         value: ""
       - key: SENTRY_ENVIRONMENT
         value: production
+      - key: KAMIS_API_KEY
+        value: "test"
+      - key: KAMIS_API_ID
+        value: "test"
 
   # Cron: Daily data collection at 6AM KST (21:00 UTC previous day)
   - type: cron
