@@ -53,7 +53,21 @@ async def fetch_daily_prices(
             response.raise_for_status()
             data = response.json()
 
-            items = data.get("data", {}).get("item", [])
+            raw_data = data.get("data", {})
+            # KAMIS API가 data를 list로 반환하는 경우 처리
+            if isinstance(raw_data, list):
+                # [{"item": [...]}, ...] 형태일 수 있음
+                items = []
+                for entry in raw_data:
+                    if isinstance(entry, dict) and "item" in entry:
+                        entry_items = entry["item"]
+                        if isinstance(entry_items, list):
+                            items.extend(entry_items)
+                        elif isinstance(entry_items, dict):
+                            items.append(entry_items)
+            else:
+                items = raw_data.get("item", [])
+
             if not items or items == "":
                 logger.warning(f"No data returned from KAMIS for {target_date}")
                 return results
