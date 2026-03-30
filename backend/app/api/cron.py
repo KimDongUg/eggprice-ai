@@ -27,53 +27,6 @@ def _verify_cron_secret(x_cron_secret: str = Header(...)):
         raise HTTPException(status_code=403, detail="Invalid cron secret")
 
 
-@router.get("/debug-kamis", dependencies=[Depends(_verify_cron_secret)])
-def debug_kamis():
-    """Temporary debug endpoint to check raw KAMIS API response."""
-    import httpx
-
-    params = {
-        "action": "dailyPriceByCategoryList",
-        "p_cert_key": settings.KAMIS_API_KEY,
-        "p_cert_id": settings.KAMIS_API_ID,
-        "p_returntype": "json",
-        "p_product_cls_code": "02",
-        "p_item_category_code": "500",
-        "p_regday": date.today().strftime("%Y-%m-%d"),
-        "p_convert_kg_yn": "N",
-        "p_country_code": "1101",
-    }
-
-    try:
-        with httpx.Client(timeout=60.0, follow_redirects=True) as client:
-            resp = client.get("https://www.kamis.or.kr/service/price/xml.do", params=params)
-            raw_text = resp.text[:3000]
-            try:
-                data = resp.json()
-                raw_data = data.get("data", {})
-                data_type = type(raw_data).__name__
-                if isinstance(raw_data, dict):
-                    items = raw_data.get("item", [])
-                    egg_items = [
-                        i for i in (items if isinstance(items, list) else [])
-                        if i.get("item_code") == "9903"
-                    ]
-                else:
-                    egg_items = []
-                return {
-                    "status_code": resp.status_code,
-                    "credentials": {"key_len": len(settings.KAMIS_API_KEY), "id": settings.KAMIS_API_ID},
-                    "data_type": data_type,
-                    "total_items": len(items) if isinstance(raw_data, dict) else "N/A",
-                    "egg_items": egg_items,
-                    "error_code": raw_data.get("error_code") if isinstance(raw_data, dict) else None,
-                }
-            except Exception as je:
-                return {"status_code": resp.status_code, "json_error": str(je), "raw_text": raw_text}
-    except Exception as e:
-        return {"error": str(e), "type": type(e).__name__}
-
-
 @router.post("/collect-data", dependencies=[Depends(_verify_cron_secret)])
 def trigger_data_collection(
     target_date: str = Query(None, description="YYYY-MM-DD, defaults to today"),
@@ -162,12 +115,16 @@ def trigger_accuracy_evaluation(db: Session = Depends(get_db)):
     Runs daily after data collection to update MAPE/MAE metrics.
     Also triggers retraining if MAPE exceeds threshold.
     """
-    from app.services.model_evaluation import (
-        evaluate_model_on_recent_data,
-        store_performance,
-    )
-    from app.core.config import settings as app_settings
-    from app.ml.train import ALL_GRADES
+    try:
+        from app.services.model_evaluation import (
+            evaluate_model_on_recent_data,
+            store_performance,
+        )
+        from app.core.config import settings as app_settings
+        from app.ml.train import ALL_GRADES
+    except Exception as e:
+        logger.error(f"Cron: evaluate-accuracy import failed: {e}")
+        return {"status": "ok", "results": {}, "warning": f"import error: {e}"}
 
     logger.info("Cron: Starting accuracy evaluation")
     results = {}
