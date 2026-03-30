@@ -35,7 +35,7 @@ services:
       - key: KAMIS_API_KEY
         value: "3f3dce20-9ad0-433f-b92f-3b4ecd2e3335"
       - key: KAMIS_API_ID
-        value: "test"
+        value: "7436"
 
   # Cron: Daily data collection at 6AM KST (21:00 UTC previous day)
   - type: cron
