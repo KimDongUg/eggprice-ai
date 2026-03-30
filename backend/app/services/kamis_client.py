@@ -12,7 +12,15 @@ KAMIS_BASE_URL = "https://www.kamis.or.kr/service/price/xml.do"
 # 계란 품목코드 (KAMIS API는 카테고리 단위로 반환, item_code로 필터)
 ITEM_CATEGORY_CODE = "500"  # 축산물
 EGG_ITEM_CODE = "9903"  # 계란 (API 응답 내 item_code)
-EGG_KIND_CODE_30 = "23"  # 특란 30개 (도매 기준)
+
+# KAMIS kind_code → 등급 매핑 (30구 도매 기준)
+EGG_KIND_MAP = {
+    "22": "왕란",
+    "23": "특란",
+    "24": "대란",
+    "25": "중란",
+    "26": "소란",
+}
 
 # KAMIS 지역 코드 매핑
 REGION_CODE_MAP = {
@@ -22,6 +30,10 @@ REGION_CODE_MAP = {
     "gwangju": "2401",
     "daejeon": "2501",
 }
+
+# 해외 서버에서 KAMIS 접근 시 느릴 수 있으므로 충분한 타임아웃 설정
+KAMIS_TIMEOUT = 60.0
+KAMIS_MAX_RETRIES = 2
 
 
 async def fetch_daily_prices(
@@ -47,16 +59,21 @@ async def fetch_daily_prices(
     }
 
     results = []
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+    transport = httpx.AsyncHTTPTransport(retries=KAMIS_MAX_RETRIES)
+    async with httpx.AsyncClient(
+        timeout=KAMIS_TIMEOUT, follow_redirects=True, transport=transport,
+    ) as client:
         try:
+            logger.info(f"KAMIS API call: date={target_date}, region={region}, id={settings.KAMIS_API_ID}")
             response = await client.get(KAMIS_BASE_URL, params=params)
             response.raise_for_status()
             data = response.json()
 
             raw_data = data.get("data", {})
+            logger.info(f"KAMIS response: type={type(raw_data).__name__}, error_code={raw_data.get('error_code') if isinstance(raw_data, dict) else 'N/A'}")
+
             # KAMIS API가 data를 list로 반환하는 경우 처리
             if isinstance(raw_data, list):
-                # [{"item": [...]}, ...] 형태일 수 있음
                 items = []
                 for entry in raw_data:
                     if isinstance(entry, dict) and "item" in entry:
@@ -69,14 +86,17 @@ async def fetch_daily_prices(
                 items = raw_data.get("item", [])
 
             if not items or items == "":
-                logger.warning(f"No data returned from KAMIS for {target_date}")
+                logger.warning(f"No data returned from KAMIS for {target_date}, region={region}")
                 return results
 
+            egg_count = 0
             for item in items:
-                # 계란(9903) 특란30개(kind_code=23)만 추출
                 if item.get("item_code") != EGG_ITEM_CODE:
                     continue
-                if item.get("kind_code") != EGG_KIND_CODE_30:
+                egg_count += 1
+                kind_code = item.get("kind_code", "")
+                grade = EGG_KIND_MAP.get(kind_code)
+                if not grade:
                     continue
 
                 price_str = item.get("dpr1", "0").replace(",", "").strip()
@@ -85,14 +105,18 @@ async def fetch_daily_prices(
 
                 results.append({
                     "date": target_date,
-                    "grade": "특란",
+                    "grade": grade,
                     "wholesale_price": float(price_str),
                     "unit": "30개",
                 })
+
+            logger.info(f"KAMIS: {len(items)} total items, {egg_count} egg items, {len(results)} with price for {target_date} region={region}")
+        except httpx.TimeoutException as e:
+            logger.error(f"KAMIS API timeout ({KAMIS_TIMEOUT}s): {e}")
         except httpx.HTTPStatusError as e:
             logger.error(f"KAMIS API HTTP error: {e.response.status_code}")
         except Exception as e:
-            logger.error(f"KAMIS API error: {e}")
+            logger.error(f"KAMIS API error: {type(e).__name__}: {e}")
 
     return results
 
