@@ -33,7 +33,7 @@ services:
       - key: SENTRY_ENVIRONMENT
         value: production
       - key: KAMIS_API_KEY
-        value: "test"
+        value: "3f3dce20-9ad0-433f-b92f-3b4ecd2e3335"
       - key: KAMIS_API_ID
         value: "test"
 
