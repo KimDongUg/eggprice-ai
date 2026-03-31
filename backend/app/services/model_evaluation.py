@@ -10,21 +10,27 @@ import logging
 from datetime import date
 
 import numpy as np
-import torch
-from torch.utils.data import DataLoader, TensorDataset
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.metrics import model_mape_gauge
 from app.models.market_data import ModelPerformance
-from app.ml.predict import load_model
-from app.ml.preprocessing import (
-    SEQUENCE_LENGTH,
-    build_features_from_db,
-    create_sequences,
-)
-from app.ml.train import compute_metrics, train_model, MODELS_DIR, ALL_GRADES
+
+try:
+    import torch
+    from torch.utils.data import DataLoader, TensorDataset
+    from app.ml.predict import load_model
+    from app.ml.preprocessing import (
+        SEQUENCE_LENGTH,
+        build_features_from_db,
+        create_sequences,
+    )
+    from app.ml.train import compute_metrics, train_model, MODELS_DIR, ALL_GRADES
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+    ALL_GRADES = ["왕란", "특란", "대란", "중란", "소란"]
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +46,10 @@ def evaluate_model_on_recent_data(
     Loads the last `eval_days` worth of data, creates sequences,
     runs inference, and computes metrics.
     """
+    if not HAS_TORCH:
+        logger.warning("torch not available — skipping model evaluation")
+        return None
+
     try:
         model, scaler = load_model(grade, model_version)
     except FileNotFoundError:
@@ -224,6 +234,10 @@ def check_and_retrain_if_needed(db: Session):
 
     Called by the monthly scheduler job.
     """
+    if not HAS_TORCH:
+        logger.warning("torch not available — skipping retrain check")
+        return
+
     for grade in ALL_GRADES:
         logger.info(f"Checking retrain need for grade={grade}")
 

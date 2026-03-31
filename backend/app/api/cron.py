@@ -119,9 +119,9 @@ def trigger_accuracy_evaluation(db: Session = Depends(get_db)):
         from app.services.model_evaluation import (
             evaluate_model_on_recent_data,
             store_performance,
+            ALL_GRADES,
         )
         from app.core.config import settings as app_settings
-        from app.ml.train import ALL_GRADES
     except Exception as e:
         logger.error(f"Cron: evaluate-accuracy import failed: {e}")
         return {"status": "ok", "results": {}, "warning": f"import error: {e}"}

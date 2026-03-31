@@ -91,14 +91,45 @@ def get_predictions(db: Session, grade: str, region: str = "seoul") -> list[Pred
     return results
 
 
+def _generate_fallback_results(db: Session, grade: str, region: str) -> list[dict]:
+    """Generate fallback prediction results when ML model is unavailable."""
+    latest = (
+        db.query(EggPrice)
+        .filter(EggPrice.grade == grade, EggPrice.region == region)
+        .order_by(desc(EggPrice.date))
+        .first()
+    )
+    base_price = latest.wholesale_price if latest and latest.wholesale_price else _BASE_PRICES.get(grade, 6500)
+    base_date = latest.date if latest else date.today()
+
+    results = []
+    for days in range(1, 61):
+        predicted = base_price * (1 + 0.002 * days) + (days % 5 - 2) * 10
+        results.append({
+            "base_date": base_date,
+            "target_date": base_date + timedelta(days=days),
+            "grade": grade,
+            "region": region,
+            "predicted_price": round(predicted, 2),
+            "confidence_lower": round(predicted * 0.97, 2),
+            "confidence_upper": round(predicted * 1.03, 2),
+            "horizon_days": days,
+            "model_version": "fallback_v1",
+        })
+    return results
+
+
 def run_predictions(db: Session, grade: str, region: str = "seoul") -> list[Prediction]:
     """Run model inference and store prediction results for a grade/region."""
     try:
         from app.ml.predict import predict_prices
         results = predict_prices(db, grade, settings.MODEL_VERSION, region=region)
+    except (ImportError, ModuleNotFoundError):
+        logger.warning(f"ML dependencies unavailable — using fallback for {grade}/{region}")
+        results = _generate_fallback_results(db, grade, region)
     except FileNotFoundError:
-        logger.warning(f"No trained model found for grade={grade}")
-        return []
+        logger.warning(f"No trained model found for grade={grade} — using fallback")
+        results = _generate_fallback_results(db, grade, region)
     except ValueError as e:
         logger.warning(f"Cannot predict for grade={grade} region={region}: {e}")
         return []
